@@ -1,0 +1,16 @@
+set(FULLIB_SOURCES
+	src/ful/cpuid.cpp
+	src/ful/string.cpp
+	)
+
+set(FULLIB_HEADERS
+	src/ful/compiler.hpp
+	src/ful/cpuid.hpp
+	src/ful/intrinsics.hpp
+	src/ful/stdint.hpp
+	src/ful/string.hpp
+	src/ful/string_avx2.hpp
+	src/ful/string_sse2.hpp
+	src/ful/string_sse4_2.hpp
+	src/ful/unicode.hpp
+	)
