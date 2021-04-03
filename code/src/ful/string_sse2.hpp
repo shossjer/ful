@@ -201,6 +201,98 @@ namespace ful
 			const unsigned int i = ntz(mask);
 			return beg_word + i;
 		}
+
+		inline bool less_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		{
+			ful_assume(beg1 != end1);
+
+			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(beg2) & -16);
+
+			const unsigned int beg2_offset = reinterpret_cast<uptr>(beg2) & (16 - 1);
+
+			if (beg2_offset != 0) // unaligned
+			{
+				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(beg1) & -16);
+				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(end1 - 1) & -16);
+
+				__m128i word1;
+				if (beg1_word != end1_word)
+				{
+					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
+				}
+				else
+				{
+					const unsigned int beg1_offset = reinterpret_cast<uptr>(beg1) & (16 - 1);
+					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
+				}
+				const __m128i word2 = rotate(*reinterpret_cast<const __m128i *>(beg2_word), beg2_offset);
+
+				const auto remaining = end1 - beg1;
+				const unsigned int word_end = 16 - beg2_offset;
+				const unsigned int remaining_up_to_word_end = remaining < word_end ? static_cast<int>(remaining) : word_end;
+				const unsigned int end_bits = static_cast<unsigned int>(-1) << remaining_up_to_word_end;
+
+				const __m128i cmpi = _mm_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm_movemask_epi8(cmpi) | end_bits; // todo smsb(_mm256_movemask_epi8(cmpi), ); // set most significant bits
+				if (mask != static_cast<unsigned int>(-1))
+				{
+					const unsigned int i = lssb(~mask);
+					return beg1[i] < beg2[i];
+				}
+
+				beg1 += remaining_up_to_word_end;
+				beg2_word += 16;
+			}
+
+			const unit_utf8 * const end1_full_word = end1 - 16;
+			while (beg1 <= end1_full_word)
+			{
+				const __m128i word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
+				const __m128i word2 = *reinterpret_cast<const __m128i *>(beg2_word);
+
+				const __m128i cmpi = _mm_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm_movemask_epi8(cmpi);
+				if (mask != 0xffff)
+				{
+					const unsigned int i = lssb(~mask);
+					return beg1[i] < beg2[i];
+				}
+
+				beg1 += 16;
+				beg2_word += 16;
+			}
+
+			if (end1 - beg1 != 0)
+			{
+				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(beg1) & -16);
+				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(end1 - 1) & -16);
+
+				__m128i word1;
+				if (beg1_word != end1_word)
+				{
+					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
+				}
+				else
+				{
+					const unsigned int beg1_offset = reinterpret_cast<uptr>(beg1) & (16 - 1);
+					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
+				}
+				const __m128i word2 = *reinterpret_cast<const __m128i *>(beg2_word);
+
+				const unsigned int align_end = static_cast<int>(end1 - beg1); // guaranteed to be < 16
+				const unsigned int end_bits = static_cast<unsigned int>(-1) << align_end;
+
+				const __m128i cmpi = _mm_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm_movemask_epi8(cmpi) | end_bits;
+				if (mask != static_cast<unsigned int>(-1))
+				{
+					const unsigned int i = lssb(~mask);
+					return beg1[i] < beg2[i];
+				}
+			}
+
+			return beg2_word[end1 - beg1] != '\0';
+		}
 	}
 }
 

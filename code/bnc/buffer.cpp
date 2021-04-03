@@ -17,7 +17,7 @@ buffer_utf8 read_utf8(const char * fname)
 		std::fseek(file, 0, SEEK_END);
 		const auto size = std::ftell(file);
 		std::fseek(file, 0, SEEK_SET);
-		buffer.resize(size * sizeof(char));
+		buffer.allocate(size * sizeof(char));
 		std::fread(buffer.data(), sizeof(char), size, file);
 
 		fclose(file);

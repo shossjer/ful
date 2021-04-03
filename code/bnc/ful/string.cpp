@@ -328,3 +328,61 @@ TEST_CASE("find_unit", "")
 	};
 #endif
 }
+
+TEST_CASE("less_cstr", "")
+{
+	auto txt = read_utf8("data/jap.txt");
+	auto tyt = read_utf8("data/jap.txt");
+	CHECK(*(txt.end() - 1) == '\n');
+	txt.reduce(txt.end() - 1); // remove newline, it should now be less than tyt
+
+	BENCHMARK_ADVANCED("less_cstr (std strcmp)")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(std::strcmp(txt.cstr(), tyt.cstr()) < 0);
+		CHECK(std::strcmp(tyt.cstr(), txt.cstr()) > 0);
+		meter.measure([&](int){ return std::strcmp(txt.cstr(), tyt.cstr()) < 0; });
+	};
+
+#if HAVE_ASMLIB
+	BENCHMARK_ADVANCED("less_cstr (asmlib strcmp)")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(A_strcmp(txt.cstr(), tyt.cstr()) < 0);
+		CHECK(A_strcmp(tyt.cstr(), txt.cstr()) > 0);
+		meter.measure([&](int){ return A_strcmp(txt.cstr(), tyt.cstr()) < 0; });
+	};
+#endif
+
+#if defined(__AVX2__)
+	BENCHMARK_ADVANCED("less_cstr avx2")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
+		CHECK_FALSE(less_cstr_avx2(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
+	};
+#endif
+
+#if defined(__SSE2__)
+	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
+		CHECK_FALSE(less_cstr_sse2(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
+	};
+#endif
+
+#if RUNTIME_CPUID
+	BENCHMARK_ADVANCED("less_cstr dispatch")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(less_cstr(txt.beg(), txt.end(), tyt.cstr()));
+		CHECK_FALSE(less_cstr(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return less_cstr(txt.beg(), txt.end(), tyt.cstr()); });
+	};
+#endif
+
+	BENCHMARK_ADVANCED("less_cstr none")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(less_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		CHECK_FALSE(less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return less_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
+	};
+}
