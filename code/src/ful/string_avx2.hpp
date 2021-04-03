@@ -82,7 +82,7 @@ namespace ful
 
 			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(beg2) & -32);
 
-			const int beg2_offset = reinterpret_cast<uptr>(beg2) & (32 - 1);
+			const unsigned int beg2_offset = reinterpret_cast<uptr>(beg2) & (32 - 1);
 
 			if (beg2_offset != 0) // unaligned
 			{
@@ -96,19 +96,19 @@ namespace ful
 				}
 				else
 				{
-					const int beg1_offset = reinterpret_cast<uptr>(beg1) & (32 - 1);
+					const unsigned int beg1_offset = reinterpret_cast<uptr>(beg1) & (32 - 1);
 					word1 = rotate(*reinterpret_cast<const __m256i *>(beg1_word), beg1_offset);
 				}
-				const auto word2 = rotate(*reinterpret_cast<const __m256i *>(beg2_word), beg2_offset);
+				const __m256i word2 = rotate(*reinterpret_cast<const __m256i *>(beg2_word), beg2_offset);
 
 				const auto remaining = end1 - beg1;
-				const int word_end = 32 - beg2_offset;
-				const int remaining_up_to_word_end = remaining < word_end ? static_cast<int>(remaining) : word_end;
-				const int end_bits = static_cast<unsigned int>(-1) << remaining_up_to_word_end;
+				const unsigned int word_end = 32 - beg2_offset;
+				const unsigned int remaining_up_to_word_end = remaining < word_end ? static_cast<int>(remaining) : word_end;
+				const unsigned int end_bits = static_cast<unsigned int>(-1) << remaining_up_to_word_end;
 
-				const auto cmpi = _mm256_cmpeq_epi8(word1, word2);
-				const int mask = _mm256_movemask_epi8(cmpi) | end_bits; // todo smsb(_mm256_movemask_epi8(cmpi), ); // set most significant bits
-				if (mask != -1)
+				const __m256i cmpi = _mm256_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm256_movemask_epi8(cmpi) | end_bits; // todo smsb(_mm256_movemask_epi8(cmpi), ); // set most significant bits
+				if (mask != static_cast<unsigned int>(-1))
 					return false;
 
 				beg1 += remaining_up_to_word_end;
@@ -118,12 +118,12 @@ namespace ful
 			const unit_utf8 * const end1_full_word = end1 - 32;
 			while (beg1 <= end1_full_word)
 			{
-				const auto word1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1));
-				const auto word2 = *reinterpret_cast<const __m256i *>(beg2_word);
+				const __m256i word1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1));
+				const __m256i word2 = *reinterpret_cast<const __m256i *>(beg2_word);
 
-				const auto cmpi = _mm256_cmpeq_epi8(word1, word2);
-				const int mask = _mm256_movemask_epi8(cmpi);
-				if (mask != -1)
+				const __m256i cmpi = _mm256_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm256_movemask_epi8(cmpi);
+				if (mask != static_cast<unsigned int>(-1))
 					return false;
 
 				beg1 += 32;
@@ -142,17 +142,17 @@ namespace ful
 				}
 				else
 				{
-					const int beg1_offset = reinterpret_cast<uptr>(beg1) & (32 - 1);
+					const unsigned int beg1_offset = reinterpret_cast<uptr>(beg1) & (32 - 1);
 					word1 = rotate(*reinterpret_cast<const __m256i *>(beg1_word), beg1_offset);
 				}
-				const auto word2 = *reinterpret_cast<const __m256i *>(beg2_word);
+				const __m256i word2 = *reinterpret_cast<const __m256i *>(beg2_word);
 
-				const int align_end = static_cast<int>(end1 - beg1); // guaranteed to be < 32
-				const int end_bits = static_cast<unsigned int>(-1) << align_end;
+				const unsigned int align_end = static_cast<int>(end1 - beg1); // guaranteed to be < 32
+				const unsigned int end_bits = static_cast<unsigned int>(-1) << align_end;
 
-				const auto cmpi = _mm256_cmpeq_epi8(word1, word2);
-				const int mask = _mm256_movemask_epi8(cmpi) | end_bits;
-				if (mask != -1)
+				const __m256i cmpi = _mm256_cmpeq_epi8(word1, word2);
+				const unsigned int mask = _mm256_movemask_epi8(cmpi) | end_bits;
+				if (mask != static_cast<unsigned int>(-1))
 					return false;
 			}
 

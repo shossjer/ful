@@ -277,6 +277,20 @@ TEST_CASE("equal_cstr", "")
 		meter.measure([&](int){ return equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
+
+#if RUNTIME_CPUID
+	BENCHMARK_ADVANCED("equal_cstr dispatch")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(equal_cstr(txt.beg(), txt.end(), tyt.cstr()));
+		meter.measure([&](int){ return equal_cstr(txt.beg(), txt.end(), tyt.cstr()); });
+	};
+#endif
+
+	BENCHMARK_ADVANCED("equal_cstr none")(Catch::Benchmark::Chronometer meter)
+	{
+		CHECK(equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		meter.measure([&](int){ return equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
+	};
 }
 
 TEST_CASE("find_unit", "")
