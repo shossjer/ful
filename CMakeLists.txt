@@ -123,6 +123,142 @@ if(TARGET ful_asmlib)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_ASMLIB)
 endif()
 
+
+cmake_dependent_option(BUILD_EASTL "Build eastl" ON "BUILD_BENCHMARKS AND POLICY CMP0097" OFF)
+if(BUILD_EASTL)
+	# note eastl has a nasty recursive dependency between its
+	# submodules so we have to hack around it by not fetching the
+	# submodules when cloning but instead postpone it and make an
+	# explicit request to fetch the submodules later (or in this case
+	# only the one submodule we actually need); this is why we require
+	# POLICY CMP0097
+	#
+	# https://gitlab.kitware.com/cmake/cmake/-/issues/19832
+	#
+	# furthermore, the latest versions of the library is missing an
+	# install target so we use this DIY version of the library instead
+	# (until it gets merged or fixed some other way)
+	dep_build(eastl
+		POLICY_CMP0097
+		FIND_GIT
+		SUPPORTS_DEBUG
+
+		DOWNLOAD_STEP
+		GIT_REPOSITORY "https://github.com/shossjer/EASTL.git"
+		GIT_TAG "install"
+		GIT_SUBMODULES ""
+		GIT_SHALLOW True
+
+		UPDATE_STEP
+		UPDATE_COMMAND "${CMAKE_COMMAND}" -E chdir "\$\{_source_dir\}" "\$\{GIT_EXECUTABLE\}" submodule update --init "test/packages/EABase"
+
+		CMAKE_OPTIONS
+		-DEASTL_BUILD_BENCHMARK=OFF
+		-DEASTL_BUILD_TESTS=OFF
+		)
+endif()
+
+dep_package(eastl ful_eastl
+	SUPPORTS_DEBUG
+
+	FILES
+	EASTL/string.h
+
+	LIBS
+	EASTL
+	)
+
+if(TARGET ful_eastl)
+	target_link_libraries(lib_benchmark INTERFACE ful_eastl)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_EASTL)
+endif()
+
+
+cmake_dependent_option(BUILD_ICU4C "Build icu4c" ON "BUILD_BENCHMARKS" OFF)
+if(BUILD_ICU4C)
+	dep_build(icu4c
+		DOWNLOAD_STEP
+		Windows_AMD64
+		URL "https://github.com/unicode-org/icu/releases/download/release-69-1/icu4c-69_1-Win64-MSVC2019.zip"
+		TIMEOUT 10
+
+		INSTALL_STEP
+		Windows_AMD64
+		INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "\$\{_source_dir\}/include" "\$\{_install_prefix\}/include"
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different "\$\{_source_dir\}/lib64/icuuc.lib" "\$\{_install_prefix\}/lib"
+		COMMAND ${CMAKE_COMMAND} -E make_directory "\$\{_install_prefix\}/bin"
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different "\$\{_source_dir\}/bin64/icuuc69.dll" "\$\{_source_dir\}/bin64/icudt69.dll" "\$\{_install_prefix\}/bin"
+		)
+endif()
+
+dep_package(icu4c ful_icu4c
+	FILES
+	unicode/ucnv.h
+
+	LIBS
+	Windows_AMD64 icuuc.lib
+	)
+
+if(TARGET ful_icu4c)
+	target_link_libraries(lib_benchmark INTERFACE ful_icu4c)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_ICU4C)
+endif()
+
+
+# https://github.com/JuliaStrings/utf8proc
+cmake_dependent_option(BUILD_UTF8PROC "Build utf8proc" ON "BUILD_BENCHMARKS" OFF)
+if(BUILD_UTF8PROC)
+	dep_build(utf8proc
+		DOWNLOAD_STEP
+		URL "https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.6.1.tar.gz"
+		TIMEOUT 10
+
+		CMAKE_OPTIONS
+		-DBUILD_SHARED_LIBS=OFF
+		)
+endif()
+
+dep_package(utf8proc ful_utf8proc
+	FILES
+	utf8proc.h
+
+	LIBS
+	Windows_AMD64 utf8proc_static.lib
+	)
+
+if(TARGET ful_utf8proc)
+	target_link_libraries(lib_benchmark INTERFACE ful_utf8proc)
+	# todo only define UTF8PROC_STATIC when static lib is found
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTF8PROC UTF8PROC_STATIC)
+endif()
+
+
+# https://github.com/nemtrif/utfcpp
+cmake_dependent_option(BUILD_UTFCPP "Build utfcpp" ON "BUILD_BENCHMARKS" OFF)
+if(BUILD_UTFCPP)
+	dep_build(utfcpp
+		DOWNLOAD_STEP
+		URL "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.1.2.tar.gz"
+		TIMEOUT 10
+
+		CMAKE_OPTIONS
+		-DUTF8_TESTS=OFF
+		-DUTF8_INSTALL=ON
+		-DUTF8_SAMPLES=OFF
+		)
+endif()
+
+dep_package(utfcpp ful_utfcpp
+	FILES
+	utf8cpp/utf8.h
+	)
+
+if(TARGET ful_utfcpp)
+	target_link_libraries(lib_benchmark INTERFACE ful_utfcpp)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTFCPP)
+endif()
+
+
 # project options
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
