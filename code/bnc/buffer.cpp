@@ -1,3 +1,8 @@
+#include "ful/compiler.hpp"
+#include "ful/stdint.hpp"
+
+#include "ful/intrinsics.hpp"
+
 #include "buffer.hpp"
 
 #include <cstdio>

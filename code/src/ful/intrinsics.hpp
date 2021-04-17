@@ -1,451 +1,154 @@
 #pragma once
 
-#include "ful/compiler.hpp"
-#include "ful/stdint.hpp"
+// #include "ful/compiler.hpp"
+// #include "ful/stdint.hpp"
 
 #if defined(_MSC_VER)
 # include <intrin.h>
 #endif
 
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
-# include <immintrin.h>
-#endif
+#include "intrinsics_x86.hpp"
 
 namespace ful
 {
-#if defined(__LZCNT__)
-
-	// number of leading zeros
-	inline unsigned int nlz(unsigned int x)
+	// generate mask where the n least significant bits are set
+	inline unsigned int low_mask(unsigned int n)
 	{
-		return _lzcnt_u32(x);
+		ful_expect(0 < n);
+		ful_expect(n <= sizeof(unsigned int) * byte_size);
+
+		return static_cast<unsigned int>(-1) >> (sizeof(unsigned int) * byte_size - n);
 	}
 
-	// number of leading zeros
-	inline unsigned int nlz(int x) { return nlz(static_cast<unsigned int>(x)); }
-
-# if defined(_MSC_VER) || !defined(__LP64__)
-	// number of leading zeros
-	inline unsigned int nlz(unsigned long x) { return nlz(static_cast<unsigned int>(x)); }
-
-	// number of leading zeros
-	inline unsigned int nlz(long x) { return nlz(static_cast<unsigned long>(x)); }
-# endif
-
-# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
-	// number of leading zeros
-	inline unsigned int nlz(unsigned long long x)
+	// get the index of the least significant set bit
+	template <typename T>
+	unsigned int least_significant_set_bit(T x)
 	{
-		return static_cast<unsigned int>(_lzcnt_u64(x)); // at most 64
-	}
-
-	// number of leading zeros
-	inline unsigned int nlz(long long x) { return nlz(static_cast<unsigned long long>(x)); }
-
-#  if defined(__LP64__)
-	// number of leading zeros
-	inline unsigned int nlz(unsigned long x) { return nlz(static_cast<unsigned long long>(x)); }
-
-	// number of leading zeros
-	inline unsigned int nlz(long x) { return nlz(static_cast<unsigned long>(x)); }
-#  endif
-
-# endif
-
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::bsf(x);
+#else
+# error Missing implementation!
 #endif
-
-#if defined(__BMI__)
-
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned int x)
-	{
-		return _tzcnt_u32(x);
 	}
 
-	// number of trailing zeros
-	inline unsigned int ntz(int x) { return ntz(static_cast<unsigned int>(x)); }
-
-# if defined(_MSC_VER) || !defined(__LP64__)
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned long x) { return ntz(static_cast<unsigned int>(x)); }
-
-	// number of trailing zeros
-	inline unsigned int ntz(long x) { return ntz(static_cast<unsigned long>(x)); }
-# endif
-
-# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned long long x)
+	// get the index of the most significant set bit
+	template <typename T>
+	unsigned int most_significant_set_bit(T x)
 	{
-		return static_cast<unsigned int>(_tzcnt_u64(x)); // at most 64
-	}
-
-	// number of trailing zeros
-	inline unsigned int ntz(long long x) { return ntz(static_cast<unsigned long long>(x)); }
-
-#  if defined(__LP64__)
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned long x) { return ntz(static_cast<unsigned long long>(x)); }
-
-	// number of trailing zeros
-	inline unsigned int ntz(long x) { return ntz(static_cast<unsigned long>(x)); }
-#  endif
-
-# endif
-
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::bsr(x);
+#else
+# error Missing implementation!
 #endif
+	}
+
+	// get the index of the nth set bit
+	inline unsigned int index_set_bit(unsigned int x, unsigned int n)
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		const unsigned int nth_mask = detail::pdep(1u << n, x);
+		return detail::bsf(nth_mask); // todo bsf or tzcnt
+#else
+# error Missing implementation!
+#endif
+	}
+
+	// get the number of leading zero bits
+	template <typename T>
+	auto count_leading_zeros(T x)
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		-> decltype(detail::lzcnt(x))
+#endif
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::lzcnt(x);
+#else
+# error Missing implementation!
+#endif
+	}
+
+	// get the number of trailing zero bits
+	template <typename T>
+	auto count_trailing_zeros(T x)
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		-> decltype(detail::tzcnt(x))
+#endif
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::tzcnt(x);
+#else
+# error Missing implementation!
+#endif
+	}
 
 #if defined(_MSC_VER)
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(unsigned long x)
-	{
-		ful_assume(x != 0);
-
-		unsigned long i;
-		_BitScanForward(&i, x);
-
-		return i;
-	}
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(long x) { return lssb(static_cast<unsigned long>(x)); }
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(unsigned int x) { return lssb(static_cast<unsigned long>(x)); }
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(int x) { return lssb(static_cast<unsigned int>(x)); }
-
-# if defined(_M_X64) || defined(_M_AMD64)
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(unsigned long long x)
-	{
-		ful_assume(x != 0);
-
-		unsigned long i;
-		_BitScanForward64(&i, x);
-
-		return i;
-	}
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int lssb(long long x) { return lssb(static_cast<unsigned long long>(x)); }
-# endif
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(unsigned long x)
-	{
-		ful_assume(x != 0);
-
-		unsigned long i;
-		_BitScanReverse(&i, x);
-
-		return i;
-	}
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(long x) { return mssb(static_cast<unsigned long>(x)); }
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(unsigned int x) { return mssb(static_cast<unsigned long>(x)); }
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(int x) { return mssb(static_cast<unsigned int>(x)); }
-
-# if defined(_M_X64) || defined(_M_AMD64)
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(unsigned long long x)
-	{
-		ful_assume(x != 0);
-
-		unsigned long i;
-		_BitScanReverse64(&i, x);
-
-		return i;
-	}
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	inline unsigned int mssb(long long x) { return mssb(static_cast<unsigned long long>(x)); }
-# endif
-
-# if !defined(__LZCNT__)
-	// number of leading zeros
-	template <typename T>
-	auto nlz(T x) -> decltype(mssb(x))
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : mssb(x) ^ (sizeof x * BYTE_SIZE - 1);
-	}
-# endif
-
-# if !defined(__BMI__)
-	// number of trailing zeros
-	template <typename T>
-	auto ntz(T x) -> decltype(lssb(x))
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : lssb(x);
-	}
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+// warning C4146: unary minus operator applied to unsigned type, result still unsigned
 #endif
 
-# if defined(_M_X64) || defined(_M_AMD64) || (defined(_MSC_VER) && defined(_M_IX86))
-	// number of set bits
-	inline unsigned int popcnt(unsigned int x) { return __popcnt(x); }
-
-	// number of set bits
-	inline unsigned int popcnt(int x) { return popcnt(static_cast<unsigned int>(x)); }
-
-	// number of set bits
-	inline unsigned int popcnt(unsigned long x) { return popcnt(static_cast<unsigned int>(x)); }
-
-	// number of set bits
-	inline unsigned int popcnt(long x) { return popcnt(static_cast<unsigned long>(x)); }
-# endif
-
-# if defined(_M_X64) || defined(_M_AMD64)
-	// number of set bits
-	inline unsigned int popcnt(unsigned long long x) { return static_cast<int>(__popcnt64(x)); } // at most 64
-
-	// number of set bits
-	inline unsigned int popcnt(long long x) { return popcnt(static_cast<unsigned long long>(x)); }
-# endif
-
-#elif defined(__GNUC__)
-
-// note gcc seems to be generating (possibly) unnecessary xor-
-// instructions, here is an interesting read that mostly talks about
-// that with popcnt
-//
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=62011
-//
-// todo clang does not, why?
-
-# if !defined(__LZCNT__)
-
-	// number of leading zeros
-	inline unsigned int nlz(unsigned int x)
+	// if `0 < n < Po2`, where Po2 is a power of two, computes `Po2 - n`
+	template <unsigned int Po2>
+	unsigned int mirror(unsigned int n)
 	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_clz(x);
+		ful_expect(0 < n);
+		ful_expect(n < Po2);
+
+		return -n & (Po2 - 1);
 	}
 
-	// number of leading zeros
-	inline unsigned int nlz(int x) { return nlz(static_cast<unsigned int>(x)); }
-
-	// number of leading zeros
-	inline unsigned int nlz(unsigned long x)
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_clzl(x);
-	}
-
-	// number of leading zeros
-	inline unsigned int nlz(long x) { return nlz(static_cast<unsigned long>(x)); }
-
-#  if defined(__x86_64__)
-	// number of leading zeros
-	inline unsigned int nlz(unsigned long long x)
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_clzll(x);
-	}
-
-	// number of leading zeros
-	inline unsigned int nlz(long long x) { return nlz(static_cast<unsigned long long>(x)); }
-#  endif
-
-# endif
-
-# if !defined(__BMI__)
-
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned int x)
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_ctz(x);
-	}
-
-	// number of trailing zeros
-	inline unsigned int ntz(int x) { return ntz(static_cast<unsigned int>(x)); }
-
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned long x)
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_ctzl(x);
-	}
-
-	// number of trailing zeros
-	inline unsigned int ntz(long x) { return ntz(static_cast<unsigned long>(x)); }
-
-#  if defined(__x86_64__)
-	// number of trailing zeros
-	inline unsigned int ntz(unsigned long long x)
-	{
-		return x == 0 ? (sizeof x * BYTE_SIZE) : __builtin_ctzll(x);
-	}
-
-	// number of trailing zeros
-	inline unsigned int ntz(long long x) { return ntz(static_cast<unsigned long long>(x)); }
-#  endif
-
-# endif
-
-	/* least significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	template <typename T>
-	auto lssb(T x) -> decltype(ntz(x))
-	{
-		ful_assume(x != 0);
-
-		return ntz(x);
-	}
-
-	/* most significant set bit
-	 *
-	 * `x = 0` is undefined
-	 */
-	template <typename T>
-	auto mssb(T x) -> decltype(nlz(x))
-	{
-		ful_assume(x != 0);
-
-		return nlz(x) ^ (sizeof x * BYTE_SIZE - 1);
-	}
-
-# if defined(__POPCNT__)
-
-	// number of set bits
-	inline unsigned int popcnt(unsigned int x) { return __builtin_popcount(x); }
-
-	// number of set bits
-	inline unsigned int popcnt(int x) { return popcnt(static_cast<unsigned int>(x)); }
-
-	// number of set bits
-	inline unsigned int popcnt(unsigned long x) { return __builtin_popcountl(x); }
-
-	// number of set bits
-	inline unsigned int popcnt(long x) { return popcnt(static_cast<unsigned long>(x)); }
-
-#  if defined(__x86_64__)
-	// number of set bits
-	inline unsigned int popcnt(unsigned long long x) { return __builtin_popcountll(x); }
-
-	// number of set bits
-	inline unsigned int popcnt(long long x) { return popcnt(static_cast<unsigned long long>(x)); }
-#  endif
-
-# endif
-
+#if defined(_MSC_VER)
+#pragma warning( pop )
 #endif
 
-#if defined(__BMI2__)
-
-	// deposit low bits
-	inline unsigned int pdep(unsigned int x, unsigned int mask)
+	// set all bits more significant than the specified index
+	inline unsigned int set_higher_bits(unsigned int x, unsigned int index)
 	{
-		return _pdep_u32(x, mask);
+		ful_expect(index < sizeof(unsigned int) * byte_size);
+
+		const unsigned int mask = static_cast<unsigned int>(-2) << index;
+		return x | mask;
 	}
 
-	// deposit low bits
-	inline int pdep(int x, unsigned int mask) { return pdep(static_cast<unsigned int>(x), mask); }
-
-# if defined(_MSC_VER) || !defined(__LP64__)
-	// deposit low bits
-	inline unsigned int pdep(unsigned long x, unsigned int mask) { return pdep(static_cast<unsigned int>(x), mask); }
-
-	// deposit low bits
-	inline long pdep(long x, unsigned int mask) { return pdep(static_cast<unsigned long>(x), mask); }
-# endif
-
-# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
-	// deposit low bits
-	inline unsigned long long pdep(unsigned long long x, unsigned long long mask)
+	// reset all bits more significant than the specified index
+	inline unsigned int zero_higher_bits(unsigned int x, unsigned int index)
 	{
-		return _pdep_u64(x, mask);
-	}
-
-	// deposit low bits
-	inline long long pdep(long long x, unsigned long long mask) { return pdep(static_cast<unsigned long long>(x), mask); }
-
-#  if defined(__LP64__)
-	// deposit low bits
-	inline unsigned int pdep(unsigned long x, unsigned long long mask) { return pdep(static_cast<unsigned long long>(x), mask); }
-
-	// deposit low bits
-	inline long pdep(long x, unsigned long long mask) { return pdep(static_cast<unsigned long>(x), mask); }
-#  endif
-
-# endif
-
-	// zero more significant bits
-	inline unsigned int zmsb(unsigned int x, unsigned int index)
-	{
-		return _bzhi_u32(x, index + 1);
-	}
-
-	// zero more significant bits
-	inline int zmsb(int x, unsigned int index) { return zmsb(static_cast<unsigned int>(x), index); }
-
-# if defined(_MSC_VER) || !defined(__LP64__)
-	// zero more significant bits
-	inline unsigned int zmsb(unsigned long x, unsigned int index) { return zmsb(static_cast<unsigned int>(x), index); }
-
-	// zero more significant bits
-	inline long zmsb(long x, unsigned int index) { return zmsb(static_cast<unsigned long>(x), index); }
-# endif
-
-# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
-	// zero more significant bits
-	inline unsigned long long zmsb(unsigned long long x, unsigned int index)
-	{
-		return _bzhi_u64(x, index + 1);
-	}
-
-	// zero more significant bits
-	inline long long zmsb(long long x, unsigned int index) { return zmsb(static_cast<unsigned long long>(x), index); }
-
-#  if defined(__LP64__)
-	// zero more significant bits
-	inline unsigned int zmsb(unsigned long x, unsigned int index) { return zmsb(static_cast<unsigned int>(x), index); }
-
-	// zero more significant bits
-	inline long zmsb(long x, unsigned int index) { return zmsb(static_cast<unsigned long>(x), index); }
-#  endif
-
-# endif
-
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::bzhi(x, index + 1);
+#else
+# error Missing implementation!
 #endif
+	}
+
+	// resets the n least significant bits
+	inline unsigned int zero_low_bits(unsigned int x, unsigned int n)
+	{
+		ful_expect(n < sizeof(unsigned int) * byte_size);
+
+		x >>= n;
+		x <<= n;
+
+		return x;
+	}
+
+	// resets all but the n least significant set bits
+	inline unsigned int keep_low_set_bits(unsigned int x, unsigned int n)
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::pdep(low_mask(n), x);
+#else
+# error Missing implementation!
+#endif
+	}
+
+	// reorder bytes for converting between little- and big-endian
+	template <typename T>
+	T byte_swap(T x)
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::bswap(x);
+#else
+# error Missing implementation!
+#endif
+	}
 }

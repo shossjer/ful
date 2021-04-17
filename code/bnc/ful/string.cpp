@@ -138,11 +138,11 @@ namespace
 		};
 
 		--s;
-		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(s) & -32);
-		const unsigned int offset = reinterpret_cast<uptr>(s) & (32 - 1);
+		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -32);
+		const unsigned int offset = reinterpret_cast<puint>(s) & (32 - 1);
 
 		__m256i cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
-		unsigned int mask = zmsb(_mm256_movemask_epi8(cmpi), offset);
+		unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(cmpi), offset);
 		if (mask == 0)
 		{
 			word -= 32;
@@ -150,7 +150,7 @@ namespace
 			cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
 			mask = _mm256_movemask_epi8(cmpi);
 		}
-		const unsigned int i = mssb(mask);
+		const unsigned int i = most_significant_set_bit(mask);
 		return word + i;
 	}
 
@@ -175,11 +175,11 @@ namespace
 		};
 
 		--s;
-		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<uptr>(s) & -16);
-		const unsigned int offset = reinterpret_cast<uptr>(s) & (16 - 1);
+		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -16);
+		const unsigned int offset = reinterpret_cast<puint>(s) & (16 - 1);
 
 		__m128i cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
-		unsigned int mask = zmsb(_mm_movemask_epi8(cmpi), offset);
+		unsigned int mask = zero_higher_bits(_mm_movemask_epi8(cmpi), offset);
 		if (mask == 0)
 		{
 			word -= 16;
@@ -187,7 +187,7 @@ namespace
 			cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
 			mask = _mm_movemask_epi8(cmpi);
 		}
-		const unsigned int i = mssb(mask);
+		const unsigned int i = most_significant_set_bit(mask);
 		return word + i;
 	}
 
@@ -210,20 +210,20 @@ TEST_CASE("point_prev", "")
 
 	BENCHMARK_ADVANCED("point_prev (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(point_prev_alt_naive(txt.end(), npoints) - txt.beg() == 0);
+		REQUIRE(point_prev_alt_naive(txt.end(), npoints) - txt.beg() == 0);
 		meter.measure([&](int){ return point_prev_alt_naive(txt.end(), npoints); });
 	};
 
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("point_prev avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(point_prev_avx2(txt.end(), npoints) - txt.beg() == 0);
+		REQUIRE(point_prev_avx2(txt.end(), npoints) - txt.beg() == 0);
 		meter.measure([&](int){ return point_prev_avx2(txt.end(), npoints); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev avx2 (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(point_prev_avx2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
+		REQUIRE(point_prev_avx2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
 		meter.measure([&](int){ return point_prev_avx2_alt_naive(txt.end(), npoints); });
 	};
 #endif
@@ -231,13 +231,13 @@ TEST_CASE("point_prev", "")
 #if defined(__SSE2__)
 	BENCHMARK_ADVANCED("point_prev sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(point_prev_sse2(txt.end(), npoints) - txt.beg() == 0);
+		REQUIRE(point_prev_sse2(txt.end(), npoints) - txt.beg() == 0);
 		meter.measure([&](int){ return point_prev_sse2(txt.end(), npoints); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev sse2 (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(point_prev_sse2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
+		REQUIRE(point_prev_sse2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
 		meter.measure([&](int){ return point_prev_sse2_alt_naive(txt.end(), npoints); });
 	};
 #endif
@@ -250,14 +250,14 @@ TEST_CASE("equal_cstr", "")
 
 	BENCHMARK_ADVANCED("equal_cstr (std strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(std::strcmp(txt.cstr(), tyt.cstr()) == 0);
+		REQUIRE(std::strcmp(txt.cstr(), tyt.cstr()) == 0);
 		meter.measure([&](int){ return std::strcmp(txt.cstr(), tyt.cstr()) == 0; });
 	};
 
 #if HAVE_ASMLIB
 	BENCHMARK_ADVANCED("equal_cstr (asmlib strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(A_strcmp(txt.cstr(), tyt.cstr()) == 0);
+		REQUIRE(A_strcmp(txt.cstr(), tyt.cstr()) == 0);
 		meter.measure([&](int){ return A_strcmp(txt.cstr(), tyt.cstr()) == 0; });
 	};
 #endif
@@ -265,7 +265,7 @@ TEST_CASE("equal_cstr", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("equal_cstr avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE(equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
 		meter.measure([&](int){ return equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
@@ -273,7 +273,7 @@ TEST_CASE("equal_cstr", "")
 #if defined(__SSE2__)
 	BENCHMARK_ADVANCED("equal_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE(equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
 		meter.measure([&](int){ return equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
@@ -281,14 +281,14 @@ TEST_CASE("equal_cstr", "")
 #if RUNTIME_CPUID
 	BENCHMARK_ADVANCED("equal_cstr dispatch")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(equal_cstr(txt.beg(), txt.end(), tyt.cstr()));
-		meter.measure([&](int){ return equal_cstr(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(equal(txt.beg(), txt.end(), tyt.cstr()));
+		meter.measure([&](int){ return equal(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
 
 	BENCHMARK_ADVANCED("equal_cstr none")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE(equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
 		meter.measure([&](int){ return equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 }
@@ -299,7 +299,7 @@ TEST_CASE("find_unit", "")
 
 	BENCHMARK_ADVANCED("find_unit (std strchr)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(std::strchr(txt.cstr(), '$') == txt.end() - 2);
+		REQUIRE(std::strchr(txt.cstr(), '$') == txt.end() - 2);
 		meter.measure([&](int){ return std::strchr(txt.cstr(), '$'); });
 	};
 
@@ -307,7 +307,7 @@ TEST_CASE("find_unit", "")
 	BENCHMARK_ADVANCED("find_unit (asmlib strstr)")(Catch::Benchmark::Chronometer meter)
 	{
 		// note asmlib does not have strchr
-		CHECK(A_strstr(txt.cstr(), u8"$") == txt.end() - 2);
+		REQUIRE(A_strstr(txt.cstr(), u8"$") == txt.end() - 2);
 		meter.measure([&](int){ return A_strstr(txt.cstr(), u8"$"); });
 	};
 #endif
@@ -315,7 +315,7 @@ TEST_CASE("find_unit", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(find_unit_avx2(txt.beg(), txt.end(), '$') == txt.end() - 2);
+		REQUIRE(find_unit_avx2(txt.beg(), txt.end(), '$') == txt.end() - 2);
 		meter.measure([&](int){ return find_unit_avx2(txt.beg(), txt.end(), '$'); });
 	};
 #endif
@@ -323,7 +323,7 @@ TEST_CASE("find_unit", "")
 #if defined(__SSE2__)
 	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(find_unit_sse2(txt.beg(), txt.end(), '$') == txt.end() - 2);
+		REQUIRE(find_unit_sse2(txt.beg(), txt.end(), '$') == txt.end() - 2);
 		meter.measure([&](int){ return find_unit_sse2(txt.beg(), txt.end(), '$'); });
 	};
 #endif
@@ -333,21 +333,21 @@ TEST_CASE("less_cstr", "")
 {
 	auto txt = read_utf8("data/jap.txt");
 	auto tyt = read_utf8("data/jap.txt");
-	CHECK(*(txt.end() - 1) == '\n');
+	REQUIRE(*(txt.end() - 1) == '\n');
 	txt.reduce(txt.end() - 1); // remove newline, it should now be less than tyt
 
 	BENCHMARK_ADVANCED("less_cstr (std strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(std::strcmp(txt.cstr(), tyt.cstr()) < 0);
-		CHECK(std::strcmp(tyt.cstr(), txt.cstr()) > 0);
+		REQUIRE(std::strcmp(txt.cstr(), tyt.cstr()) < 0);
+		REQUIRE(std::strcmp(tyt.cstr(), txt.cstr()) > 0);
 		meter.measure([&](int){ return std::strcmp(txt.cstr(), tyt.cstr()) < 0; });
 	};
 
 #if HAVE_ASMLIB
 	BENCHMARK_ADVANCED("less_cstr (asmlib strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(A_strcmp(txt.cstr(), tyt.cstr()) < 0);
-		CHECK(A_strcmp(tyt.cstr(), txt.cstr()) > 0);
+		REQUIRE(A_strcmp(txt.cstr(), tyt.cstr()) < 0);
+		REQUIRE(A_strcmp(tyt.cstr(), txt.cstr()) > 0);
 		meter.measure([&](int){ return A_strcmp(txt.cstr(), tyt.cstr()) < 0; });
 	};
 #endif
@@ -355,8 +355,8 @@ TEST_CASE("less_cstr", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("less_cstr avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
-		CHECK_FALSE(less_cstr_avx2(tyt.beg(), tyt.end(), txt.cstr()));
+		REQUIRE(less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(less_cstr_avx2(tyt.beg(), tyt.end(), txt.cstr()));
 		meter.measure([&](int){ return less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
@@ -364,8 +364,8 @@ TEST_CASE("less_cstr", "")
 #if defined(__SSE2__)
 	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
-		CHECK_FALSE(less_cstr_sse2(tyt.beg(), tyt.end(), txt.cstr()));
+		REQUIRE(less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(less_cstr_sse2(tyt.beg(), tyt.end(), txt.cstr()));
 		meter.measure([&](int){ return less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
@@ -373,16 +373,16 @@ TEST_CASE("less_cstr", "")
 #if RUNTIME_CPUID
 	BENCHMARK_ADVANCED("less_cstr dispatch")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(less_cstr(txt.beg(), txt.end(), tyt.cstr()));
-		CHECK_FALSE(less_cstr(tyt.beg(), tyt.end(), txt.cstr()));
-		meter.measure([&](int){ return less_cstr(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(less(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(less(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return less(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
 
 	BENCHMARK_ADVANCED("less_cstr none")(Catch::Benchmark::Chronometer meter)
 	{
-		CHECK(less_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
-		CHECK_FALSE(less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
+		REQUIRE(less_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
 		meter.measure([&](int){ return less_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 }
