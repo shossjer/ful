@@ -4,3 +4,5 @@
 !code/
 !data/
 !dep/
+
+*.dll
