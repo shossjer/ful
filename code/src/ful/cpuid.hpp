@@ -1,13 +1,11 @@
 #pragma once
 
-// #if RUNTIME_CPUID
+#if defined(FUL_FPTR)
+
+// #include "ful/compiler.hpp"
 
 namespace ful
 {
-// note "Intel considers POPCNT as part of SSE4.2, and LZCNT as part of BMI1"
-//
-// https://en.wikipedia.org/w/index.php?title=Bit_manipulation_instruction_set&oldid=1003418999
-
 	enum class cpuid_feature : unsigned int
 	{
 		// NONE   = 0,
@@ -29,26 +27,21 @@ namespace ful
 		BMI2   = 1u << 12,
 	};
 
+	extern void cpuid_init();
+
 	inline bool cpuid_supports(cpuid_feature feature)
 	{
 		extern unsigned int cpuid_feature_cache;
 
-		return (cpuid_feature_cache & static_cast<unsigned int>(feature)) != 0;
-	}
-
-	template <typename V>
-	V cpuid_switch(V value)
-	{
-		return value;
-	}
-	template <typename V, typename ...Ps>
-	V cpuid_switch(cpuid_feature feature, V value, Ps ...ps)
-	{
-		if (cpuid_supports(feature))
-			return value;
-
-		return cpuid_switch(ps...);
+		if (ful_expect(cpuid_feature_cache != 0))
+		{
+			return (cpuid_feature_cache & static_cast<unsigned int>(feature)) != 0;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
 
-// #endif
+#endif

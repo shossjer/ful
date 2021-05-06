@@ -14,6 +14,14 @@ namespace ful
 {
 	namespace detail
 	{
+#if defined(FUL_IFUNC)
+		extern bool equal_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+		extern bool less_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+#elif defined(FUL_FPTR)
+		extern bool (* equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+		extern bool (* less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+#endif
+
 		inline bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
 			for (; beg1 != end1; ++beg1, ++beg2)
@@ -32,20 +40,6 @@ namespace ful
 					return *beg1 < *beg2;
 			}
 			return *beg2 != '\0';
-		}
-
-		inline bool equal_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
-		{
-			extern bool (* equal_cstr_dispatch)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-
-			return equal_cstr_dispatch(beg1, end1, beg2);
-		}
-
-		inline bool less_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
-		{
-			extern bool (* less_cstr_dispatch)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-
-			return less_cstr_dispatch(beg1, end1, beg2);
 		}
 	}
 }
