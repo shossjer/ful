@@ -261,143 +261,74 @@ endif()
 
 # project options
 
-# https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-# https://docs.microsoft.com/en-us/cpp/build/reference/arch-x64
-option(CPUID_SSE "Assume SSE intrinsics are available" OFF)
-option(CPUID_SSE2 "Assume SSE2 intrinsics are available" OFF)
-option(CPUID_SSE3 "Assume SSE3 intrinsics are available" OFF)
-option(CPUID_SSSE3 "Assume SSSE3 intrinsics are available" OFF)
-option(CPUID_SSE4_1 "Assume SSE4.1 intrinsics are available" OFF)
-option(CPUID_SSE4_2 "Assume SSE4.2 intrinsics are available" OFF)
-option(CPUID_POPCNT "Assume POPCNT intrinsics are available" OFF)
-option(CPUID_AVX "Assume AVX intrinsics are available" OFF)
-option(CPUID_AVX2 "Assume AVX2 intrinsics are available" OFF)
-option(CPUID_BMI "Assume BMI intrinsics are available" OFF)
-option(CPUID_BMI2 "Assume BMI2 intrinsics are available" OFF)
-option(CPUID_LZCNT "Assume LZCNT intrinsics are available" OFF)
+option(FUL_CPUID_SSE "Assume SSE intrinsics are available" OFF)
+option(FUL_CPUID_SSE2 "Assume SSE2 intrinsics are available" OFF)
+option(FUL_CPUID_SSE3 "Assume SSE3 intrinsics are available" OFF)
+option(FUL_CPUID_SSSE3 "Assume SSSE3 intrinsics are available" OFF)
+option(FUL_CPUID_SSE4_1 "Assume SSE4.1 intrinsics are available" OFF)
+option(FUL_CPUID_SSE4_2 "Assume SSE4.2 intrinsics are available" OFF)
+option(FUL_CPUID_POPCNT "Assume POPCNT intrinsics are available" OFF)
+option(FUL_CPUID_AVX "Assume AVX intrinsics are available" OFF)
+option(FUL_CPUID_AVX2 "Assume AVX2 intrinsics are available" OFF)
+option(FUL_CPUID_BMI "Assume BMI intrinsics are available" OFF)
+option(FUL_CPUID_BMI2 "Assume BMI2 intrinsics are available" OFF)
+option(FUL_CPUID_LZCNT "Assume LZCNT intrinsics are available" OFF)
 
-if(CMAKE_CXX_COMPILER_ID EQUAL Clang OR CMAKE_CXX_COMPILER_ID EQUAL GNU)
-	if(CMAKE_CXX_FLAGS MATCHES "-msse " OR CMAKE_CXX_FLAGS MATCHES "-msse$")
-		set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-msse2 " OR CMAKE_CXX_FLAGS MATCHES "-msse2$")
-		set(CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-msse3 " OR CMAKE_CXX_FLAGS MATCHES "-msse3$")
-		set(CPUID_SSE3 ON CACHE BOOL "Assume SSE3 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mssse3 " OR CMAKE_CXX_FLAGS MATCHES "-mssse3$")
-		set(CPUID_SSSE3 ON CACHE BOOL "Assume SSSE3 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-msse4.1 " OR CMAKE_CXX_FLAGS MATCHES "-msse4.1$")
-		set(CPUID_SSE4_1 ON CACHE BOOL "Assume SSE4_1 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-msse4.2 " OR CMAKE_CXX_FLAGS MATCHES "-msse4.2$")
-		set(CPUID_SSE4_2 ON CACHE BOOL "Assume SSE4_2 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mpopcnt " OR CMAKE_CXX_FLAGS MATCHES "-mpopcnt$")
-		set(CPUID_POPCNT ON CACHE BOOL "Assume POPCNT intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mavx " OR CMAKE_CXX_FLAGS MATCHES "-mavx$")
-		set(CPUID_AVX ON CACHE BOOL "Assume AVX intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mavx2 " OR CMAKE_CXX_FLAGS MATCHES "-mavx2$")
-		set(CPUID_AVX2 ON CACHE BOOL "Assume AVX2 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mbmi " OR CMAKE_CXX_FLAGS MATCHES "-mbmi$")
-		set(CPUID_BMI ON CACHE BOOL "Assume BMI intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mbmi2 " OR CMAKE_CXX_FLAGS MATCHES "-mbmi2$")
-		set(CPUID_BMI2 ON CACHE BOOL "Assume BMI2 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "-mlzcnt " OR CMAKE_CXX_FLAGS MATCHES "-mlzcnt$")
-		set(CPUID_LZCNT ON CACHE BOOL "Assume LZCNT intrinsics are available" FORCE)
-	endif()
-elseif(CMAKE_CXX_COMPILER_ID EQUAL MSVC)
-	if(CMAKE_CXX_FLAGS MATCHES "/arch:SSE " OR CMAKE_CXX_FLAGS MATCHES "/arch:SSE$")
-		set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "/arch:SSE2 " OR CMAKE_CXX_FLAGS MATCHES "/arch:SSE2$")
-		set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
-		set(CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "/arch:AVX " OR CMAKE_CXX_FLAGS MATCHES "/arch:AVX$")
-		set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
-		set(CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
-		set(CPUID_SSE3 ON CACHE BOOL "Assume SSE3 intrinsics are available" FORCE)
-		set(CPUID_SSSE3 ON CACHE BOOL "Assume SSSE3 intrinsics are available" FORCE)
-		set(CPUID_SSE4_1 ON CACHE BOOL "Assume SSE4_1 intrinsics are available" FORCE)
-		set(CPUID_SSE4_2 ON CACHE BOOL "Assume SSE4_2 intrinsics are available" FORCE)
-		set(CPUID_AVX ON CACHE BOOL "Assume AVX intrinsics are available" FORCE)
-	endif()
-	if(CMAKE_CXX_FLAGS MATCHES "/arch:AVX2 " OR CMAKE_CXX_FLAGS MATCHES "/arch:AVX2$")
-		set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
-		set(CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
-		set(CPUID_SSE3 ON CACHE BOOL "Assume SSE3 intrinsics are available" FORCE)
-		set(CPUID_SSSE3 ON CACHE BOOL "Assume SSSE3 intrinsics are available" FORCE)
-		set(CPUID_SSE4_1 ON CACHE BOOL "Assume SSE4_1 intrinsics are available" FORCE)
-		set(CPUID_SSE4_2 ON CACHE BOOL "Assume SSE4_2 intrinsics are available" FORCE)
-		set(CPUID_AVX ON CACHE BOOL "Assume AVX intrinsics are available" FORCE)
-		set(CPUID_AVX2 ON CACHE BOOL "Assume AVX2 intrinsics are available" FORCE)
-	endif()
-endif()
+option(FUL_PROBE_CONFTIME "Probe CPUID at configure-time, setting FUL_CPUID_* if not set already" ON)
+option(FUL_PROBE_RUNTIME "Probe CPUID at runtime" OFF)
 
-option(CONFTIME_CPUID "Probe CPUID at configure-time, setting CPUID_* if not set already" ON)
-option(RUNTIME_CPUID "Probe CPUID at runtime" OFF)
-
-if(CONFTIME_CPUID AND NOT CONFTIME_CPUID_RESULT_RUN EQUAL 0)
+if(FUL_PROBE_CONFTIME AND NOT FUL_PROBE_CONFTIME_RUN_RESULT EQUAL 0)
 	try_run(
-		CONFTIME_CPUID_RESULT_RUN
-		CONFTIME_CPUID_RESULT_COMPILE
+		FUL_PROBE_CONFTIME_RUN_RESULT
+		FUL_PROBE_CONFTIME_COMPILE_RESULT
 
 		"${PROJECT_BINARY_DIR}/probe/cpuid"
 		"${PROJECT_SOURCE_DIR}/.probe/cpuid.cpp"
 
 		CMAKE_FLAGS
 		"-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
-		"-DINCLUDE_DIRECTORIES=${PROJECT_SOURCE_DIR}/code/src"
 
 		RUN_OUTPUT_VARIABLE _cpuid_output
 		)
 
-	if(CONFTIME_CPUID_RESULT_COMPILE AND CONFTIME_CPUID_RESULT_RUN EQUAL 0)
+	if(FUL_PROBE_CONFTIME_COMPILE_RESULT AND FUL_PROBE_CONFTIME_RUN_RESULT EQUAL 0)
 		message(STATUS "Probe CPUID at configure-time - ${_cpuid_output}")
 
 		if("SSE" IN_LIST _cpuid_output)
-			set(CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
+			set(FUL_CPUID_SSE ON CACHE BOOL "Assume SSE intrinsics are available" FORCE)
 		endif()
 		if("SSE2" IN_LIST _cpuid_output)
-			set(CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
+			set(FUL_CPUID_SSE2 ON CACHE BOOL "Assume SSE2 intrinsics are available" FORCE)
 		endif()
 		if("SSE3" IN_LIST _cpuid_output)
-			set(CPUID_SSE3 ON CACHE BOOL "Assume SSE3 intrinsics are available" FORCE)
+			set(FUL_CPUID_SSE3 ON CACHE BOOL "Assume SSE3 intrinsics are available" FORCE)
 		endif()
 		if("SSSE3" IN_LIST _cpuid_output)
-			set(CPUID_SSSE3 ON CACHE BOOL "Assume SSSE3 intrinsics are available" FORCE)
+			set(FUL_CPUID_SSSE3 ON CACHE BOOL "Assume SSSE3 intrinsics are available" FORCE)
 		endif()
 		if("SSE4_1" IN_LIST _cpuid_output)
-			set(CPUID_SSE4_1 ON CACHE BOOL "Assume SSE4.1 intrinsics are available" FORCE)
+			set(FUL_CPUID_SSE4_1 ON CACHE BOOL "Assume SSE4.1 intrinsics are available" FORCE)
 		endif()
 		if("SSE4_2" IN_LIST _cpuid_output)
-			set(CPUID_SSE4_2 ON CACHE BOOL "Assume SSE4.2 intrinsics are available" FORCE)
+			set(FUL_CPUID_SSE4_2 ON CACHE BOOL "Assume SSE4.2 intrinsics are available" FORCE)
 		endif()
 		if("POPCNT" IN_LIST _cpuid_output)
-			set(CPUID_POPCNT ON CACHE BOOL "Assume POPCNT intrinsics are available" FORCE)
+			set(FUL_CPUID_POPCNT ON CACHE BOOL "Assume POPCNT intrinsics are available" FORCE)
 		endif()
 		if("AVX" IN_LIST _cpuid_output)
-			set(CPUID_AVX ON CACHE BOOL "Assume AVX intrinsics are available" FORCE)
+			set(FUL_CPUID_AVX ON CACHE BOOL "Assume AVX intrinsics are available" FORCE)
 		endif()
 		if("AVX2" IN_LIST _cpuid_output)
-			set(CPUID_AVX2 ON CACHE BOOL "Assume AVX2 intrinsics are available" FORCE)
+			set(FUL_CPUID_AVX2 ON CACHE BOOL "Assume AVX2 intrinsics are available" FORCE)
 		endif()
 		if("BMI" IN_LIST _cpuid_output)
-			set(CPUID_BMI ON CACHE BOOL "Assume BMI intrinsics are available" FORCE)
+			set(FUL_CPUID_BMI ON CACHE BOOL "Assume BMI intrinsics are available" FORCE)
 		endif()
 		if("BMI2" IN_LIST _cpuid_output)
-			set(CPUID_BMI2 ON CACHE BOOL "Assume BMI2 intrinsics are available" FORCE)
+			set(FUL_CPUID_BMI2 ON CACHE BOOL "Assume BMI2 intrinsics are available" FORCE)
 		endif()
 		if("LZCNT" IN_LIST _cpuid_output)
-			set(CPUID_LZCNT ON CACHE BOOL "Assume LZCNT intrinsics are available" FORCE)
+			set(FUL_CPUID_LZCNT ON CACHE BOOL "Assume LZCNT intrinsics are available" FORCE)
 		endif()
 	else()
 		message(WARNING "Probe CPUID at configure-time - failed to run successfully")
@@ -405,128 +336,186 @@ if(CONFTIME_CPUID AND NOT CONFTIME_CPUID_RESULT_RUN EQUAL 0)
 endif()
 
 add_library(lib_cpuid INTERFACE)
-if(RUNTIME_CPUID)
-	target_compile_definitions(lib_cpuid INTERFACE RUNTIME_CPUID)
-endif()
-if(CPUID_SSE)
+if(FUL_CPUID_SSE)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse>
 		$<$<CXX_COMPILER_ID:MSVC>:
 			/arch:SSE>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSE__>
-		)
 endif()
-if(CPUID_SSE2)
+if(FUL_CPUID_SSE2)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse2>
 		$<$<CXX_COMPILER_ID:MSVC>:
 			/arch:SSE2>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSE2__>
-		)
+	if(MSVC AND NOT FUL_CPUID_SSE)
+		message(WARNING "MSVC will assume SSE is available even though FUL_CPUID_SSE is unset")
+	endif()
 endif()
-if(CPUID_SSE3)
+if(FUL_CPUID_SSE3)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse3>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSE3__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will ignore FUL_CPUID_SSE3 unless also FUL_CPUID_AVX is set")
+	endif()
 endif()
-if(CPUID_SSSE3)
+if(FUL_CPUID_SSSE3)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mssse3>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSSE3__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will ignore FUL_CPUID_SSSE3 unless also FUL_CPUID_AVX is set")
+	endif()
 endif()
-if(CPUID_SSE4_1)
+if(FUL_CPUID_SSE4_1)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.1>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSE4_1__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will ignore FUL_CPUID_SSE4_1 unless also FUL_CPUID_AVX is set")
+	endif()
 endif()
-if(CPUID_SSE4_2)
+if(FUL_CPUID_SSE4_2)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.2>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__SSE4_2__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will ignore FUL_CPUID_SSE4_2 unless also FUL_CPUID_AVX is set")
+	endif()
 endif()
-if(CPUID_POPCNT)
+if(FUL_CPUID_POPCNT)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mpopcnt>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__POPCNT__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will ignore FUL_CPUID_POPCNT unless also FUL_CPUID_AVX is set")
+	endif()
 endif()
-if(CPUID_AVX)
+if(FUL_CPUID_AVX)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx>
 		$<$<CXX_COMPILER_ID:MSVC>:
 			/arch:AVX>
 		)
+	if(MSVC AND NOT FUL_CPUID_SSE)
+		message(WARNING "MSVC will assume SSE is available even though FUL_CPUID_SSE is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE2)
+		message(WARNING "MSVC will assume SSE2 is available even though FUL_CPUID_SSE2 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE3)
+		message(WARNING "MSVC will assume SSE3 is available even though FUL_CPUID_SSE3 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSSE3)
+		message(WARNING "MSVC will assume SSSE3 is available even though FUL_CPUID_SSSE3 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE4_1)
+		message(WARNING "MSVC will assume SSE4.1 is available even though FUL_CPUID_SSE4_1 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE4_2)
+		message(WARNING "MSVC will assume SSE4.2 is available even though FUL_CPUID_SSE4_2 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_POPCNT)
+		message(WARNING "MSVC will assume POPCNT is available even though FUL_CPUID_POPCNT is unset")
+	endif()
 endif()
-if(CPUID_AVX2)
+if(FUL_CPUID_AVX2)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx2>
 		$<$<CXX_COMPILER_ID:MSVC>:
 			/arch:AVX2>
 		)
+	if(MSVC AND NOT FUL_CPUID_SSE)
+		message(WARNING "MSVC will assume SSE is available even though FUL_CPUID_SSE is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE2)
+		message(WARNING "MSVC will assume SSE2 is available even though FUL_CPUID_SSE2 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE3)
+		message(WARNING "MSVC will assume SSE3 is available even though FUL_CPUID_SSE3 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSSE3)
+		message(WARNING "MSVC will assume SSSE3 is available even though FUL_CPUID_SSSE3 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE4_1)
+		message(WARNING "MSVC will assume SSE4.1 is available even though FUL_CPUID_SSE4_1 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_SSE4_2)
+		message(WARNING "MSVC will assume SSE4.2 is available even though FUL_CPUID_SSE4_2 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_POPCNT)
+		message(WARNING "MSVC will assume POPCNT is available even though FUL_CPUID_POPCNT is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_AVX)
+		message(WARNING "MSVC will assume AVX is available even though FUL_CPUID_AVX is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_BMI)
+		message(WARNING "MSVC will assume BMI is available even though FUL_CPUID_BMI is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_BMI2)
+		message(WARNING "MSVC will assume BMI2 is available even though FUL_CPUID_BMI2 is unset")
+	endif()
+	if(MSVC AND NOT FUL_CPUID_LZCNT)
+		message(WARNING "MSVC will assume LZCNT is available even though FUL_CPUID_LZCNT is unset")
+	endif()
 endif()
-if(CPUID_BMI)
+if(FUL_CPUID_BMI)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__BMI__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX2)
+		message(WARNING "MSVC will ignore FUL_CPUID_BMI unless also FUL_CPUID_AVX2 is set")
+	endif()
 endif()
-if(CPUID_BMI2)
+if(FUL_CPUID_BMI2)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi2>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__BMI2__>
-		)
+	if(MSVC AND NOT FUL_CPUID_AVX2)
+		message(WARNING "MSVC will ignore FUL_CPUID_BMI2 unless also FUL_CPUID_AVX2 is set")
+	endif()
 endif()
-if(CPUID_LZCNT)
+if(FUL_CPUID_LZCNT)
 	target_compile_options(lib_cpuid INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mlzcnt>
 		)
-	target_compile_definitions(lib_cpuid INTERFACE
-		$<$<CXX_COMPILER_ID:MSVC>:
-			__LZCNT__>
+	if(MSVC AND NOT FUL_CPUID_AVX2)
+		message(WARNING "MSVC will ignore FUL_CPUID_LZCNT unless also FUL_CPUID_AVX2 is set")
+	endif()
+endif()
+
+if(FUL_PROBE_RUNTIME)
+	try_compile(
+		FUL_PROBE_RUNTIME_COMPILE_RESULT
+
+		"${PROJECT_BINARY_DIR}/probe/ifunc"
+		"${PROJECT_SOURCE_DIR}/.probe/ifunc.cpp"
+
+		CMAKE_FLAGS
+		"-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
 		)
+
+	if(FUL_PROBE_RUNTIME_COMPILE_RESULT)
+		message(STATUS "Runtime dispatch using the gcc extension ifunc")
+		target_compile_definitions(lib_cpuid INTERFACE FUL_IFUNC)
+	else()
+		message(STATUS "Runtime dispatch using function pointers")
+		target_compile_definitions(lib_cpuid INTERFACE FUL_FPTR)
+	endif()
 endif()
 
 add_subdirectory(code)
