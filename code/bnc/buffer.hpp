@@ -14,7 +14,7 @@ public:
 	{
 		if (beg_)
 		{
-			::operator delete(beg_, cap_ - beg_);
+			::operator delete(beg_);
 		}
 	}
 
@@ -38,7 +38,7 @@ public:
 	{
 		if (beg_)
 		{
-			::operator delete(beg_, cap_ - beg_);
+			::operator delete(beg_);
 		}
 		beg_ = other.beg_;
 		end_ = other.end_;
