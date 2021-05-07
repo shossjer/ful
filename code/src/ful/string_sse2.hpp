@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(__SSE2__)
-
 // #include "ful/intrinsics.hpp"
 // #include "ful/stdint.hpp"
 // #include "ful/unicode.hpp"
@@ -12,9 +10,10 @@ namespace ful
 {
 	namespace detail
 	{
-		inline __m128i rotate(__m128i ab, unsigned int n)
+		ful_target("sse2") inline
+		__m128i rotate(__m128i ab, unsigned int n)
 		{
-			ful_assume(n < 16);
+			ful_expect(n < 16);
 
 			static const long long tabler[] = {
 				 0,  8, 16, 24, 32, 40, 48, 56,
@@ -47,9 +46,10 @@ namespace ful
 
 		inline __m128i rotate(__m128i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (16 - 1)); }
 
-		inline const unit_utf8 * point_prev_sse2(const unit_utf8 * s, int n)
+		ful_target("sse2") inline
+		const unit_utf8 * point_prev_sse2(const unit_utf8 * s, int n)
 		{
-			ful_assume(0 < n);
+			ful_expect(0 < n);
 
 			alignas(16) static const signed char m65[] = {
 				-65, -65, -65, -65, -65, -65, -65, -65,
@@ -80,9 +80,10 @@ namespace ful
 			return word + i;
 		}
 
-		inline bool equal_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_target("sse2") inline
+		bool equal_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
-			ful_assume(beg1 != end1);
+			ful_expect(beg1 != end1);
 
 			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -16);
 
@@ -166,9 +167,10 @@ namespace ful
 			return beg2_word[end1 - beg1] == '\0';
 		}
 
-		inline const unit_utf8 * find_unit_sse2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
+		ful_target("sse2") inline
+		const unit_utf8 * find_unit_sse2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
 		{
-			ful_assume(beg != end);
+			ful_expect(beg != end);
 
 			const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg) & -16);
 			const unit_utf8 * const end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end - 1) & -16);
@@ -202,9 +204,10 @@ namespace ful
 			return beg_word + i;
 		}
 
-		inline bool less_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_target("sse2") inline
+		bool less_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
-			ful_assume(beg1 != end1);
+			ful_expect(beg1 != end1);
 
 			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -16);
 
@@ -295,5 +298,3 @@ namespace ful
 		}
 	}
 }
-
-#endif

@@ -9,6 +9,12 @@
 
 #include "intrinsics_x86.hpp"
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+// warning C4146: unary minus operator applied to unsigned type, result still unsigned
+#endif
+
 namespace ful
 {
 	// generate mask where the n least significant bits are set
@@ -45,7 +51,7 @@ namespace ful
 	// get the index of the nth set bit
 	inline unsigned int index_set_bit(unsigned int x, unsigned int n)
 	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		const unsigned int nth_mask = detail::pdep(1u << n, x);
 		return detail::bsf(nth_mask); // todo bsf or tzcnt
 #else
@@ -56,11 +62,11 @@ namespace ful
 	// get the number of leading zero bits
 	template <typename T>
 	auto count_leading_zeros(T x)
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(detail::lzcnt(x))
 #endif
 	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::lzcnt(x);
 #else
 # error Missing implementation!
@@ -70,22 +76,16 @@ namespace ful
 	// get the number of trailing zero bits
 	template <typename T>
 	auto count_trailing_zeros(T x)
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(detail::tzcnt(x))
 #endif
 	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::tzcnt(x);
 #else
 # error Missing implementation!
 #endif
 	}
-
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 4146 )
-// warning C4146: unary minus operator applied to unsigned type, result still unsigned
-#endif
 
 	// if `0 < n < Po2`, where Po2 is a power of two, computes `Po2 - n`
 	template <unsigned int Po2>
@@ -96,10 +96,6 @@ namespace ful
 
 		return -n & (Po2 - 1);
 	}
-
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 
 	// set all bits more significant than the specified index
 	inline unsigned int set_higher_bits(unsigned int x, unsigned int index)
@@ -113,7 +109,9 @@ namespace ful
 	// reset all bits more significant than the specified index
 	inline unsigned int zero_higher_bits(unsigned int x, unsigned int index)
 	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		ful_expect(index < sizeof(unsigned int) * byte_size);
+
+#if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::bzhi(x, index + 1);
 #else
 # error Missing implementation!
@@ -134,7 +132,7 @@ namespace ful
 	// resets all but the n least significant set bits
 	inline unsigned int keep_low_set_bits(unsigned int x, unsigned int n)
 	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+#if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::pdep(low_mask(n), x);
 #else
 # error Missing implementation!
@@ -152,3 +150,7 @@ namespace ful
 #endif
 	}
 }
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
