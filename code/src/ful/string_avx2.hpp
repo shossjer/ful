@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(__AVX2__)
-
 // #include "ful/intrinsics.hpp"
 // #include "ful/stdint.hpp"
 // #include "ful/unicode.hpp"
@@ -12,9 +10,10 @@ namespace ful
 {
 	namespace detail
 	{
-		inline __m256i rotate(__m256i ab, unsigned int n)
+		ful_target("avx2") inline
+		__m256i rotate(__m256i ab, unsigned int n)
 		{
-			ful_assume(n < 32);
+			ful_expect(n < 32);
 
 			static const signed char table[] = {
 				 0,  1,  2,  3,  4,  5,  6,  7,
@@ -38,9 +37,10 @@ namespace ful
 
 		inline __m256i rotate(__m256i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (32 - 1)); }
 
-		inline const unit_utf8 * point_prev_avx2(const unit_utf8 * s, int n)
+		ful_target("avx2") inline
+		const unit_utf8 * point_prev_avx2(const unit_utf8 * s, int n)
 		{
-			ful_assume(0 < n);
+			ful_expect(0 < n);
 
 			alignas(32) static const signed char m65[] = {
 				-65, -65, -65, -65, -65, -65, -65, -65,
@@ -73,9 +73,10 @@ namespace ful
 			return word + i;
 		}
 
-		inline bool equal_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_target("avx2") inline
+		bool equal_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
-			ful_assume(beg1 != end1);
+			ful_expect(beg1 != end1);
 
 			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -32);
 
@@ -158,9 +159,10 @@ namespace ful
 			return beg2_word[end1 - beg1] == '\0';
 		}
 
-		inline const unit_utf8 * find_unit_avx2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
+		ful_target("avx2") inline
+		const unit_utf8 * find_unit_avx2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
 		{
-			ful_assume(beg != end);
+			ful_expect(beg != end);
 
 			const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg) & -32);
 			const unit_utf8 * const end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end - 1) & -32);
@@ -193,9 +195,10 @@ namespace ful
 			return beg_word + i;
 		}
 
-		inline bool less_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_target("avx2") inline
+		bool less_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
-			ful_assume(beg1 != end1);
+			ful_expect(beg1 != end1);
 
 			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -32);
 
@@ -283,8 +286,5 @@ namespace ful
 
 			return beg2_word[end1 - beg1] != '\0';
 		}
-
 	}
 }
-
-#endif

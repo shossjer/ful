@@ -47,9 +47,20 @@
 #endif
 
 #if defined(__GNUC__)
+// overrides targeted architecture
+# define ful_target(m) __attribute__((target (m)))
+// https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#target
+#elif defined(_MSC_VER)
+// overrides targeted architecture
+# define ful_target(m)
+#else
+# error Missing implementation!
+#endif
+
+#if defined(__GNUC__)
 // optimize knowing that this branch is impossible
 # define ful_unreachable() __builtin_unreachable()
-#elif defined (_MSC_VER)
+#elif defined(_MSC_VER)
 // optimize knowing that this branch is impossible
 # define ful_unreachable() __assume(0)
 #else
