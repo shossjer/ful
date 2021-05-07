@@ -26,8 +26,10 @@ namespace ful
 				-128, -128, -128, -128, -128, -128, -128, -128,
 			};
 
-			const __m256i ab_mask = _mm256_loadu2_m128i(reinterpret_cast<const __m128i *>(table + n), reinterpret_cast<const __m128i *>(table + n));
-			const __m256i ba_mask = _mm256_loadu2_m128i(reinterpret_cast<const __m128i *>(table + 16 + n), reinterpret_cast<const __m128i *>(table + 16 + n));
+			const __m256i table_0 = _mm256_castsi128_si256(_mm_loadu_si128(reinterpret_cast<const __m128i *>(table + n)));
+			const __m256i ab_mask = _mm256_permute2x128_si256(table_0, table_0, 0x00);
+			const __m256i table_16 = _mm256_castsi128_si256(_mm_loadu_si128(reinterpret_cast<const __m128i *>(table + 16 + n)));
+			const __m256i ba_mask = _mm256_permute2x128_si256(table_16, table_16, 0x00);
 
 			const __m256i ba = _mm256_permute2x128_si256(ab, ab, 1);
 			const __m256i ab_shuf = _mm256_shuffle_epi8(ab, ab_mask);
