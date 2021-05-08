@@ -1,5 +1,3 @@
-cmake_dependent_option(BUILDTIME_TESTS "Run tests as part of the build process." ON "BUILD_TESTS" OFF)
-
 function(run_tests name executable)
 	# inspired by the works of stack overflow user 1178599
 	#
@@ -46,7 +44,7 @@ target_link_libraries(fullib PUBLIC lib_cpuid)
 target_compile_options(fullib PRIVATE ${_compile_options})
 target_compile_definitions(fullib PRIVATE ${_compile_definitions})
 
-if(BUILD_TESTS)
+if(FUL_BUILD_TESTS)
 	add_executable(fultst "")
 	target_sources(fultst PRIVATE ${FULTST_SOURCES})
 	target_include_directories(fultst PRIVATE "tst")
@@ -59,11 +57,11 @@ if(BUILD_TESTS)
 	endif()
 endif()
 
-if(BUILDTIME_TESTS)
+if(FUL_TESTS_BUILDTIME)
 	run_tests(runfultst fultst)
 endif()
 
-if(BUILD_BENCHMARKS)
+if(FUL_BUILD_BENCHMARKS)
 	add_executable(fulbnc "")
 	target_sources(fulbnc PRIVATE ${FULBNC_SOURCES} ${FULBNC_HEADERS})
 	target_include_directories(fulbnc PRIVATE "bnc")
