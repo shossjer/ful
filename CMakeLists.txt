@@ -49,9 +49,9 @@ message(STATUS "System is ${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}")
 
 # build dependencies
 
-option(BUILD_CATCH "Build catch" ON)
+option(FUL_BUILD_CATCH "Build catch" ON)
 
-if(BUILD_CATCH)
+if(FUL_BUILD_CATCH)
 	dep_build(catch
 		DOWNLOAD_STEP
 		GIT_REPOSITORY "https://github.com/philsquared/Catch.git"
@@ -72,9 +72,9 @@ dep_package(catch ful_catch
 
 # build settings
 
-cmake_dependent_option(BUILD_TESTS "Build tests" ON "TARGET ful_catch" OFF)
+cmake_dependent_option(FUL_BUILD_TESTS "Build tests" ON "TARGET ful_catch" OFF)
 add_library(lib_test INTERFACE)
-if(BUILD_TESTS)
+if(FUL_BUILD_TESTS)
 	target_link_libraries(lib_test INTERFACE ful_catch)
 	target_compile_options(lib_test INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
@@ -86,17 +86,20 @@ if(BUILD_TESTS)
 	)
 endif()
 
-cmake_dependent_option(BUILD_BENCHMARKS "Build benchmarks" OFF "TARGET ful_catch" OFF)
+cmake_dependent_option(FUL_TESTS_BUILDTIME "Run tests as part of the build process." ON "FUL_BUILD_TESTS" OFF)
+
+cmake_dependent_option(FUL_BUILD_BENCHMARKS "Build benchmarks" OFF "TARGET ful_catch" OFF)
 add_library(lib_benchmark INTERFACE)
-if(BUILD_BENCHMARKS)
+if(FUL_BUILD_BENCHMARKS)
 	target_link_libraries(lib_benchmark INTERFACE ful_catch)
 	target_compile_definitions(lib_benchmark INTERFACE CATCH_CONFIG_ENABLE_BENCHMARKING)
 endif()
 
 # build features
 
-cmake_dependent_option(BUILD_ASMLIB "Build asmlib" ON "BUILD_BENCHMARKS" OFF)
-if(BUILD_ASMLIB)
+# https://www.agner.org/optimize/#asmlib
+cmake_dependent_option(FUL_BUILD_ASMLIB "Build asmlib" ON "FUL_BUILD_BENCHMARKS" OFF)
+if(FUL_BUILD_ASMLIB)
 	dep_build(asmlib
 		DOWNLOAD_STEP
 		URL "https://www.agner.org/optimize/asmlib.zip"
@@ -125,19 +128,19 @@ if(TARGET ful_asmlib)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_ASMLIB)
 endif()
 
-
-cmake_dependent_option(BUILD_EASTL "Build eastl" ON "BUILD_BENCHMARKS AND POLICY CMP0097" OFF)
-if(BUILD_EASTL)
+# https://github.com/electronicarts/EASTL
+cmake_dependent_option(FUL_BUILD_EASTL "Build eastl" ON "FUL_BUILD_BENCHMARKS AND POLICY CMP0097" OFF)
+if(FUL_BUILD_EASTL)
 	# note eastl has a nasty recursive dependency between its
 	# submodules so we have to hack around it by not fetching the
 	# submodules when cloning but instead postpone it and make an
 	# explicit request to fetch the submodules later (or in this case
 	# only the one submodule we actually need); this is why we require
-	# POLICY CMP0097
+	# POLICY CMP0097 (available since version 3.14)
 	#
 	# https://gitlab.kitware.com/cmake/cmake/-/issues/19832
 	#
-	# furthermore, the latest versions of the library is missing an
+	# furthermore, the latest version of the library is missing an
 	# install target so we use this DIY version of the library instead
 	# (until it gets merged or fixed some other way)
 	dep_build(eastl
@@ -175,14 +178,21 @@ if(TARGET ful_eastl)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_EASTL)
 endif()
 
-
-cmake_dependent_option(BUILD_ICU4C "Build icu4c" ON "BUILD_BENCHMARKS" OFF)
-if(BUILD_ICU4C)
+# http://site.icu-project.org/
+cmake_dependent_option(FUL_BUILD_ICU4C "Build icu4c" ON "FUL_BUILD_BENCHMARKS" OFF)
+if(FUL_BUILD_ICU4C)
 	dep_build(icu4c
 		DOWNLOAD_STEP
+		Linux_x86_64
+		URL "https://github.com/unicode-org/icu/releases/download/release-69-1/icu4c-69_1-src.tgz"
+		TIMEOUT 10
 		Windows_AMD64
 		URL "https://github.com/unicode-org/icu/releases/download/release-69-1/icu4c-69_1-Win64-MSVC2019.zip"
 		TIMEOUT 10
+
+		CONFIGURE_STEP
+		Linux_x86_64
+		CONFIGURE_COMMAND "\$\{_source_dir\}/source/configure" "--prefix=\$\{_install_prefix\}" --enable-static --disable-shared --disable-icu-config --disable-extras --disable-icuio --disable-tools --disable-tests --disable-samples
 
 		INSTALL_STEP
 		Windows_AMD64
@@ -198,18 +208,105 @@ dep_package(icu4c ful_icu4c
 	unicode/ucnv.h
 
 	LIBS
+	Linux_x86_64 icuuc icudata
 	Windows_AMD64 icuuc.lib
 	)
 
 if(TARGET ful_icu4c)
 	target_link_libraries(lib_benchmark INTERFACE ful_icu4c)
+	if(UNIX)
+		# todo dl is needed
+		# todo pthread is needed for some reason - https://bugzilla.redhat.com/show_bug.cgi?id=1954178
+		target_link_libraries(lib_benchmark INTERFACE dl pthread)
+	endif()
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_ICU4C)
 endif()
 
+# https://www.gnu.org/software/libiconv/
+cmake_dependent_option(FUL_BUILD_LIBICONV "Build libiconv" ON "FUL_BUILD_BENCHMARKS AND UNIX" OFF)
+if(FUL_BUILD_LIBICONV)
+	dep_build(libiconv
+		DOWNLOAD_STEP
+		URL "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz"
+		TIMEOUT 10
+
+		CONFIGURE_STEP
+		CONFIGURE_COMMAND "\$\{_source_dir\}/configure" "--prefix=\$\{_install_prefix\}" --enable-static --disable-shared
+
+		BUILD_STEP
+		BUILD_COMMAND make install
+		)
+endif()
+
+dep_package(iconv ful_libiconv
+	FILES
+	iconv.h
+
+	LIBS
+	iconv
+	)
+
+if(TARGET ful_libiconv)
+	target_link_libraries(lib_benchmark INTERFACE ful_libiconv)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBICONV)
+endif()
+
+# https://www.gnu.org/software/libunistring/
+cmake_dependent_option(FUL_BUILD_LIBUNISTRING "Build libunistring" ON "FUL_BUILD_BENCHMARKS AND UNIX" OFF)
+if(FUL_BUILD_LIBUNISTRING)
+	dep_build(libunistring
+		DOWNLOAD_STEP
+		URL "https://ftp.gnu.org/gnu/libunistring/libunistring-0.9.10.tar.gz"
+		TIMEOUT 10
+
+		CONFIGURE_STEP
+		CONFIGURE_COMMAND "\$\{_source_dir\}/configure" "--prefix=\$\{_install_prefix\}" --disable-shared
+
+		BUILD_STEP
+		BUILD_COMMAND make install
+		)
+endif()
+
+dep_package(libunistring ful_libunistring
+	FILES
+	unistr.h
+
+	LIBS
+	unistring
+	)
+
+if(TARGET ful_libunistring)
+	target_link_libraries(lib_benchmark INTERFACE ful_libunistring)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBUNISTRING)
+endif()
+
+# https://github.com/DuffsDevice/tiny-utf8
+cmake_dependent_option(FUL_BUILD_TINYUTF8 "Build tiny-utf8" ON "FUL_BUILD_BENCHMARKS" OFF)
+if(FUL_BUILD_TINYUTF8)
+	dep_build(tinyutf8
+		DOWNLOAD_STEP
+		URL "https://github.com/DuffsDevice/tiny-utf8/archive/refs/tags/v4.3.2.tar.gz"
+		TIMEOUT 10
+
+		CMAKE_OPTIONS
+		-DTINYUTF8_BUILD_TESTING=OFF
+		-DTINYUTF8_BUILD_DOC=OFF
+		)
+endif()
+
+dep_package(tinyutf8 ful_tinyutf8
+	FILES
+	tinyutf8/tinyutf8.h
+	)
+
+if(TARGET ful_tinyutf8)
+	target_link_libraries(lib_benchmark INTERFACE ful_tinyutf8)
+	target_compile_definitions(lib_benchmark INTERFACE HAVE_TINYUTF8)
+endif()
 
 # https://github.com/JuliaStrings/utf8proc
-cmake_dependent_option(BUILD_UTF8PROC "Build utf8proc" ON "BUILD_BENCHMARKS" OFF)
-if(BUILD_UTF8PROC)
+cmake_dependent_option(FUL_BUILD_UTF8PROC "Build utf8proc" ON "FUL_BUILD_BENCHMARKS" OFF)
+if(FUL_BUILD_UTF8PROC)
 	dep_build(utf8proc
 		DOWNLOAD_STEP
 		URL "https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.6.1.tar.gz"
@@ -225,6 +322,7 @@ dep_package(utf8proc ful_utf8proc
 	utf8proc.h
 
 	LIBS
+	Linux_x86_64 utf8proc
 	Windows_AMD64 utf8proc_static.lib
 	)
 
@@ -236,8 +334,8 @@ endif()
 
 
 # https://github.com/nemtrif/utfcpp
-cmake_dependent_option(BUILD_UTFCPP "Build utfcpp" ON "BUILD_BENCHMARKS" OFF)
-if(BUILD_UTFCPP)
+cmake_dependent_option(FUL_BUILD_UTFCPP "Build utfcpp" ON "FUL_BUILD_BENCHMARKS" OFF)
+if(FUL_BUILD_UTFCPP)
 	dep_build(utfcpp
 		DOWNLOAD_STEP
 		URL "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.1.2.tar.gz"
@@ -259,7 +357,6 @@ if(TARGET ful_utfcpp)
 	target_link_libraries(lib_benchmark INTERFACE ful_utfcpp)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTFCPP)
 endif()
-
 
 # project options
 
