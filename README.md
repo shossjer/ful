@@ -136,3 +136,41 @@ all. It will take some work to get them working.
 
 * Is it okay to cast to simdtypes? https://stackoverflow.com/a/52117639
 * Is it okay to read past end? https://stackoverflow.com/a/37801845
+
+## Reference
+
+### Predefined macros
+
+Without runtime probing, ful uses the following table of predefined
+macros in order to determine which instruction sets are available and
+which specialized implementations to use. With runtime probing, these
+macros are ignored.
+
+| feature | gcc/clang    |                                                           msvc x86 |    msvc x64 |
+|:--------|:-------------|-------------------------------------------------------------------:|------------:|
+| sse     | `__SSE__`    | `__SSE__ \|\| __SSE2__ \|\| __AVX__ \|\| __AVX2__ \|\| __AVX512__` |      always |
+| sse2    | `__SSE2__`   |              `__SSE2__ \|\| __AVX__ \|\| __AVX2__ \|\| __AVX512__` |      always |
+| sse4.2  | `__SSE4_2__` |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
+| popcnt  | `__POPCNT__` |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
+| avx     | `__AVX__`    |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
+| bmi1    | `__BMI__`    |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
+| bmi2    | `__BMI2__`   |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
+| lzcnt   | `__LZCNT__`  |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
+| avx2    | `__AVX2__`   |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
+
+Consult the documentation for your favorite compiler in order to make
+it define the macros you expect.
+
+* https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+* https://docs.microsoft.com/en-us/cpp/build/reference/arch-x86
+* https://docs.microsoft.com/en-us/cpp/build/reference/arch-x64
+
+The documentation on msdn does not specifically say that the more
+exotic instruction sets (i.e. sse4.2, popcnt, ...) are guaranteed to
+be available with bigger and more advanced simd types but since
+Windows is only supported on a few platforms, we can deduce that this
+must be so. Wikipedia seems to agree.
+
+* https://en.wikipedia.org/w/index.php?title=SSE4&oldid=1016082259#POPCNT_and_LZCNT
+* https://en.wikipedia.org/w/index.php?title=Bit_manipulation_instruction_set&oldid=1016725585#ABM_(Advanced_Bit_Manipulation)
+
