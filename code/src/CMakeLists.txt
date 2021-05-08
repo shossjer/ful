@@ -10,8 +10,10 @@ set(FULLIB_HEADERS
 	src/ful/intrinsics_x86.hpp
 	src/ful/stdint.hpp
 	src/ful/string.hpp
+	src/ful/string_avx.hpp
 	src/ful/string_avx2.hpp
 	src/ful/string_sse2.hpp
 	src/ful/string_sse4_2.hpp
 	src/ful/unicode.hpp
+	src/ful/unsafe_ptr.hpp
 	)
