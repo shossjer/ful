@@ -54,6 +54,9 @@ namespace ful
 #if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		const unsigned int nth_mask = detail::pdep(1u << n, x);
 		return detail::bsf(nth_mask); // todo bsf or tzcnt
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		for (; n != 0; --n) x &= x - 1;
+		return detail::bsf(x);
 #else
 # error Missing implementation!
 #endif
@@ -78,10 +81,15 @@ namespace ful
 	auto count_trailing_zeros(T x)
 #if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(detail::tzcnt(x))
+#elif defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
+		-> decltype(detail::lzcnt(x))
 #endif
 	{
 #if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::tzcnt(x);
+#elif defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
+		// Hacker's Delight, 2nd ed, p 107
+		return static_cast<decltype(detail::lzcnt(x))>(sizeof(T) * byte_size) - detail::lzcnt(~x & (x - 1));
 #else
 # error Missing implementation!
 #endif
@@ -114,7 +122,8 @@ namespace ful
 #if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::bzhi(x, index + 1);
 #else
-# error Missing implementation!
+		const unsigned int mask = static_cast<unsigned int>(-1) >> (index ^ (sizeof (unsigned int) * byte_size - 1));
+		return x & mask;
 #endif
 	}
 
@@ -135,7 +144,9 @@ namespace ful
 #if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::pdep(low_mask(n), x);
 #else
-# error Missing implementation!
+		unsigned int y = x;
+		for (; n != 0; --n) y &= y - 1;
+		return x & ~y;
 #endif
 	}
 
