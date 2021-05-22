@@ -1,7 +1,6 @@
 #include "ful/compiler.hpp"
 #include "ful/stdint.hpp"
-
-#include "ful/intrinsics.hpp"
+#include "ful/types.hpp"
 
 #include "buffer.hpp"
 

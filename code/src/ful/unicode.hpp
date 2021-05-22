@@ -1,15 +1,11 @@
 #pragma once
 
 // #include "ful/stdint.hpp"
+// #include "ful/types.hpp"
+
 
 namespace ful
 {
-	using unit_utf8 = char;
-	using unit_utf32 = char32_t;
-#if defined(_MSC_VER)
-	using unit_utfw = wchar_t;
-#endif
-
 	inline unsigned int point_size(const unit_utf8 * s)
 	{
 		if (static_cast<signed char>(*s) >= 0)

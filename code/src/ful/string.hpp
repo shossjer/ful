@@ -2,9 +2,10 @@
 
 #include "ful/compiler.hpp"
 #include "ful/stdint.hpp"
+#include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-#include "ful/unicode.hpp"
+//#include "ful/unicode.hpp"
 #include "ful/unsafe_ptr.hpp"
 
 #include "string_none.hpp"

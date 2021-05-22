@@ -1,3 +1,5 @@
+#include "ful/types.hpp"
+
 #include "ful/string.hpp"
 
 #include "buffer.hpp"

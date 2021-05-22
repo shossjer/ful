@@ -1,12 +1,11 @@
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 
-#include "ful/string.hpp"
 #include "ful/probe/cpuid.hpp"
 
 #include "ful/stdint.hpp"
+#include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-//#include "ful/unicode.hpp"
 #include "ful/unsafe_ptr.hpp"
 
 #include "ful/string_avx.hpp"
