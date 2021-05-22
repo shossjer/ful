@@ -50,9 +50,21 @@
 // overrides targeted architecture
 # define ful_target(m) __attribute__((target (m)))
 // https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#target
+// https://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html
+# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
+// overrides targeted architecture
+#  define ful_generic() ful_target("arch=x86-64")
+# elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+// overrides targeted architecture
+#  define ful_generic() ful_target("arch=i386")
+# else
+#  error Missing implementation!
+# endif
 #elif defined(_MSC_VER)
 // overrides targeted architecture
 # define ful_target(m)
+// overrides targeted architecture
+# define ful_generic()
 #else
 # error Missing implementation!
 #endif

@@ -4,8 +4,7 @@ namespace ful
 {
 	namespace detail
 	{
-		// todo gcc generates some bad code if avx is supported so we have to turn all features off
-		ful_target("arch=x86-64") inline
+		ful_generic() inline
 		unit_utf8 * copy_large_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
 		{
 			if (!ful_expect(16 <= last - first))
@@ -31,7 +30,8 @@ namespace ful
 			return begin;
 		}
 
-		inline unit_utf8 * rcopy_large_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+		ful_generic() inline
+		unit_utf8 * rcopy_large_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
 		{
 			if (!ful_expect(16 <= last - first))
 				return end;
@@ -56,7 +56,8 @@ namespace ful
 			return end;
 		}
 
-		inline bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_generic() inline
+		bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
 			for (; beg1 != end1; ++beg1, ++beg2)
 			{
@@ -66,8 +67,7 @@ namespace ful
 			return *beg2 == '\0';
 		}
 
-		// todo gcc generates some bad code if avx is supported so we have to turn all features off
-		ful_target("arch=x86-64") inline
+		ful_generic() inline
 		void fill_large_none(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
 		{
 			if (!ful_expect(16 <= to - from))
@@ -87,7 +87,8 @@ namespace ful
 			*reinterpret_cast<uint64 *>(to_word) = *reinterpret_cast<const uint64 *>(bytes);
 		}
 
-		inline bool less_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_generic() inline
+		bool less_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
 			for (; beg1 != end1; ++beg1, ++beg2)
 			{
