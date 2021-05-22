@@ -213,10 +213,10 @@ if(FUL_BUILD_ICU4C)
 		DOWNLOAD_STEP
 		Linux_x86_64
 		URL "https://github.com/unicode-org/icu/releases/download/release-69-1/icu4c-69_1-src.tgz"
-		TIMEOUT 10
+		TIMEOUT 20
 		Windows_AMD64
 		URL "https://github.com/unicode-org/icu/releases/download/release-69-1/icu4c-69_1-Win64-MSVC2019.zip"
-		TIMEOUT 10
+		TIMEOUT 20
 
 		CONFIGURE_STEP
 		Linux_x86_64
@@ -262,7 +262,7 @@ if(FUL_BUILD_LIBICONV)
 	dep_build(libiconv
 		DOWNLOAD_STEP
 		URL "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz"
-		TIMEOUT 10
+		TIMEOUT 20
 
 		CONFIGURE_STEP
 		CONFIGURE_COMMAND "\$\{_source_dir\}/configure" "--prefix=\$\{_install_prefix\}" --enable-static --disable-shared
