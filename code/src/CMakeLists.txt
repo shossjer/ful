@@ -5,6 +5,7 @@ set(FULLIB_SOURCES
 
 set(FULLIB_HEADERS
 	src/ful/compiler.hpp
+	src/ful/dispatch.hpp
 	src/ful/intrinsics.hpp
 	src/ful/intrinsics_x86.hpp
 	src/ful/probe/cpuid.hpp

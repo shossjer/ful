@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ful/compiler.hpp"
+#include "ful/dispatch.hpp"
 #include "ful/stdint.hpp"
 #include "ful/types.hpp"
 
@@ -20,18 +21,12 @@ namespace ful
 {
 	namespace detail
 	{
-#if defined(FUL_IFUNC)
-		extern unit_utf8 * copy_large(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin);
-		extern unit_utf8 * rcopy_large(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end);
-		extern bool equal_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-		extern void fill_large(unit_utf8 * from, unit_utf8 * to, unit_utf8 u);
-		extern bool less_cstr(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-#elif defined(FUL_FPTR)
-		extern unit_utf8 * (* copy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin);
-		extern unit_utf8 * (* rcopy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end);
-		extern bool (* equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-		extern void (* fill_large)(unit_utf8 * from, unit_utf8 * to, unit_utf8 u);
-		extern bool (* less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		extern unit_utf8 * ful_dispatch(copy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin);
+		extern unit_utf8 * ful_dispatch(rcopy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end);
+		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+		extern void ful_dispatch(fill_large)(unit_utf8 * from, unit_utf8 * to, unit_utf8 u);
+		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 #endif
 	}
 
