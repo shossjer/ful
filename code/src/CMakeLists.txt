@@ -1,6 +1,7 @@
 set(FULLIB_SOURCES
 	src/ful/probe/cpuid.cpp
 	src/ful/string.cpp
+	src/ful/unicode.cpp
 	)
 
 set(FULLIB_HEADERS
@@ -8,6 +9,7 @@ set(FULLIB_HEADERS
 	src/ful/dispatch.hpp
 	src/ful/intrinsics.hpp
 	src/ful/intrinsics_x86.hpp
+	src/ful/point_utils.hpp
 	src/ful/probe/cpuid.hpp
 	src/ful/stdint.hpp
 	src/ful/string.hpp
@@ -18,5 +20,6 @@ set(FULLIB_HEADERS
 	src/ful/string_sse4_2.hpp
 	src/ful/types.hpp
 	src/ful/unicode.hpp
+	src/ful/unicode_none.hpp
 	src/ful/unsafe_ptr.hpp
 	)

@@ -1,49 +1,48 @@
 #pragma once
 
+#include "ful/dispatch.hpp"
 // #include "ful/stdint.hpp"
 // #include "ful/types.hpp"
 
+//#include "ful/point_utils.hpp"
+
+#include "ful/unicode_none.hpp"
 
 namespace ful
 {
-	inline unsigned int point_size(const unit_utf8 * s)
+	namespace detail
 	{
-		if (static_cast<signed char>(*s) >= 0)
-			return 1;
-
-		if ((static_cast<signed char>(*s) & 0x20) == 0)
-			return 2;
-
-		if ((static_cast<signed char>(*s) & 0x10) == 0)
-			return 3;
-
-		return 4;
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		extern usize ful_dispatch(point_count)(const unit_utf8 * beg, const unit_utf8 * end);
+		extern const unit_utf8 * ful_dispatch(point_next)(const unit_utf8 * s, usize n);
+		extern const unit_utf8 * ful_dispatch(point_prev)(const unit_utf8 * s, usize n);
+#endif
 	}
 
-	inline const unit_utf8 * point_next(const unit_utf8 * s) { return s + point_size(s); }
+	inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::point_count(beg, end);
+#else
+		return detail::point_count_none(beg, end);
+#endif
+	}
 
 	inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
 	{
-		extern const unit_utf8 * (* point_next_dispatch)(const unit_utf8 * s, usize n);
-
-		return point_next_dispatch(s, n);
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::point_next(s, n);
+#else
+		return detail::point_next_none(s, n);
+#endif
 	}
 
-	inline const unit_utf8 * point_prev(const unit_utf8 * s)
+	inline const unit_utf8 * point_prev(const unit_utf8 * s, usize n)
 	{
-		--s;
-		if ((*s & 0x80) == 0)
-			return s;
-
-		--s;
-		if (*s & 0x40)
-			return s;
-
-		--s;
-		if (*s & 0x40)
-			return s;
-
-		--s;
-		return s;
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::point_prev(s, n);
+#else
+		return detail::point_prev_none(s, n);
+#endif
 	}
 }
