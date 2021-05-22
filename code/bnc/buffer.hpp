@@ -1,4 +1,4 @@
-#include "ful/unicode.hpp"
+#pragma once
 
 class buffer_utf8
 {

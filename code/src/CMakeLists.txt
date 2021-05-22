@@ -15,6 +15,7 @@ set(FULLIB_HEADERS
 	src/ful/string_none.hpp
 	src/ful/string_sse2.hpp
 	src/ful/string_sse4_2.hpp
+	src/ful/types.hpp
 	src/ful/unicode.hpp
 	src/ful/unsafe_ptr.hpp
 	)
