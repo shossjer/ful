@@ -98,8 +98,23 @@ endif()
 # build features
 
 # https://www.agner.org/optimize/#asmlib
+macro(_package_asmlib)
+	dep_package(asmlib ful_asmlib
+		${ARGV}
+
+		FILES
+		asmlib.h
+
+		LIBS
+		Linux_x86_64 libaelf64.a
+		Windows_AMD64 libacof64.lib
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_ASMLIB "Build asmlib" ON "FUL_BUILD_BENCHMARKS" OFF)
 if(FUL_BUILD_ASMLIB)
+	_package_asmlib(IGNORE_SYSTEM)
+
 	dep_build(asmlib
 		DOWNLOAD_STEP
 		URL "https://www.agner.org/optimize/asmlib.zip"
@@ -114,23 +129,30 @@ if(FUL_BUILD_ASMLIB)
 		)
 endif()
 
-dep_package(asmlib ful_asmlib
-	FILES
-	asmlib.h
-
-	LIBS
-	Linux_x86_64 libaelf64.a
-	Windows_AMD64 libacof64.lib
-	)
-
+_package_asmlib()
 if(TARGET ful_asmlib)
 	target_link_libraries(lib_benchmark INTERFACE ful_asmlib)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_ASMLIB)
 endif()
 
 # https://github.com/electronicarts/EASTL
+macro(_package_eastl)
+	dep_package(eastl ful_eastl
+		SUPPORTS_DEBUG
+		${ARGV}
+
+		FILES
+		EASTL/string.h
+
+		LIBS
+		EASTL
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_EASTL "Build eastl" ON "FUL_BUILD_BENCHMARKS AND POLICY CMP0097" OFF)
 if(FUL_BUILD_EASTL)
+	_package_eastl(IGNORE_SYSTEM)
+
 	# note eastl has a nasty recursive dependency between its
 	# submodules so we have to hack around it by not fetching the
 	# submodules when cloning but instead postpone it and make an
@@ -163,24 +185,30 @@ if(FUL_BUILD_EASTL)
 		)
 endif()
 
-dep_package(eastl ful_eastl
-	SUPPORTS_DEBUG
-
-	FILES
-	EASTL/string.h
-
-	LIBS
-	EASTL
-	)
-
+_package_eastl()
 if(TARGET ful_eastl)
 	target_link_libraries(lib_benchmark INTERFACE ful_eastl)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_EASTL)
 endif()
 
 # http://site.icu-project.org/
+macro(_package_icu4c)
+	dep_package(icu4c ful_icu4c
+		${ARGV}
+
+		FILES
+		unicode/ucnv.h
+
+		LIBS
+		Linux_x86_64 icuuc icudata
+		Windows_AMD64 icuuc.lib
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_ICU4C "Build icu4c" ON "FUL_BUILD_BENCHMARKS" OFF)
 if(FUL_BUILD_ICU4C)
+	_package_icu4c(IGNORE_SYSTEM)
+
 	dep_build(icu4c
 		DOWNLOAD_STEP
 		Linux_x86_64
@@ -203,15 +231,7 @@ if(FUL_BUILD_ICU4C)
 		)
 endif()
 
-dep_package(icu4c ful_icu4c
-	FILES
-	unicode/ucnv.h
-
-	LIBS
-	Linux_x86_64 icuuc icudata
-	Windows_AMD64 icuuc.lib
-	)
-
+_package_icu4c()
 if(TARGET ful_icu4c)
 	target_link_libraries(lib_benchmark INTERFACE ful_icu4c)
 	if(UNIX)
@@ -223,8 +243,22 @@ if(TARGET ful_icu4c)
 endif()
 
 # https://www.gnu.org/software/libiconv/
+macro(_package_libiconv)
+	dep_package(iconv ful_libiconv
+		${ARGV}
+
+		FILES
+		iconv.h
+
+		LIBS
+		iconv
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_LIBICONV "Build libiconv" ON "FUL_BUILD_BENCHMARKS AND UNIX" OFF)
 if(FUL_BUILD_LIBICONV)
+	_package_libiconv(IGNORE_SYSTEM)
+
 	dep_build(libiconv
 		DOWNLOAD_STEP
 		URL "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz"
@@ -238,22 +272,29 @@ if(FUL_BUILD_LIBICONV)
 		)
 endif()
 
-dep_package(iconv ful_libiconv
-	FILES
-	iconv.h
-
-	LIBS
-	iconv
-	)
-
+_package_libiconv()
 if(TARGET ful_libiconv)
 	target_link_libraries(lib_benchmark INTERFACE ful_libiconv)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBICONV)
 endif()
 
 # https://www.gnu.org/software/libunistring/
+macro(_package_libunistring)
+	dep_package(libunistring ful_libunistring
+		${ARGV}
+
+		FILES
+		unistr.h
+
+		LIBS
+		unistring
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_LIBUNISTRING "Build libunistring" ON "FUL_BUILD_BENCHMARKS AND UNIX" OFF)
 if(FUL_BUILD_LIBUNISTRING)
+	_package_libunistring(IGNORE_SYSTEM)
+
 	dep_build(libunistring
 		DOWNLOAD_STEP
 		URL "https://ftp.gnu.org/gnu/libunistring/libunistring-0.9.10.tar.gz"
@@ -267,22 +308,26 @@ if(FUL_BUILD_LIBUNISTRING)
 		)
 endif()
 
-dep_package(libunistring ful_libunistring
-	FILES
-	unistr.h
-
-	LIBS
-	unistring
-	)
-
+_package_libunistring()
 if(TARGET ful_libunistring)
 	target_link_libraries(lib_benchmark INTERFACE ful_libunistring)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBUNISTRING)
 endif()
 
 # https://github.com/DuffsDevice/tiny-utf8
+macro(_package_tinyutf8)
+	dep_package(tinyutf8 ful_tinyutf8
+		${ARGV}
+
+		FILES
+		tinyutf8/tinyutf8.h
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_TINYUTF8 "Build tiny-utf8" ON "FUL_BUILD_BENCHMARKS" OFF)
 if(FUL_BUILD_TINYUTF8)
+	_package_tinyutf8(IGNORE_SYSTEM)
+
 	dep_build(tinyutf8
 		DOWNLOAD_STEP
 		URL "https://github.com/DuffsDevice/tiny-utf8/archive/refs/tags/v4.3.2.tar.gz"
@@ -294,20 +339,34 @@ if(FUL_BUILD_TINYUTF8)
 		)
 endif()
 
-dep_package(tinyutf8 ful_tinyutf8
-	FILES
-	tinyutf8/tinyutf8.h
-	)
-
+_package_tinyutf8()
 if(TARGET ful_tinyutf8)
 	target_link_libraries(lib_benchmark INTERFACE ful_tinyutf8)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_TINYUTF8)
 endif()
 
 # https://github.com/JuliaStrings/utf8proc
+macro(_package_utf8proc)
+	dep_package(utf8proc ful_utf8proc
+		SUPPORTS_DEBUG
+		${ARGV}
+
+		FILES
+		utf8proc.h
+
+		LIBS
+		Linux_x86_64 utf8proc
+		Windows_AMD64 utf8proc_static.lib
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_UTF8PROC "Build utf8proc" ON "FUL_BUILD_BENCHMARKS" OFF)
 if(FUL_BUILD_UTF8PROC)
+	_package_utf8proc(IGNORE_SYSTEM)
+
 	dep_build(utf8proc
+		SUPPORTS_DEBUG
+
 		DOWNLOAD_STEP
 		URL "https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.6.1.tar.gz"
 		TIMEOUT 10
@@ -317,15 +376,7 @@ if(FUL_BUILD_UTF8PROC)
 		)
 endif()
 
-dep_package(utf8proc ful_utf8proc
-	FILES
-	utf8proc.h
-
-	LIBS
-	Linux_x86_64 utf8proc
-	Windows_AMD64 utf8proc_static.lib
-	)
-
+_package_utf8proc()
 if(TARGET ful_utf8proc)
 	target_link_libraries(lib_benchmark INTERFACE ful_utf8proc)
 	# todo only define UTF8PROC_STATIC when static lib is found
@@ -334,8 +385,19 @@ endif()
 
 
 # https://github.com/nemtrif/utfcpp
+macro(_package_utfcpp)
+	dep_package(utfcpp ful_utfcpp
+		${ARGV}
+
+		FILES
+		utf8cpp/utf8.h
+		)
+endmacro()
+
 cmake_dependent_option(FUL_BUILD_UTFCPP "Build utfcpp" ON "FUL_BUILD_BENCHMARKS" OFF)
 if(FUL_BUILD_UTFCPP)
+	_package_utfcpp(IGNORE_SYSTEM)
+
 	dep_build(utfcpp
 		DOWNLOAD_STEP
 		URL "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.1.2.tar.gz"
@@ -348,11 +410,7 @@ if(FUL_BUILD_UTFCPP)
 		)
 endif()
 
-dep_package(utfcpp ful_utfcpp
-	FILES
-	utf8cpp/utf8.h
-	)
-
+_package_utfcpp()
 if(TARGET ful_utfcpp)
 	target_link_libraries(lib_benchmark INTERFACE ful_utfcpp)
 	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTFCPP)
