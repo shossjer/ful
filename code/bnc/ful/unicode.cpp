@@ -1,5 +1,7 @@
 #include "ful/types.hpp"
 
+#include "ful/point_utils.hpp"
+
 #include "ful/string.hpp"
 #include "ful/unicode.hpp"
 
