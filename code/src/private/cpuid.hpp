@@ -4,17 +4,31 @@
 
 # define ful_cpucall(stem, alt, ...) ful::detail::stem##_##alt
 # define ful_cpuinit() __builtin_cpu_init()
-# define ful_cpucheck(name, value) __builtin_cpu_supports(name)
+# define ful_cpucheck(feature) __builtin_cpu_supports(FUL_FEATURE_NAME_##feature)
 # define ful_resolve(stem, ret, ...) \
 namespace ful { namespace detail { __attribute__((ifunc ("resolve_" #stem))) ret stem(__VA_ARGS__); }} \
 extern "C" { ret (* resolve_##stem())(__VA_ARGS__); } \
 ret (* resolve_##stem())(__VA_ARGS__)
 
+#define FUL_FEATURE_NAME_AVX "avx"
+#define FUL_FEATURE_NAME_AVX2 "avx2"
+#define FUL_FEATURE_NAME_SSE "sse"
+#define FUL_FEATURE_NAME_SSE2 "sse2"
+#define FUL_FEATURE_NAME_SSE3 "sse3"
+#define FUL_FEATURE_NAME_SSSE3 "ssse3"
+#define FUL_FEATURE_NAME_SSE4_1 "sse4.1"
+#define FUL_FEATURE_NAME_SSE4_2 "sse4.2"
+#define FUL_FEATURE_NAME_POPCNT "popcnt"
+#define FUL_FEATURE_NAME_ABM "abm"
+#define FUL_FEATURE_NAME_LZCNT "lzcnt"
+#define FUL_FEATURE_NAME_BMI "bmi"
+#define FUL_FEATURE_NAME_BMI2 "bmi2"
+
 #elif defined(FUL_FPTR)
 
 # define ful_cpucall(stem, alt, ...) ful::detail::stem = ful::detail::stem##_##alt, ful::detail::stem##_##alt(__VA_ARGS__)
 # define ful_cpuinit() ful::cpuid_init()
-# define ful_cpucheck(name, value) ful::cpuid_supports(cpuid_feature::value)
+# define ful_cpucheck(feature) ful::cpuid_supports(cpuid_feature::feature)
 # define ful_resolve(stem, ret, ...) \
 static ret resolve_##stem(__VA_ARGS__); \
 namespace ful { namespace detail { ret (* stem)(__VA_ARGS__) = resolve_##stem; }} \
