@@ -6,10 +6,8 @@
 
 #include <cstdio>
 
-buffer_utf8 read_utf8(const char * fname)
+bool read_buffer(const char * fname, buffer_utf8 & buffer)
 {
-	buffer_utf8 buffer;
-
 #if defined(_MSC_VER)
 	FILE * file;
 	if (ful_check(fopen_s(&file, fname, "rb") == 0))
@@ -23,9 +21,10 @@ buffer_utf8 read_utf8(const char * fname)
 		std::fseek(file, 0, SEEK_SET);
 		buffer.allocate(size * sizeof(char));
 		const std::size_t read = std::fread(buffer.data(), sizeof(char), size, file);
-		ful_unused(ful_check(read == size));
 
 		fclose(file);
+
+		return ful_check(read == size);
 	}
-	return buffer;
+	return false;
 }

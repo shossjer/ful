@@ -1,3 +1,4 @@
+#include "ful/stdint.hpp"
 #include "ful/types.hpp"
 
 #include "ful/point_utils.hpp"
@@ -5,6 +6,7 @@
 #include "ful/string.hpp"
 
 #include "buffer.hpp"
+#include "data.hpp"
 
 #include <catch2/catch.hpp>
 
@@ -19,8 +21,7 @@ using namespace ful::detail;
 
 namespace
 {
-#if defined(__SSE2__)
-
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	inline __m128i rotate_alt_wr(__m128i ab, unsigned int n)
 	{
 		ful_assume(n < 16);
@@ -32,7 +33,6 @@ namespace
 	}
 
 	inline __m128i rotate_alt_wr(__m128i ab, int n) { return rotate_alt_wr(ab, static_cast<unsigned int>(n) & (16 - 1)); }
-
 #endif
 }
 
@@ -62,7 +62,7 @@ TEST_CASE("rotate", "")
 	}
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	{
 		const __m128i x = _mm_set_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 		const __m128i y1 = _mm_set_epi8(1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2);
@@ -116,7 +116,8 @@ namespace
 
 TEST_CASE("copy", "")
 {
-	auto txt = read_utf8("data/jap.txt");
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	const auto first = txt.beg() + 3;
 	const auto last = txt.end();
@@ -238,7 +239,8 @@ namespace
 
 TEST_CASE("rcopy", "")
 {
-	auto txt = read_utf8("data/jap.txt");
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	const auto before_offset = 1;
 	const auto after_offset = 5;
@@ -307,9 +309,6 @@ TEST_CASE("rcopy", "")
 
 	BENCHMARK_ADVANCED("rcopy large none")(Catch::Benchmark::Chronometer meter)
 	{
-		if (txt.size() < 16)
-			return;
-
 		buffer_utf8 tyt;
 		tyt.allocate(txt.size() + before_offset);
 		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
@@ -327,9 +326,6 @@ TEST_CASE("rcopy", "")
 #if defined(__AVX__)
 	BENCHMARK_ADVANCED("rcopy large avx")(Catch::Benchmark::Chronometer meter)
 	{
-		if (txt.size() < 16)
-			return;
-
 		buffer_utf8 tyt;
 		tyt.allocate(txt.size() + before_offset);
 		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
@@ -406,9 +402,6 @@ TEST_CASE("fill", "")
 
 	BENCHMARK_ADVANCED("fill large none")(Catch::Benchmark::Chronometer meter)
 	{
-		if (size < 16)
-			return;
-
 		buffer_utf8 tyt;
 		tyt.allocate(offset + size);
 
@@ -418,9 +411,6 @@ TEST_CASE("fill", "")
 #if defined(__AVX__)
 	BENCHMARK_ADVANCED("fill large avx")(Catch::Benchmark::Chronometer meter)
 	{
-		if (size < 16)
-			return;
-
 		buffer_utf8 tyt;
 		tyt.allocate(offset + size);
 
@@ -544,7 +534,7 @@ namespace
 		return s;
 	}
 
-	const unit_utf8 * point_next_alt_naive(const unit_utf8 * s, int n)
+	const unit_utf8 * point_next_alt_naive(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -558,7 +548,7 @@ namespace
 		return s + point_size(s);
 	}
 
-	const unit_utf8 * point_next_alt_size(const unit_utf8 * s, int n)
+	const unit_utf8 * point_next_alt_size(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -568,8 +558,7 @@ namespace
 	}
 
 #if defined(__AVX2__)
-
-	const unit_utf8 * point_next_avx2(const unit_utf8 * s, unsigned int n)
+	const unit_utf8 * point_next_avx2(const unit_utf8 * s, usize n)
 	{
 		ful_assume(0 < n);
 
@@ -599,16 +588,14 @@ namespace
 			cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
 			mask = _mm256_movemask_epi8(cmpi);
 		}
-		const unsigned int i = index_set_bit(mask, n - 1);
+		const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(n - 1)); // n <= 32
 		word += i;
 		return word + point_size(word);
 	}
-
 #endif
 
-#if defined(__SSE2__)
-
-	const unit_utf8 * point_next_sse2(const unit_utf8 * s, unsigned int n)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+	const unit_utf8 * point_next_sse2(const unit_utf8 * s, usize n)
 	{
 		ful_assume(0 < n);
 
@@ -636,44 +623,43 @@ namespace
 			cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
 			mask = _mm_movemask_epi8(cmpi);
 		}
-		const unsigned int i = index_set_bit(mask, n - 1);
+		const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(n - 1)); // n <= 32
 		word += i;
 		return word + point_size(word);
 	}
-
 #endif
 }
 
 TEST_CASE("point_next", "")
 {
-	auto txt = read_utf8("data/jap.txt");
-	const auto npoints = 1742;
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	BENCHMARK_ADVANCED("point_next (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_alt_naive(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_alt_naive(txt.beg(), npoints); });
+		REQUIRE(point_next_alt_naive(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_naive(txt.beg(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_next (size)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_alt_size(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_alt_size(txt.beg(), npoints); });
+		REQUIRE(point_next_alt_size(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_size(txt.beg(), txt.npoints()); });
 	};
 
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("point_next (avx2)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_avx2(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_avx2(txt.beg(), npoints); });
+		REQUIRE(point_next_avx2(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_avx2(txt.beg(), txt.npoints()); });
 	};
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("point_next sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_sse2(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_sse2(txt.beg(), npoints); });
+		REQUIRE(point_next_sse2(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_sse2(txt.beg(), txt.npoints()); });
 	};
 #endif
 }
@@ -698,7 +684,7 @@ namespace
 		return s;
 	}
 
-	const unit_utf8 * point_prev_alt_naive(const unit_utf8 * s, int n)
+	const unit_utf8 * point_prev_alt_naive(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -708,7 +694,6 @@ namespace
 	}
 
 #if defined(__AVX2__)
-
 	const unit_utf8 * point_prev_avx2_alt_naive(const unit_utf8 * s)
 	{
 		alignas(32) static const signed char m65[] = {
@@ -735,7 +720,7 @@ namespace
 		return word + i;
 	}
 
-	const unit_utf8 * point_prev_avx2_alt_naive(const unit_utf8 * s, int n)
+	const unit_utf8 * point_prev_avx2_alt_naive(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -743,11 +728,9 @@ namespace
 		}
 		return s;
 	}
-
 #endif
 
-#if defined(__SSE2__)
-
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	const unit_utf8 * point_prev_sse2_alt_naive(const unit_utf8 * s)
 	{
 		alignas(16) static const signed char m65[] = {
@@ -772,7 +755,7 @@ namespace
 		return word + i;
 	}
 
-	const unit_utf8 * point_prev_sse2_alt_naive(const unit_utf8 * s, int n)
+	const unit_utf8 * point_prev_sse2_alt_naive(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -780,53 +763,52 @@ namespace
 		}
 		return s;
 	}
-
 #endif
 }
 
 TEST_CASE("point_prev", "")
 {
-	auto txt = read_utf8("data/jap.txt");
-	const auto npoints = 1742;
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	BENCHMARK_ADVANCED("point_prev (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_alt_naive(txt.end(), npoints) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_alt_naive(txt.end(), npoints); });
+		REQUIRE(point_prev_alt_naive(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return point_prev_alt_naive(txt.end(), txt.npoints()); });
 	};
 
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("point_prev avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_avx2(txt.end(), npoints) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_avx2(txt.end(), npoints); });
+		REQUIRE(point_prev_avx2(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return point_prev_avx2(txt.end(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev avx2 (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_avx2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_avx2_alt_naive(txt.end(), npoints); });
+		REQUIRE(point_prev_avx2_alt_naive(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return point_prev_avx2_alt_naive(txt.end(), txt.npoints()); });
 	};
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("point_prev sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_sse2(txt.end(), npoints) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_sse2(txt.end(), npoints); });
+		REQUIRE(point_prev_sse2(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return point_prev_sse2(txt.end(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev sse2 (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_sse2_alt_naive(txt.end(), npoints) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_sse2_alt_naive(txt.end(), npoints); });
+		REQUIRE(point_prev_sse2_alt_naive(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return point_prev_sse2_alt_naive(txt.end(), txt.npoints()); });
 	};
 #endif
 }
 
 namespace
 {
-	const unit_utf8 * point_size_(const unit_utf8 * s, int n)
+	const unit_utf8 * point_size_(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -847,7 +829,7 @@ namespace
 		return table[static_cast<uint8>(s[0]) >> 4];
 	}
 
-	const unit_utf8 * point_size_alt_table(const unit_utf8 * s, int n)
+	const unit_utf8 * point_size_alt_table(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -865,7 +847,7 @@ namespace
 		return detail::lzcnt(n ^ (n >> 1)) & 7;
 	}
 
-	const unit_utf8 * point_size_alt_lzcnt(const unit_utf8 * s, int n)
+	const unit_utf8 * point_size_alt_lzcnt(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
@@ -878,34 +860,36 @@ namespace
 
 TEST_CASE("point_size", "")
 {
-	auto txt = read_utf8("data/jap.txt");
-	const auto npoints = 1742;
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	BENCHMARK_ADVANCED("point_size")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_size_(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_size_(txt.beg(), npoints); });
+		REQUIRE(point_size_(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_size_(txt.beg(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_size (table)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_size_alt_table(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_size_alt_table(txt.beg(), npoints); });
+		REQUIRE(point_size_alt_table(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_size_alt_table(txt.beg(), txt.npoints()); });
 	};
 
 #if defined(__LZCNT__)
 	BENCHMARK_ADVANCED("point_size (lzcnt)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_size_alt_lzcnt(txt.beg(), npoints) - txt.end() == 0);
-		meter.measure([&](int){ return point_size_alt_lzcnt(txt.beg(), npoints); });
+		REQUIRE(point_size_alt_lzcnt(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_size_alt_lzcnt(txt.beg(), txt.npoints()); });
 	};
 #endif
 }
 
 TEST_CASE("equal_cstr", "")
 {
-	auto txt = read_utf8("data/jap.txt");
-	auto tyt = read_utf8("data/jap.txt");
+	data_any_utf8 txt;
+	data_any_utf8 tyt;
+	REQUIRE(txt.init());
+	REQUIRE(tyt.init());
 
 	BENCHMARK_ADVANCED("equal_cstr (std strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
@@ -929,7 +913,7 @@ TEST_CASE("equal_cstr", "")
 	};
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("equal_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
@@ -937,7 +921,7 @@ TEST_CASE("equal_cstr", "")
 	};
 #endif
 
-#if RUNTIME_CPUID
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
 	BENCHMARK_ADVANCED("equal_cstr dispatch")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(equal(txt.beg(), txt.end(), tyt.cstr()));
@@ -954,46 +938,53 @@ TEST_CASE("equal_cstr", "")
 
 TEST_CASE("find_unit", "")
 {
-	auto txt = read_utf8("data/jap.txt");
+	data_any_utf8 txt;
+	REQUIRE(txt.init());
 
 	BENCHMARK_ADVANCED("find_unit (std strchr)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(std::strchr(txt.cstr(), '$') == txt.end() - 2);
-		meter.measure([&](int){ return std::strchr(txt.cstr(), '$'); });
+		REQUIRE(std::strchr(txt.cstr(), txt.cunit()) == txt.beg() + txt.iunit());
+		meter.measure([&](int){ return std::strchr(txt.cstr(), txt.cunit()); });
 	};
 
 #if HAVE_ASMLIB
 	BENCHMARK_ADVANCED("find_unit (asmlib strstr)")(Catch::Benchmark::Chronometer meter)
 	{
 		// note asmlib does not have strchr
-		REQUIRE(A_strstr(txt.cstr(), u8"$") == txt.end() - 2);
-		meter.measure([&](int){ return A_strstr(txt.cstr(), u8"$"); });
+		const char str[2] = {txt.cunit(), '\0'};
+		REQUIRE(A_strstr(txt.cstr(), str) == txt.beg() + txt.iunit());
+		meter.measure([&](int){ return A_strstr(txt.cstr(), str); });
 	};
 #endif
 
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_avx2(txt.beg(), txt.end(), '$') == txt.end() - 2);
-		meter.measure([&](int){ return find_unit_avx2(txt.beg(), txt.end(), '$'); });
+		REQUIRE(find_unit_avx2(txt.beg(), txt.end(), txt.cunit()) == txt.beg() + txt.iunit());
+		meter.measure([&](int){ return find_unit_avx2(txt.beg(), txt.end(), txt.cunit()); });
 	};
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_sse2(txt.beg(), txt.end(), '$') == txt.end() - 2);
-		meter.measure([&](int){ return find_unit_sse2(txt.beg(), txt.end(), '$'); });
+		REQUIRE(find_unit_sse2(txt.beg(), txt.end(), txt.cunit()) == txt.beg() + txt.iunit());
+		meter.measure([&](int){ return find_unit_sse2(txt.beg(), txt.end(), txt.cunit()); });
 	};
 #endif
 }
 
 TEST_CASE("less_cstr", "")
 {
-	auto txt = read_utf8("data/jap.txt");
-	auto tyt = read_utf8("data/jap.txt");
-	REQUIRE(*(txt.end() - 1) == '\n');
-	txt.reduce(txt.end() - 1); // remove newline, it should now be less than tyt
+	data_any_utf8 txt;
+	data_any_utf8 tyt;
+	REQUIRE(txt.init());
+	REQUIRE(tyt.init());
+
+	// decrement last character, now txt is less than tyt
+	ful::unit_utf8 & txt_last = txt.data()[txt.size() - 1];
+	REQUIRE(0 < static_cast<int>(txt_last));
+	txt_last--;
 
 	BENCHMARK_ADVANCED("less_cstr (std strcmp)")(Catch::Benchmark::Chronometer meter)
 	{
@@ -1020,7 +1011,7 @@ TEST_CASE("less_cstr", "")
 	};
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
@@ -1029,7 +1020,7 @@ TEST_CASE("less_cstr", "")
 	};
 #endif
 
-#if RUNTIME_CPUID
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
 	BENCHMARK_ADVANCED("less_cstr dispatch")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(less(txt.beg(), txt.end(), tyt.cstr()));

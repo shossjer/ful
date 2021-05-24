@@ -6,6 +6,7 @@
 #include "ful/unicode.hpp"
 
 #include "buffer.hpp"
+#include "data.hpp"
 
 #include <catch2/catch.hpp>
 
@@ -81,7 +82,7 @@ using namespace ful::detail;
 namespace
 {
 #if defined(HAVE_EASTL)
-	unit_utf32 * conv_utf8_to_utf32_lib_eastl(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_eastl(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		const bool ret = eastl::DecodePart(first, last, begin, end);
 		ful_expect(ret);
@@ -90,7 +91,7 @@ namespace
 #endif
 
 #if defined(HAVE_ICU4C)
-	unit_utf32 * conv_utf8_to_utf32_lib_icu4c(UConverter * converter8, UConverter * converter32, const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_icu4c(UConverter * converter8, UConverter * converter32, const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		UChar buffer[2048]; // arbitrary
 		UErrorCode err;
@@ -116,28 +117,28 @@ namespace
 			ful_expect(source == target);
 
 			if (!more)
-				return reinterpret_cast<unit_utf32 *>(begin_char);
+				return reinterpret_cast<unit_utf32le *>(begin_char);
 		}
 	}
 #endif
 
 #if defined(HAVE_LIBICONV)
-	unit_utf32 * conv_utf8_to_utf32_lib_libiconv(iconv_t converter, const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_libiconv(iconv_t converter, const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
 		size_t first_size = (last - first) * sizeof(unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(unit_utf32);
+		size_t begin_size = (end - begin) * sizeof(unit_utf32le);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
 
-		return reinterpret_cast<unit_utf32 *>(begin_char);
+		return reinterpret_cast<unit_utf32le *>(begin_char);
 	}
 #endif
 
 #if defined(HAVE_LIBUNISTRING)
-	unit_utf32 * conv_utf8_to_utf32_lib_libunistring(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_libunistring(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		ful_unused(end);
 
@@ -148,7 +149,7 @@ namespace
 #endif
 
 #if defined(HAVE_TINYUTF8)
-	unit_utf32 * conv_utf8_to_utf32_lib_tinyutf8(const tiny_utf8::string & string, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_tinyutf8(const tiny_utf8::string & string, unit_utf32le * begin, unit_utf32le * end)
 	{
 		ful_unused(end);
 
@@ -158,7 +159,7 @@ namespace
 #endif
 
 #if defined(HAVE_UTF8PROC)
-	unit_utf32 * conv_utf8_to_utf32_lib_utf8proc(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_utf8proc(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		const utf8proc_ssize_t count = utf8proc_decompose(reinterpret_cast<const utf8proc_uint8_t *>(first), last - first, reinterpret_cast<utf8proc_int32_t *>(begin), end - begin, utf8proc_option_t{});
 		if (ful_expect(0 <= count))
@@ -173,7 +174,7 @@ namespace
 #endif
 
 #if defined(HAVE_UTFCPP)
-	unit_utf32 * conv_utf8_to_utf32_lib_utfcpp(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_lib_utfcpp(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		ful_unused(end);
 
@@ -181,7 +182,7 @@ namespace
 	}
 #endif
 
-	unit_utf32 * conv_utf8_to_utf32_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		ful_unused(end);
 		while (first != last)
@@ -220,7 +221,7 @@ namespace
 	}
 
 #if defined(__AVX2__)
-	unit_utf32 * conv_utf8_to_utf32_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin, unit_utf32 * end)
+	unit_utf32le * conv_utf8_to_utf32le_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 		const __m256i order3 = _mm256_set_epi64x(
 			0x80090a0b80060708, 0x8003040580000102,
@@ -339,358 +340,169 @@ namespace
 		return conv_utf8_to_utf32_alt_naive(first, last, begin, end);
 	}
 #endif
-}
 
-TEST_CASE("conv_utf8_to_utf32 eng", "")
-{
-	auto txt = read_utf8("data/eng.html");
+	template <typename Data>
+	void conv_utf8_to_utf32le(Data & txt)
 	{
-		std::vector<unit_utf32> tyt(txt.size());
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-	}
+		{
+			// todo this makes the first benchmark run faster?
+			std::vector<unit_utf32le> tyt(txt.size());
+			REQUIRE(conv_utf8_to_utf32le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+		}
 
 #if defined(HAVE_EASTL)
-	BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
 #if defined(HAVE_ICU4C)
-	BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		UErrorCode err = U_ZERO_ERROR;
-		UConverter * const converter8 = ucnv_open("UTF-8", &err);
-		REQUIRE(err == U_ZERO_ERROR);
-		UConverter * const converter32 = ucnv_open("UTF-32LE", &err);
-		REQUIRE(err == U_ZERO_ERROR);
+			UErrorCode err = U_ZERO_ERROR;
+			UConverter * const converter8 = ucnv_open("UTF-8", &err);
+			REQUIRE(err == U_ZERO_ERROR);
+			UConverter * const converter32 = ucnv_open("UTF-32LE", &err);
+			REQUIRE(err == U_ZERO_ERROR);
 
-		REQUIRE(conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+			REQUIRE(conv_utf8_to_utf32le_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
 
-		ucnv_close(converter32);
-		ucnv_close(converter8);
-	};
+			ucnv_close(converter32);
+			ucnv_close(converter8);
+		};
 #endif
 
 #if defined(HAVE_LIBICONV)
-	BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		const iconv_t converter = iconv_open("UTF-32LE", "UTF-8");
-		REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
+			const iconv_t converter = iconv_open("UTF-32LE", "UTF-8");
+			REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
 
-		REQUIRE(conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+			REQUIRE(conv_utf8_to_utf32le_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
 
-		iconv_close(converter);
-	};
+			iconv_close(converter);
+		};
 #endif
 
 #if defined(HAVE_LIBUNISTRING)
-	BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
 #if defined(HAVE_TINYUTF8)
-	BENCHMARK_ADVANCED("lib tinyutf8")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib tinyutf8")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		tiny_utf8::string string(txt.data(), txt.size());
+			tiny_utf8::string string(txt.data(), txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
 #if defined(HAVE_UTF8PROC)
-	BENCHMARK_ADVANCED("lib utf8proc")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib utf8proc")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
 #if defined(HAVE_UTFCPP)
-	BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
-	BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 
 #if defined(__AVX2__)
-	BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
+		BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf32le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1344161);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf32le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.npoints());
+			meter.measure([&](int){ return conv_utf8_to_utf32le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
+	}
 }
 
-TEST_CASE("conv_utf8_to_utf32 rus", "")
+TEST_CASE("conv_utf8_to_utf32le", "")
 {
-	auto txt = read_utf8("data/rus.html");
+	SECTION("eng")
 	{
-		std::vector<unit_utf32> tyt(txt.size());
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
+		data_eng_utf8 txt;
+		REQUIRE(txt.init());
+
+		conv_utf8_to_utf32le(txt);
 	}
 
-#if defined(HAVE_EASTL)
-	BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
+	SECTION("got")
 	{
-		std::vector<unit_utf32> tyt(txt.size());
+		data_got_utf8 txt;
+		REQUIRE(txt.init());
 
-		REQUIRE(conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_ICU4C)
-	BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		UErrorCode err = U_ZERO_ERROR;
-		UConverter * const converter8 = ucnv_open("UTF-8", &err);
-		REQUIRE(err == U_ZERO_ERROR);
-		UConverter * const converter32 = ucnv_open("UTF-32LE", &err);
-		REQUIRE(err == U_ZERO_ERROR);
-
-		REQUIRE(conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-
-		ucnv_close(converter32);
-		ucnv_close(converter8);
-	};
-#endif
-
-#if defined(HAVE_LIBICONV)
-	BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		const iconv_t converter = iconv_open("UTF-32LE", "UTF-8");
-		REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
-
-		REQUIRE(conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-
-		iconv_close(converter);
-	};
-#endif
-
-#if defined(HAVE_LIBUNISTRING)
-	BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_TINYUTF8)
-	BENCHMARK_ADVANCED("lib tinyutf8")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		tiny_utf8::string string(txt.data(), txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_UTF8PROC)
-	BENCHMARK_ADVANCED("lib utf8proc")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_UTFCPP)
-	BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-
-#if defined(__AVX2__)
-	BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 1426479);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-}
-
-TEST_CASE("conv_utf8_to_utf32 jap", "")
-{
-	auto txt = read_utf8("data/jap.html");
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
+		conv_utf8_to_utf32le(txt);
 	}
 
-#if defined(HAVE_EASTL)
-	BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
+	SECTION("jap")
 	{
-		std::vector<unit_utf32> tyt(txt.size());
+		data_jap_utf8 txt;
+		REQUIRE(txt.init());
 
-		REQUIRE(conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
+		conv_utf8_to_utf32le(txt);
+	}
 
-#if defined(HAVE_ICU4C)
-	BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
+	SECTION("rus")
 	{
-		std::vector<unit_utf32> tyt(txt.size());
+		data_rus_utf8 txt;
+		REQUIRE(txt.init());
 
-		UErrorCode err = U_ZERO_ERROR;
-		UConverter * const converter8 = ucnv_open("UTF-8", &err);
-		REQUIRE(err == U_ZERO_ERROR);
-		UConverter * const converter32 = ucnv_open("UTF-32LE", &err);
-		REQUIRE(err == U_ZERO_ERROR);
-
-		REQUIRE(conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_icu4c(converter8, converter32, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-
-		ucnv_close(converter32);
-		ucnv_close(converter8);
-	};
-#endif
-
-#if defined(HAVE_LIBICONV)
-	BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		const iconv_t converter = iconv_open("UTF-32LE", "UTF-8");
-		REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
-
-		REQUIRE(conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-
-		iconv_close(converter);
-	};
-#endif
-
-#if defined(HAVE_LIBUNISTRING)
-	BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_TINYUTF8)
-	BENCHMARK_ADVANCED("lib tinyutf8")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		tiny_utf8::string string(txt.data(), txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_tinyutf8(string, tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_UTF8PROC)
-	BENCHMARK_ADVANCED("lib utf8proc")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utf8proc(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-#if defined(HAVE_UTFCPP)
-	BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-
-#if defined(__AVX2__)
-	BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utf32> tyt(txt.size());
-
-		REQUIRE(conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864343);
-		meter.measure([&](int){ return conv_utf8_to_utf32_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
-#endif
+		conv_utf8_to_utf32le(txt);
+	}
 }
 
-#if defined(_MSC_VER)
 namespace
 {
-	unit_utfw * conv_utf8_to_utfw_lib_win32(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+#if defined(_MSC_VER)
+	unit_utf16le * conv_utf8_to_utf16le_lib_win32(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 		const int n = ::MultiByteToWideChar(CP_UTF8, 0, first, static_cast<int>(last - first), begin, static_cast<int>(end - begin));
 		return begin + n;
 	}
+#endif
 
 //#if defined(HAVE_EASTL)
-//	unit_utfw * conv_utf8_to_utfw_lib_eastl(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+//	unit_utf16le * conv_utf8_to_utf16le_lib_eastl(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 //	{
 //		const bool ret = eastl::DecodePart(first, last, begin, end);
 //		ful_expect(ret);
@@ -699,12 +511,12 @@ namespace
 //#endif
 
 #if defined(HAVE_ICU4C)
-	unit_utfw * conv_utf8_to_utfw_lib_icu4c(UConverter * converter8, const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_lib_icu4c(UConverter * converter8, const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
-		static_assert(sizeof(UChar) == sizeof(unit_utfw), "");
+		static_assert(sizeof(UChar) == sizeof(unit_utf16le), "");
 		// note since Windows only runs on little endian (source!?), UChar is
 		// guaranteed to be little endian so casting between UChar and
-		// unit_utfw is fine, probably
+		// unit_utf16le is fine, probably
 
 		UErrorCode err = U_ZERO_ERROR;
 		const int n = ::ucnv_toUChars(converter8, reinterpret_cast<UChar *>(begin), static_cast<int>(end - begin), first, static_cast<int>(last - first), &err);
@@ -715,23 +527,25 @@ namespace
 #endif
 
 #if defined(HAVE_LIBICONV)
-	unit_utfw * conv_utf8_to_utfw_lib_libiconv(iconv_t converter, const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_lib_libiconv(iconv_t converter, const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
 		size_t first_size = (last - first) * sizeof(unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(unit_utfw);
+		size_t begin_size = (end - begin) * sizeof(unit_utf16le);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
 
-		return reinterpret_cast<unit_utfw *>(begin_char);
+		return reinterpret_cast<unit_utf16le *>(begin_char);
 	}
 #endif
 
 #if defined(HAVE_LIBUNISTRING)
-	unit_utfw * conv_utf8_to_utf16_lib_libunistring(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_lib_libunistring(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
+		ful_unused(end);
+
 		size_t size;
 		u8_to_u16(reinterpret_cast<const uint8_t *>(first), last - first, reinterpret_cast<uint16_t *>(begin), &size);
 		return begin + size;
@@ -739,7 +553,7 @@ namespace
 #endif
 
 #if defined(HAVE_UTFCPP)
-	unit_utfw * conv_utf8_to_utfw_lib_utfcpp(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_lib_utfcpp(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 		ful_unused(end);
 
@@ -747,7 +561,7 @@ namespace
 	}
 #endif
 
-	unit_utfw * conv_utf8_to_utfw_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 		ful_unused(end);
 		while (first != last)
@@ -792,7 +606,7 @@ namespace
 	}
 
 #if defined(__AVX2__)
-	unit_utfw * conv_utf8_to_utfw_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utfw * begin, unit_utfw * end)
+	unit_utf16le * conv_utf8_to_utf16le_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 		const __m256i x_mask2 = _mm256_set1_epi16(0x07c0);
 		const __m256i y_mask2 = _mm256_set1_epi16(0x003f);
@@ -877,101 +691,138 @@ namespace
 		return conv_utf8_to_utfw_alt_naive(first, last, begin, end);
 	}
 #endif
-}
 
-TEST_CASE("conv_utf8_to_utfw jap", "")
-{
-	auto txt = read_utf8("data/jap.html");
+	template <typename Data>
+	void conv_utf8_to_utf16le(Data & txt)
 	{
-		std::vector<unit_utfw> tyt(txt.size());
-		REQUIRE(conv_utf8_to_utfw_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-	}
+		{
+			// todo this makes the first benchmark run faster?
+			std::vector<unit_utf16le> tyt(txt.size());
+			REQUIRE(conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+		}
 
-	BENCHMARK_ADVANCED("lib Win32")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+#if defined(_MSC_VER)
+		BENCHMARK_ADVANCED("lib Win32")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utfw_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf16le_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
+#endif
 
 //#if defined(HAVE_EASTL)
-//	BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
-//	{
-//		std::vector<unit_utfw> tyt(txt.size());
+//		BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
+//		{
+//			std::vector<unit_utf16le> tyt(txt.size());
 //
-//		REQUIRE(conv_utf8_to_utfw_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-//		meter.measure([&](int){ return conv_utf8_to_utfw_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-//	};
+//			REQUIRE(conv_utf8_to_utf16le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+//			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+//		};
 //#endif
 
 #if defined(HAVE_ICU4C)
-	BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		UErrorCode err = U_ZERO_ERROR;
-		UConverter * const converter8 = ucnv_open("UTF-8", &err);
-		REQUIRE(err == U_ZERO_ERROR);
+			UErrorCode err = U_ZERO_ERROR;
+			UConverter * const converter8 = ucnv_open("UTF-8", &err);
+			REQUIRE(err == U_ZERO_ERROR);
 
-		REQUIRE(conv_utf8_to_utfw_lib_icu4c(converter8, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_lib_icu4c(converter8, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+			REQUIRE(conv_utf8_to_utf16le_lib_icu4c(converter8, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_icu4c(converter8, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
 
-		ucnv_close(converter8);
-	};
+			ucnv_close(converter8);
+		};
 #endif
 
 #if defined(HAVE_LIBICONV)
-	BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		const iconv_t converter = iconv_open("UTF-32LE", "UTF-16LE");
-		REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
+			const iconv_t converter = iconv_open("UTF-16LE", "UTF-8");
+			REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
 
-		REQUIRE(conv_utf8_to_utfw_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+			REQUIRE(conv_utf8_to_utf16le_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_libiconv(converter, txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
 
-		iconv_close(converter);
-	};
+			iconv_close(converter);
+		};
 #endif
 
 #if defined(HAVE_LIBUNISTRING)
-	BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utfw_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf16le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
 #if defined(HAVE_UTFCPP)
-	BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utfw_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf16le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
 
-	BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utfw_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 
 #if defined(__AVX2__)
-	BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
-	{
-		std::vector<unit_utfw> tyt(txt.size());
+		BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
+		{
+			std::vector<unit_utf16le> tyt(txt.size());
 
-		REQUIRE(conv_utf8_to_utfw_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + 864344);
-		meter.measure([&](int){ return conv_utf8_to_utfw_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
-	};
+			REQUIRE(conv_utf8_to_utf16le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
+			meter.measure([&](int){ return conv_utf8_to_utf16le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
+		};
 #endif
+	}
 }
-#endif
+
+TEST_CASE("conv_utf8_to_utf16le", "")
+{
+	SECTION("eng")
+	{
+		data_eng_utf8 txt;
+		REQUIRE(txt.init());
+
+		conv_utf8_to_utf16le(txt);
+	}
+
+	SECTION("got")
+	{
+		data_got_utf8 txt;
+		REQUIRE(txt.init());
+
+		conv_utf8_to_utf16le(txt);
+	}
+
+	SECTION("jap")
+	{
+		data_jap_utf8 txt;
+		REQUIRE(txt.init());
+
+		conv_utf8_to_utf16le(txt);
+	}
+
+	SECTION("rus")
+	{
+		data_rus_utf8 txt;
+		REQUIRE(txt.init());
+
+		conv_utf8_to_utf16le(txt);
+	}
+}
