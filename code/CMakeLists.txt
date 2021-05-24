@@ -34,6 +34,7 @@ set(_compile_definitions
 	)
 
 include (bnc/CMakeLists.txt)
+include (cmn/CMakeLists.txt)
 include (src/CMakeLists.txt)
 include (tst/CMakeLists.txt)
 
@@ -44,11 +45,20 @@ target_link_libraries(fullib PUBLIC lib_cpuid)
 target_compile_options(fullib PRIVATE ${_compile_options})
 target_compile_definitions(fullib PRIVATE ${_compile_definitions})
 
+if(FUL_BUILD_TESTS OR FUL_BUILD_BENCMARKS)
+	add_library(fulcmn "")
+	target_sources(fulcmn PRIVATE ${FULCMN_SOURCES} ${FULCMN_HEADERS})
+	target_include_directories(fulcmn PUBLIC "cmn")
+	target_link_libraries(fulcmn PUBLIC fullib)
+	target_compile_options(fulcmn PRIVATE ${_compile_options})
+	target_compile_definitions(fulcmn PRIVATE ${_compile_definitions})
+endif()
+
 if(FUL_BUILD_TESTS)
 	add_executable(fultst "")
 	target_sources(fultst PRIVATE ${FULTST_SOURCES})
 	target_include_directories(fultst PRIVATE "tst")
-	target_link_libraries(fultst PRIVATE fullib lib_test)
+	target_link_libraries(fultst PRIVATE fulcmn lib_test)
 	target_compile_options(fultst PRIVATE ${_compile_options})
 	target_compile_definitions(fultst PRIVATE ${_compile_definitions})
 
@@ -63,9 +73,9 @@ endif()
 
 if(FUL_BUILD_BENCHMARKS)
 	add_executable(fulbnc "")
-	target_sources(fulbnc PRIVATE ${FULBNC_SOURCES} ${FULBNC_HEADERS})
+	target_sources(fulbnc PRIVATE ${FULBNC_SOURCES})
 	target_include_directories(fulbnc PRIVATE "bnc")
-	target_link_libraries(fulbnc PRIVATE fullib lib_benchmark)
+	target_link_libraries(fulbnc PRIVATE fulcmn lib_benchmark)
 	target_compile_options(fulbnc PRIVATE ${_compile_options})
 	target_compile_definitions(fulbnc PRIVATE ${_compile_definitions})
 
