@@ -1,10 +1,10 @@
-int dispatch(int) __attribute__((ifunc ("resolve")));
+__attribute__((ifunc ("resolve"))) int dispatch(int);
 
 int dispatch_identity(int x) { return x; }
 
 extern "C"
 {
-	static int (* resolve())(int)
+	int (* resolve())(int)
 	{
 		return dispatch_identity;
 	}

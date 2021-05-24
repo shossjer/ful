@@ -1,6 +1,6 @@
 #if defined(FUL_FPTR)
 
-#include "ful/probe/cpuid.hpp"
+#include "private/cpuid.hpp"
 
 #if defined(_MSC_VER)
 # include <intrin.h>

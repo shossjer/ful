@@ -2,12 +2,13 @@
 
 #if defined(FUL_IFUNC)
 
-# define ful_cpucall(stem, alt, ...) stem##_##alt
+# define ful_cpucall(stem, alt, ...) ful::detail::stem##_##alt
 # define ful_cpuinit() __builtin_cpu_init()
 # define ful_cpucheck(name, value) __builtin_cpu_supports(name)
 # define ful_resolve(stem, ret, ...) \
 namespace ful { namespace detail { __attribute__((ifunc ("resolve_" #stem))) ret stem(__VA_ARGS__); }} \
-extern "C" static ret (* resolve_##stem)(__VA_ARGS__)
+extern "C" { ret (* resolve_##stem())(__VA_ARGS__); } \
+ret (* resolve_##stem())(__VA_ARGS__)
 
 #elif defined(FUL_FPTR)
 
@@ -15,9 +16,9 @@ extern "C" static ret (* resolve_##stem)(__VA_ARGS__)
 # define ful_cpuinit() ful::cpuid_init()
 # define ful_cpucheck(name, value) ful::cpuid_supports(cpuid_feature::value)
 # define ful_resolve(stem, ret, ...) \
-extern "C" static ret resolve_##stem(__VA_ARGS__); \
+static ret resolve_##stem(__VA_ARGS__); \
 namespace ful { namespace detail { ret (* stem)(__VA_ARGS__) = resolve_##stem; }} \
-extern "C" static ret resolve_##stem(__VA_ARGS__)
+static ret resolve_##stem(__VA_ARGS__)
 
 # include "ful/compiler.hpp"
 

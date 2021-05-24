@@ -1,7 +1,8 @@
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 
-#include "ful/probe/cpuid.hpp"
+#include "private/cpuid.hpp"
 
+#include "ful/compiler.hpp"
 #include "ful/stdint.hpp"
 #include "ful/types.hpp"
 
