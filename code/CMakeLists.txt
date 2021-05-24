@@ -82,4 +82,8 @@ if(FUL_BUILD_BENCHMARKS)
 	if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_GREATER 3.7)
 		set_target_properties(fulbnc PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_HOME_DIRECTORY}")
 	endif()
+
+	if(TARGET runfultst)
+		add_dependencies(fulbnc runfultst)
+	endif()
 endif()
