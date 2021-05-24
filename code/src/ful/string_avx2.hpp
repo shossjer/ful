@@ -40,7 +40,7 @@ namespace ful
 		inline __m256i rotate(__m256i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (32 - 1)); }
 
 		ful_target("avx2") inline
-		const unit_utf8 * point_prev_avx2(const unit_utf8 * s, int n)
+		const unit_utf8 * point_prev_avx2(const unit_utf8 * s, ssize n)
 		{
 			ful_expect(0 < n);
 
@@ -71,7 +71,7 @@ namespace ful
 				mask = _mm256_movemask_epi8(cmpi);
 			}
 
-			const unsigned int i = index_set_bit(mask, -n);
+			const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(-n)); // -n < 32
 			return word + i;
 		}
 
@@ -250,7 +250,7 @@ namespace ful
 				if (mask != static_cast<unsigned int>(-1))
 				{
 					const unsigned int i = least_significant_set_bit(~mask);
-					return beg1[i] < beg2[i];
+					return beg1[i] < beg2_word[i];
 				}
 
 				beg1 += 32;
@@ -282,7 +282,7 @@ namespace ful
 				if (mask != static_cast<unsigned int>(-1))
 				{
 					const unsigned int i = least_significant_set_bit(~mask);
-					return beg1[i] < beg2[i];
+					return beg1[i] < beg2_word[i];
 				}
 			}
 
