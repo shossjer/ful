@@ -17,9 +17,13 @@ written to work together with `std::string` (which has enough problems
 as it is already). None of these paths lead to optimal C++.
 
 In order to guarantee some sort of performance improvements, this
-library can run benchmarks against the following libraries (with
-implementations of strings that may or may not contain some support
-for Unicode):
+library can run benchmarks against string/unicode functionality using
+the many alternative libraries listed in the section below.
+
+## Alternatives?
+
+The following list of libraries are summarized here in order to put
+ful into some sort of context. It is ordered alphabetically.
 
 * asmlib - https://www.agner.org/optimize/#asmlib
 
@@ -87,8 +91,8 @@ for Unicode):
   2016.
 
 Is your favorite _Unicode_ library not on the list? Tell me about it!
-Unless it is one of the libraries below. These libraries have come up
-in searches but they cannot be built for various reasons, like at
+Unless it is one of these other libraries that, although they have
+come up in searches, they cannot be built for various reasons, like at
 all. It will take some work to get them working.
 
 * bstrlib - https://github.com/websnarf/bstrlib
@@ -136,6 +140,7 @@ all. It will take some work to get them working.
 
 * Is it okay to cast to simdtypes? https://stackoverflow.com/a/52117639
 * Is it okay to read past end? https://stackoverflow.com/a/37801845
+* Is the standard string a monolith? http://www.gotw.ca/gotw/084.htm
 
 ## Reference
 
@@ -146,17 +151,17 @@ macros in order to determine which instruction sets are available and
 which specialized implementations to use. With runtime probing, these
 macros are ignored.
 
-| feature | gcc/clang    |                                                           msvc x86 |    msvc x64 |
-|:--------|:-------------|-------------------------------------------------------------------:|------------:|
-| sse     | `__SSE__`    | `__SSE__ \|\| __SSE2__ \|\| __AVX__ \|\| __AVX2__ \|\| __AVX512__` |      always |
-| sse2    | `__SSE2__`   |              `__SSE2__ \|\| __AVX__ \|\| __AVX2__ \|\| __AVX512__` |      always |
-| sse4.2  | `__SSE4_2__` |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
-| popcnt  | `__POPCNT__` |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
-| avx     | `__AVX__`    |                            `__AVX__ \|\| __AVX2__ \|\| __AVX512__` | same as x86 |
-| bmi1    | `__BMI__`    |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
-| bmi2    | `__BMI2__`   |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
-| lzcnt   | `__LZCNT__`  |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
-| avx2    | `__AVX2__`   |                                         `__AVX2__ \|\| __AVX512__` | same as x86 |
+| feature | gcc/clang    |                             msvc x86 |    msvc x64 |
+|:--------|:-------------|-------------------------------------:|------------:|
+| sse     | `__SSE__`    | `__SSE__ \|\| __SSE2__ \|\| __AVX__` | always true |
+| sse2    | `__SSE2__`   |              `__SSE2__ \|\| __AVX__` | always true |
+| sse4.2  | `__SSE4_2__` |                            `__AVX__` | same as x86 |
+| popcnt  | `__POPCNT__` |                            `__AVX__` | same as x86 |
+| avx     | `__AVX__`    |                            `__AVX__` | same as x86 |
+| bmi1    | `__BMI__`    |                           `__AVX2__` | same as x86 |
+| bmi2    | `__BMI2__`   |                           `__AVX2__` | same as x86 |
+| lzcnt   | `__LZCNT__`  |                           `__AVX2__` | same as x86 |
+| avx2    | `__AVX2__`   |                           `__AVX2__` | same as x86 |
 
 Consult the documentation for your favorite compiler in order to make
 it define the macros you expect.
