@@ -10,8 +10,6 @@
 
 #include <catch2/catch.hpp>
 
-#include <vector>
-
 #if defined(_MSC_VER)
 # include <Windows.h>
 #endif
@@ -74,7 +72,6 @@
 #endif
 
 using namespace ful;
-using namespace ful::detail;
 
 namespace
 {
@@ -181,13 +178,13 @@ namespace
 
 	unit_utf32le * conv_utf8_to_utf32le_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
-		return convert_8_32le_none(first, last, begin, end);
+		return detail::convert_8_32le_none(first, last, begin, end);
 	}
 
 #if defined(__AVX2__)
 	unit_utf32le * conv_utf8_to_utf32le_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
-		return convert_8_32le_avx2(first, last, begin, end);
+		return detail::convert_8_32le_avx2(first, last, begin, end);
 	}
 #endif
 
@@ -413,13 +410,13 @@ namespace
 
 	unit_utf16le * conv_utf8_to_utf16le_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
-		return convert_8_16le_none(first, last, begin, end);
+		return detail::convert_8_16le_none(first, last, begin, end);
 	}
 
 #if defined(__AVX2__)
 	unit_utf16le * conv_utf8_to_utf16le_alt_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
-		return convert_8_16le_avx2(first, last, begin, end);
+		return detail::convert_8_16le_avx2(first, last, begin, end);
 	}
 #endif
 

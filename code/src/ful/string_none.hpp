@@ -5,12 +5,12 @@ namespace ful
 	namespace detail
 	{
 		ful_generic() inline
-		unit_utf8 * copy_large_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+		char8 * copy_large_none(const char8 * first, const char8 * last, char8 * begin)
 		{
 			if (!ful_expect(16 <= last - first))
 				return begin;
 
-			const unit_utf8 * const last_word = last - 8;
+			const char8 * const last_word = last - 8;
 			while (first <= last_word)
 			{
 				const uint64 word = *reinterpret_cast<const uint64 *>(first);
@@ -31,12 +31,12 @@ namespace ful
 		}
 
 		ful_generic() inline
-		unit_utf8 * rcopy_large_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+		char8 * rcopy_large_none(const char8 * first, const char8 * last, char8 * end)
 		{
 			if (!ful_expect(16 <= last - first))
 				return end;
 
-			const unit_utf8 * const first_word = first + 8;
+			const char8 * const first_word = first + 8;
 			while (first_word <= last)
 			{
 				last -= 8;
@@ -68,7 +68,7 @@ namespace ful
 		}
 
 		ful_generic() inline
-		void fill_large_none(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+		void fill_large_none(char8 * from, char8 * to, char8 u)
 		{
 			if (!ful_expect(16 <= to - from))
 				return;
@@ -76,7 +76,7 @@ namespace ful
 			// todo
 			alignas(8) uint8 bytes[] = {(uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u};
 
-			unit_utf8 * const to_word = to - 8;
+			char8 * const to_word = to - 8;
 			while (from < to_word)
 			{
 				*reinterpret_cast<uint64 *>(from) = *reinterpret_cast<const uint64 *>(bytes);

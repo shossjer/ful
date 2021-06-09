@@ -15,7 +15,7 @@
 
 using namespace ful;
 
-ful_resolve(copy_large, unit_utf8 * , const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+ful_resolve(copy_large, char8 * , const char8 * first, const char8 * last, char8 * begin)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))
@@ -24,7 +24,7 @@ ful_resolve(copy_large, unit_utf8 * , const unit_utf8 * first, const unit_utf8 *
 		return ful_cpucall(copy_large, none, first, last, begin);
 }
 
-ful_resolve(rcopy_large, unit_utf8 *, const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+ful_resolve(rcopy_large, char8 *, const char8 * first, const char8 * last, char8 * end)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))
@@ -42,7 +42,7 @@ ful_resolve(equal_cstr, bool, const unit_utf8 * beg1, const unit_utf8 * end1, co
 		return ful_cpucall(equal_cstr, none, beg1, end1, beg2);
 }
 
-ful_resolve(fill_large, void, unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+ful_resolve(fill_large, void, char8 * from, char8 * to, char8 u)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))

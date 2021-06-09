@@ -46,6 +46,38 @@ namespace ful
 # error Missing implementation!
 #endif
 
+#if defined(__INT64_TYPE__)
+	using sint64 = __INT64_TYPE__;
+#elif defined(_MSC_VER)
+	using sint64 = __int64;
+#else
+# error Missing implementation!
+#endif
+
+#if defined(__INT32_TYPE__)
+	using sint32 = __INT32_TYPE__;
+#elif defined(_MSC_VER)
+	using sint32 = __int32;
+#else
+# error Missing implementation!
+#endif
+
+#if defined(__INT16_TYPE__)
+	using sint16 = __INT16_TYPE__;
+#elif defined(_MSC_VER)
+	using sint16 = __int16;
+#else
+# error Missing implementation!
+#endif
+
+#if defined(__INT8_TYPE__)
+	using sint8 = __INT8_TYPE__;
+#elif defined(_MSC_VER)
+	using sint8 = signed __int8;
+#else
+# error Missing implementation!
+#endif
+
 #if defined(__UINTPTR_TYPE__)
 	using puint = __UINTPTR_TYPE__;
 #elif defined(_MSC_VER)
@@ -77,4 +109,9 @@ namespace ful
 #else
 # error Missing implementation!
 #endif
+
+	using char8 = sint8;
+	using char16 = sint16;
+	using char32 = sint32;
+	using char64 = sint64;
 }
