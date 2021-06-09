@@ -187,9 +187,9 @@ TEST_CASE("copy", "")
 		auto from = tyt.data() + 1;
 		auto to = tyt.end();
 
-		REQUIRE(copy_large_none(first, last, from) == to);
+		REQUIRE(copy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)) == reinterpret_cast<char8 *>(to));
 		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy_large_none(first, last, from); });
+		meter.measure([&](int){ return copy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)); });
 	};
 
 #if defined(__AVX__)
@@ -204,9 +204,9 @@ TEST_CASE("copy", "")
 		auto from = tyt.data() + 1;
 		auto to = tyt.end();
 
-		REQUIRE(copy_large_avx(first, last, from) == to);
+		REQUIRE(copy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)) == reinterpret_cast<char8 *>(to));
 		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy_large_avx(first, last, from); });
+		meter.measure([&](int){ return copy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)); });
 	};
 #endif
 
@@ -318,9 +318,9 @@ TEST_CASE("rcopy", "")
 		auto begin = tyt.data() + after_offset;
 		auto end = tyt.data() + after_offset + txt.size();
 
-		REQUIRE(rcopy_large_none(first, last, end) == begin);
+		REQUIRE(rcopy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)) == reinterpret_cast<char8 *>(begin));
 		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy_large_none(first, last, end); });
+		meter.measure([&](int){ return rcopy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)); });
 	};
 
 #if defined(__AVX__)
@@ -335,9 +335,9 @@ TEST_CASE("rcopy", "")
 		auto begin = tyt.data() + after_offset;
 		auto end = tyt.data() + after_offset + txt.size();
 
-		REQUIRE(rcopy_large_avx(first, last, end) == begin);
+		REQUIRE(rcopy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)) == reinterpret_cast<char8 *>(begin));
 		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy_large_avx(first, last, end); });
+		meter.measure([&](int){ return rcopy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)); });
 	};
 #endif
 
@@ -405,7 +405,7 @@ TEST_CASE("fill", "")
 		buffer_utf8 tyt;
 		tyt.allocate(offset + size);
 
-		meter.measure([&](int n){ return fill_large_none(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); });
+		meter.measure([&](int n){ return fill_large_none(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); });
 	};
 
 #if defined(__AVX__)
@@ -414,7 +414,7 @@ TEST_CASE("fill", "")
 		buffer_utf8 tyt;
 		tyt.allocate(offset + size);
 
-		meter.measure([&](int n){ return fill_large_avx(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); });
+		meter.measure([&](int n){ return fill_large_avx(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); });
 	};
 #endif
 
@@ -916,8 +916,8 @@ TEST_CASE("equal_cstr", "")
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("equal_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
-		meter.measure([&](int){ return equal_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
+		meter.measure([&](int){ return equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
 	};
 #endif
 
@@ -960,16 +960,16 @@ TEST_CASE("find_unit", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_avx2(txt.beg(), txt.end(), txt.cunit()) == txt.beg() + txt.iunit());
-		meter.measure([&](int){ return find_unit_avx2(txt.beg(), txt.end(), txt.cunit()); });
+		REQUIRE(find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
+		meter.measure([&](int){ return find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
 	};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_sse2(txt.beg(), txt.end(), txt.cunit()) == txt.beg() + txt.iunit());
-		meter.measure([&](int){ return find_unit_sse2(txt.beg(), txt.end(), txt.cunit()); });
+		REQUIRE(find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
+		meter.measure([&](int){ return find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())); });
 	};
 #endif
 }
@@ -1014,9 +1014,9 @@ TEST_CASE("less_cstr", "")
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
 	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()));
-		REQUIRE_FALSE(less_cstr_sse2(tyt.beg(), tyt.end(), txt.cstr()));
-		meter.measure([&](int){ return less_cstr_sse2(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
+		REQUIRE_FALSE(less_cstr_sse2(reinterpret_cast<const char8 *>(tyt.beg()), reinterpret_cast<const char8 *>(tyt.end()), reinterpret_cast<const char8 *>(txt.cstr())));
+		meter.measure([&](int){ return less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
 	};
 #endif
 

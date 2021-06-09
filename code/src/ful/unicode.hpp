@@ -4,7 +4,9 @@
 // #include "ful/stdint.hpp"
 // #include "ful/types.hpp"
 
-//#include "ful/point_utils.hpp"
+#include "ful/point_utils.hpp"
+
+#include "ful/string.hpp"
 
 #include "ful/unicode_none.hpp"
 #include "ful/unicode_avx2.hpp"

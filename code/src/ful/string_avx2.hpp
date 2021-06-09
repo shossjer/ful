@@ -162,42 +162,6 @@ namespace ful
 		}
 
 		ful_target("avx2") inline
-		const unit_utf8 * find_unit_avx2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
-		{
-			ful_expect(beg != end);
-
-			const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg) & -32);
-			const unit_utf8 * const end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end - 1) & -32);
-
-			const unsigned int beg_offset = reinterpret_cast<puint>(beg) & (32 - 1);
-
-			const __m256i cveci = _mm256_set1_epi8(c);
-
-			__m256i cmpi = _mm256_cmpeq_epi8(cveci, *reinterpret_cast<const __m256i *>(beg_word));
-			unsigned int mask = zero_low_bits(_mm256_movemask_epi8(cmpi), beg_offset);
-
-			while (beg_word != end_word)
-			{
-				if (mask != 0)
-					goto found;
-
-				beg_word += 32;
-
-				cmpi = _mm256_cmpeq_epi8(cveci, *reinterpret_cast<const __m256i *>(beg_word));
-				mask = _mm256_movemask_epi8(cmpi);
-			}
-
-			{
-				const unsigned int end_offset = reinterpret_cast<puint>(end - 1) & (32 - 1);
-				mask = set_higher_bits(mask, end_offset);
-			}
-
-		found:
-			const unsigned int i = count_trailing_zeros(mask);
-			return beg_word + i;
-		}
-
-		ful_target("avx2") inline
 		bool less_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
 			ful_expect(beg1 != end1);
@@ -287,6 +251,42 @@ namespace ful
 			}
 
 			return beg2_word[end1 - beg1] != '\0';
+		}
+
+		ful_target("avx2") inline
+		const char8 * find_unit_8_avx2(const char8 * beg, const char8 * end, char8 c)
+		{
+			ful_expect(beg != end);
+
+			const char8 * beg_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(beg) & -32);
+			const char8 * const end_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+
+			const unsigned int beg_offset = reinterpret_cast<puint>(beg) & (32 - 1);
+
+			const __m256i cveci = _mm256_set1_epi8(c);
+
+			__m256i cmpi = _mm256_cmpeq_epi8(cveci, *reinterpret_cast<const __m256i *>(beg_word));
+			unsigned int mask = zero_low_bits(_mm256_movemask_epi8(cmpi), beg_offset);
+
+			while (beg_word != end_word)
+			{
+				if (mask != 0)
+					goto found;
+
+				beg_word += 32;
+
+				cmpi = _mm256_cmpeq_epi8(cveci, *reinterpret_cast<const __m256i *>(beg_word));
+				mask = _mm256_movemask_epi8(cmpi);
+			}
+
+			{
+				const unsigned int end_offset = reinterpret_cast<puint>(end - 1) & (32 - 1);
+				mask = set_higher_bits(mask, end_offset);
+			}
+
+		found:
+			const unsigned int i = count_trailing_zeros(mask);
+			return beg_word + i;
 		}
 	}
 }

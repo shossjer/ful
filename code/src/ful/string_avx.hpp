@@ -1,17 +1,11 @@
 #pragma once
 
-// #include "ful/intrinsics.hpp"
-// #include "ful/stdint.hpp"
-// #include "ful/unicode.hpp"
-
-// #include <immintrin.h>
-
 namespace ful
 {
 	namespace detail
 	{
 		ful_target("avx") inline
-		unit_utf8 * copy_large_avx(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+		char8 * copy_large_avx(const char8 * first, const char8 * last, char8 * begin)
 		{
 			if (!ful_expect(16 <= last - first))
 				return begin;
@@ -50,8 +44,8 @@ namespace ful
 			}
 			else
 			{
-				unit_utf8 * begin_aligned = reinterpret_cast<unit_utf8 *>(reinterpret_cast<puint>(begin + 32) & -32);
-				const unit_utf8 * first_aligned = first + (begin_aligned - begin); // although it is not aligned
+				char8 * begin_aligned = reinterpret_cast<char8 *>(reinterpret_cast<puint>(begin + 32) & -32);
+				const char8 * first_aligned = first + (begin_aligned - begin); // although it is not aligned
 
 				const __m256i head = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 				const __m256i head_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first_aligned));
@@ -61,7 +55,7 @@ namespace ful
 				first_aligned += 32;
 				begin_aligned += 32;
 
-				const unit_utf8 * const last_aligned = last - 64;
+				const char8 * const last_aligned = last - 64;
 				while (first_aligned < last_aligned)
 				{
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first_aligned));
@@ -81,7 +75,7 @@ namespace ful
 		}
 
 		ful_target("avx") inline
-		unit_utf8 * rcopy_large_avx(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+		char8 * rcopy_large_avx(const char8 * first, const char8 * last, char8 * end)
 		{
 			if (!ful_expect(16 <= last - first))
 				return end;
@@ -120,8 +114,8 @@ namespace ful
 			}
 			else
 			{
-				unit_utf8 * end_aligned = reinterpret_cast<unit_utf8 *>(reinterpret_cast<puint>(end - 1) & -32);
-				const unit_utf8 * last_aligned = last - (end - end_aligned); // although it is not aligned
+				char8 * end_aligned = reinterpret_cast<char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+				const char8 * last_aligned = last - (end - end_aligned); // although it is not aligned
 
 				const __m256i tail = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
 				const __m256i tail_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last_aligned - 32));
@@ -131,7 +125,7 @@ namespace ful
 				last_aligned -= 32;
 				end_aligned -= 32;
 
-				const unit_utf8 * const first_aligned = first + 64;
+				const char8 * const first_aligned = first + 64;
 				while (first_aligned < last_aligned)
 				{
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last_aligned - 32));
@@ -151,7 +145,7 @@ namespace ful
 		}
 
 		ful_target("avx") inline
-		void fill_large_avx(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+		void fill_large_avx(char8 * from, char8 * to, char8 u)
 		{
 			if (!ful_expect(16 <= to - from))
 				return;
@@ -178,12 +172,12 @@ namespace ful
 				_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), u256);
 				_mm256_storeu_si256(reinterpret_cast<__m256i *>(from + 32), u256);
 
-				from = unsafe_cast<unit_utf8 *>((unsafe_ptr<1>(from) + 64) & -64);
+				from = unsafe_cast<char8 *>((unsafe_ptr<1>(from) + 64) & -64);
 
-				unit_utf8 * const to_word = to - 64;
+				char8 * const to_word = to - 64;
 				while (from < to_word)
 				{
-					_mm_prefetch(from + 64, _MM_HINT_T0);
+					_mm_prefetch(reinterpret_cast<const char *>(from + 64), _MM_HINT_T0);
 
 					_mm256_store_si256(reinterpret_cast<__m256i *>(from), u256);
 					_mm256_store_si256(reinterpret_cast<__m256i *>(from + 32), u256);

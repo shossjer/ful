@@ -6,7 +6,6 @@
 #include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-//#include "ful/unicode.hpp"
 #include "ful/unsafe_ptr.hpp"
 
 #include "string_none.hpp"
@@ -22,15 +21,15 @@ namespace ful
 	namespace detail
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		extern unit_utf8 * ful_dispatch(copy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin);
-		extern unit_utf8 * ful_dispatch(rcopy_large)(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end);
+		extern char8 * ful_dispatch(copy_large)(const char8 * first, const char8 * last, char8 * begin);
+		extern char8 * ful_dispatch(rcopy_large)(const char8 * first, const char8 * last, char8 * end);
 		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-		extern void ful_dispatch(fill_large)(unit_utf8 * from, unit_utf8 * to, unit_utf8 u);
+		extern void ful_dispatch(fill_large)(char8 * from, char8 * to, char8 u);
 		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 #endif
 	}
 
-	inline unit_utf8 * copy(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+	inline char8 * copy(const char8 * first, const char8 * last, char8 * begin)
 	{
 		if (!ful_expect(begin <= first || last <= begin))
 			return begin;
@@ -91,7 +90,7 @@ namespace ful
 		}
 	}
 
-	inline unit_utf8 * rcopy(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+	inline char8 * rcopy(const char8 * first, const char8 * last, char8 * end)
 	{
 		if (!ful_expect(end <= first || last <= end))
 			return end;
@@ -178,7 +177,7 @@ namespace ful
 #endif
 	}
 
-	inline void fill(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+	inline void fill(char8 * from, char8 * to, char8 u)
 	{
 		const usize size = to - from;
 		switch (size)

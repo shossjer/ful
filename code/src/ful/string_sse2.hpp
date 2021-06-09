@@ -47,6 +47,28 @@ namespace ful
 		inline __m128i rotate(__m128i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (16 - 1)); }
 
 		ful_target("sse2") inline
+		__m128i loadu_first_sse2(const char8 * begin, const char8 * end)
+		{
+			if (!ful_expect(begin != end))
+				return _mm_setzero_si128();
+
+			const __m128i * const begin_word = reinterpret_cast<const __m128i *>(reinterpret_cast<puint>(begin) & -16);
+			const __m128i * const end_word = reinterpret_cast<const __m128i *>(reinterpret_cast<puint>(end - 1) & -16);
+
+			__m128i word;
+			if (begin_word != end_word)
+			{
+				word = _mm_loadu_si128(reinterpret_cast<const __m128i *>(begin));
+			}
+			else
+			{
+				const unsigned int first_offset = reinterpret_cast<puint>(begin) & (16 - 1);
+				word = rotate(*begin_word, first_offset);
+			}
+			return word;
+		}
+
+		ful_target("sse2") inline
 		const unit_utf8 * point_prev_sse2(const unit_utf8 * s, ssize n)
 		{
 			ful_expect(0 < n);
@@ -81,29 +103,17 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		bool equal_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		bool equal_cstr_sse2(const char8 * beg1, const char8 * end1, const char8 * beg2)
 		{
 			ful_expect(beg1 != end1);
 
-			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -16);
+			const char8 * beg2_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(beg2) & -16);
 
 			const unsigned int beg2_offset = reinterpret_cast<puint>(beg2) & (16 - 1);
 
 			if (beg2_offset != 0) // unaligned
 			{
-				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg1) & -16);
-				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end1 - 1) & -16);
-
-				__m128i word1;
-				if (beg1_word != end1_word)
-				{
-					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
-				}
-				else
-				{
-					const unsigned int beg1_offset = reinterpret_cast<puint>(beg1) & (16 - 1);
-					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
-				}
+				const __m128i word1 = loadu_first_sse2(beg1, end1);
 				const __m128i word2 = rotate(*reinterpret_cast<const __m128i *>(beg2_word), beg2_offset);
 
 				const auto remaining = end1 - beg1;
@@ -123,7 +133,7 @@ namespace ful
 				beg2_word += 16;
 			}
 
-			const unit_utf8 * const end1_full_word = end1 - 16;
+			const char8 * const end1_full_word = end1 - 16;
 			while (beg1 <= end1_full_word)
 			{
 				const __m128i word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
@@ -140,19 +150,7 @@ namespace ful
 
 			if (end1 - beg1 != 0)
 			{
-				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg1) & -16);
-				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end1 - 1) & -16);
-
-				__m128i word1;
-				if (beg1_word != end1_word)
-				{
-					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
-				}
-				else
-				{
-					const unsigned int beg1_offset = reinterpret_cast<puint>(beg1) & (16 - 1);
-					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
-				}
+				const __m128i word1 = loadu_first_sse2(beg1, end1);
 				const __m128i word2 = *reinterpret_cast<const __m128i *>(beg2_word);
 
 				const unsigned int align_end = static_cast<int>(end1 - beg1); // guaranteed to be < 16
@@ -168,12 +166,12 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		const unit_utf8 * find_unit_sse2(const unit_utf8 * beg, const unit_utf8 * end, unit_utf8 c)
+		const char8 * find_unit_sse2(const char8 * beg, const char8 * end, char8 c)
 		{
 			ful_expect(beg != end);
 
-			const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg) & -16);
-			const unit_utf8 * const end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end - 1) & -16);
+			const char8 * beg_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(beg) & -16);
+			const char8 * const end_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
 
 			const unsigned int beg_offset = reinterpret_cast<puint>(beg) & (16 - 1);
 			const unsigned int beg_mask = static_cast<unsigned int>(-1) << beg_offset;
@@ -205,29 +203,17 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		bool less_cstr_sse2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		bool less_cstr_sse2(const char8 * beg1, const char8 * end1, const char8 * beg2)
 		{
 			ful_expect(beg1 != end1);
 
-			const unit_utf8 * beg2_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg2) & -16);
+			const char8 * beg2_word = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(beg2) & -16);
 
 			const unsigned int beg2_offset = reinterpret_cast<puint>(beg2) & (16 - 1);
 
 			if (beg2_offset != 0) // unaligned
 			{
-				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg1) & -16);
-				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end1 - 1) & -16);
-
-				__m128i word1;
-				if (beg1_word != end1_word)
-				{
-					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
-				}
-				else
-				{
-					const unsigned int beg1_offset = reinterpret_cast<puint>(beg1) & (16 - 1);
-					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
-				}
+				const __m128i word1 = loadu_first_sse2(beg1, end1);
 				const __m128i word2 = rotate(*reinterpret_cast<const __m128i *>(beg2_word), beg2_offset);
 
 				const auto remaining = end1 - beg1;
@@ -247,7 +233,7 @@ namespace ful
 				beg2_word += 16;
 			}
 
-			const unit_utf8 * const end1_full_word = end1 - 16;
+			const char8 * const end1_full_word = end1 - 16;
 			while (beg1 <= end1_full_word)
 			{
 				const __m128i word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
@@ -267,19 +253,7 @@ namespace ful
 
 			if (end1 - beg1 != 0)
 			{
-				const unit_utf8 * const beg1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(beg1) & -16);
-				const unit_utf8 * const end1_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(end1 - 1) & -16);
-
-				__m128i word1;
-				if (beg1_word != end1_word)
-				{
-					word1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
-				}
-				else
-				{
-					const unsigned int beg1_offset = reinterpret_cast<puint>(beg1) & (16 - 1);
-					word1 = rotate(*reinterpret_cast<const __m128i *>(beg1_word), beg1_offset);
-				}
+				const __m128i word1 = loadu_first_sse2(beg1, end1);
 				const __m128i word2 = *reinterpret_cast<const __m128i *>(beg2_word);
 
 				const unsigned int align_end = static_cast<int>(end1 - beg1); // guaranteed to be < 16
