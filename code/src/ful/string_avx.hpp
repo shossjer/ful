@@ -147,11 +147,11 @@ namespace ful
 		ful_target("avx") inline
 		void fill_large_avx(char8 * from, char8 * to, char8 u)
 		{
-			if (!ful_expect(16 <= to - from))
+			const usize size = to - from;
+			if (!ful_expect(16 <= size))
 				return;
 
-			const usize size = to - from;
-			if (size < 32)
+			if (size <= 32)
 			{
 				const __m128i u128 = _mm_set1_epi8(u);
 
@@ -174,20 +174,24 @@ namespace ful
 				from = ful_align_next_32(from);
 
 				char8 * const to_word = to - 64;
-				while (from < to_word)
+				if (from < to_word)
 				{
-					_mm_prefetch(reinterpret_cast<const char *>(from + 64), _MM_HINT_T0);
+					do
+					{
+						_mm256_stream_si256(reinterpret_cast<__m256i *>(from), u256);
+						_mm256_stream_si256(reinterpret_cast<__m256i *>(from + 32), u256);
 
-					_mm256_store_si256(reinterpret_cast<__m256i *>(from), u256);
-					_mm256_store_si256(reinterpret_cast<__m256i *>(from + 32), u256);
+						from += 64;
+					}
+					while (from < to_word);
 
-					from += 64;
+					from = ful_align_next_32(to_word);
 				}
 
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(to_word), u256);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(to_word + 32), u256);
+				_mm256_stream_si256(reinterpret_cast<__m256i *>(from), u256);
+				_mm_sfence();
 
-				return;
+				_mm256_storeu_si256(reinterpret_cast<__m256i *>(to_word + 32), u256);
 			}
 		}
 	}
