@@ -514,43 +514,120 @@ TEST_CASE("code_point", "")
 
 namespace
 {
-	const unit_utf8 * point_next_alt_naive(const unit_utf8 * s)
+	const unit_utf8 * point_next_alt_ahead(const unit_utf8 * s)
 	{
 		++s;
-		if (static_cast<signed char>(*s) > -65)
+		if (static_cast<sint8>(*s) > -65)
 			return s;
 
 		++s;
-		if (static_cast<signed char>(*s) > -65)
+		if (static_cast<sint8>(*s) > -65)
 			return s;
 
 		++s;
-		if (static_cast<signed char>(*s) > -65)
+		if (static_cast<sint8>(*s) > -65)
 			return s;
 
 		++s;
 		return s;
 	}
 
-	const unit_utf8 * point_next_alt_naive(const unit_utf8 * s, usize n)
+	const unit_utf8 * point_next_alt_ahead(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
-			s = point_next_alt_naive(s);
+			s = point_next_alt_ahead(s);
 		}
 		return s;
 	}
 
-	const unit_utf8 * point_next_alt_size(const unit_utf8 * s)
+	const unit_utf8 * point_next_alt_if_and(const unit_utf8 * s)
 	{
-		return s + point_size(s);
+		if (static_cast<sint8>(*s) >= 0)
+		{
+			return s + 1;
+		}
+		else if ((static_cast<sint8>(*s) & 0x20) == 0)
+		{
+			return s + 2;
+		}
+		else if ((static_cast<sint8>(*s) & 0x10) == 0)
+		{
+			return s + 3;
+		}
+		else
+		{
+			return s + 4;
+		}
 	}
 
-	const unit_utf8 * point_next_alt_size(const unit_utf8 * s, usize n)
+	const unit_utf8 * point_next_alt_if_and(const unit_utf8 * s, usize n)
 	{
 		for (; 0 < n; --n)
 		{
-			s = point_next_alt_size(s);
+			s = point_next_alt_if_and(s);
+		}
+		return s;
+	}
+
+	const unit_utf8 * point_next_alt_if_less(const unit_utf8 * s)
+	{
+		const sint8 v = static_cast<sint8>(*s);
+
+		++s;
+		if (v >= 0)
+			return s;
+
+		++s;
+		if ((v & 0x20) == 0)
+			return s;
+
+		++s;
+		if ((v & 0x10) == 0)
+			return s;
+
+		++s;
+		return s;
+	}
+
+	const unit_utf8 * point_next_alt_if_less(const unit_utf8 * s, usize n)
+	{
+		for (; 0 < n; --n)
+		{
+			s = point_next_alt_if_less(s);
+		}
+		return s;
+	}
+
+	const unit_utf8 * point_next_alt_switch(const unit_utf8 * s)
+	{
+		switch (static_cast<uint8>(*s) >> 4)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+			return s + 1;
+		case 12:
+		case 13:
+			return s + 2;
+		case 14:
+			return s + 3;
+		case 15:
+			return s + 4;
+		default: ful_unreachable();
+		}
+	}
+
+	const unit_utf8 * point_next_alt_switch(const unit_utf8 * s, usize n)
+	{
+		for (; 0 < n; --n)
+		{
+			s = point_next_alt_switch(s);
 		}
 		return s;
 	}
@@ -633,16 +710,28 @@ TEST_CASE("point_next", "")
 	data_any_utf8 txt;
 	REQUIRE(txt.init());
 
-	BENCHMARK_ADVANCED("point_next (naive)")(Catch::Benchmark::Chronometer meter)
+	BENCHMARK_ADVANCED("point_next (ahead)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_alt_naive(txt.beg(), txt.npoints()) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_alt_naive(txt.beg(), txt.npoints()); });
+		REQUIRE(point_next_alt_ahead(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_ahead(txt.beg(), txt.npoints()); });
 	};
 
-	BENCHMARK_ADVANCED("point_next (size)")(Catch::Benchmark::Chronometer meter)
+	BENCHMARK_ADVANCED("point_next (if and)")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_next_alt_size(txt.beg(), txt.npoints()) - txt.end() == 0);
-		meter.measure([&](int){ return point_next_alt_size(txt.beg(), txt.npoints()); });
+		REQUIRE(point_next_alt_if_and(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_if_and(txt.beg(), txt.npoints()); });
+	};
+
+	BENCHMARK_ADVANCED("point_next (if less)")(Catch::Benchmark::Chronometer meter)
+	{
+		REQUIRE(point_next_alt_if_less(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_if_less(txt.beg(), txt.npoints()); });
+	};
+
+	BENCHMARK_ADVANCED("point_next (switch)")(Catch::Benchmark::Chronometer meter)
+	{
+		REQUIRE(point_next_alt_switch(txt.beg(), txt.npoints()) - txt.end() == 0);
+		meter.measure([&](int){ return point_next_alt_switch(txt.beg(), txt.npoints()); });
 	};
 
 #if defined(__AVX2__)
