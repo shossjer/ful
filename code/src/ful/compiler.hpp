@@ -38,12 +38,36 @@
 # define ful_check(x) !!(x)
 #endif
 
+#if defined(__GNUC__)
+// silence warning about side effects
+# define ful_const const __attribute__((const))
+#else
+// silence warning about side effects
+# define ful_const const
+#endif
+
 #if defined(_DEBUG) || !defined(NDEBUG)
 // breaks into the debugger if false (in debug builds), optimize knowing that the expression is true (in nondebug builds)
 # define ful_expect(x) ((x) ? true : (ful_break(), false))
 #else
 // breaks into the debugger if false (in debug builds), optimize knowing that the expression is true (in nondebug builds)
 # define ful_expect(x) (ful_assume(x), true)
+#endif
+
+#if defined(__GNUC__)
+// silence warning about fall through in switches
+# define ful_fallthrough __attribute__((fallthrough))
+#else
+// silence warning about fall through in switches
+# define ful_fallthrough do {} while(0)
+#endif
+
+#if defined(_MSC_VER)
+// optimize this call away
+# define ful_inline __forceinline
+#else
+// optimize this call away
+# define ful_inline inline __attribute__((always_inline))
 #endif
 
 #if defined(__GNUC__)
@@ -79,4 +103,5 @@
 # error Missing implementation!
 #endif
 
+// silence warning about unused variable
 # define ful_unused(x) static_cast<void>(x)
