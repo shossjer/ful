@@ -156,7 +156,7 @@ namespace ful
 		return detail::equal_cstr(beg1, end1, beg2);
 #elif defined(__AVX2__)
 		return detail::equal_cstr_avx2(beg1, end1, beg2);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 		return detail::equal_cstr_sse2(beg1, end1, beg2);
 #else
 		return detail::equal_cstr_none(beg1, end1, beg2);
@@ -169,7 +169,7 @@ namespace ful
 		return detail::less_cstr(beg1, end1, beg2);
 #elif defined(__AVX2__)
 		return detail::less_cstr_avx2(beg1, end1, beg2);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 		return detail::less_cstr_sse2(beg1, end1, beg2);
 #else
 		return detail::less_cstr_none(beg1, end1, beg2);

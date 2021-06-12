@@ -19,7 +19,7 @@ using namespace ful::detail;
 
 namespace
 {
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	inline __m128i rotate_alt_wr(__m128i ab, unsigned int n)
 	{
 		ful_assume(n < 16);
@@ -60,7 +60,7 @@ TEST_CASE("rotate", "")
 	}
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	{
 		const __m128i x = _mm_set_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 		const __m128i y1 = _mm_set_epi8(1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2);
@@ -592,7 +592,7 @@ namespace
 	}
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	const unit_utf8 * point_next_sse2(const unit_utf8 * s, usize n)
 	{
 		ful_assume(0 < n);
@@ -653,7 +653,7 @@ TEST_CASE("point_next", "")
 	};
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("point_next sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(point_next_sse2(txt.beg(), txt.npoints()) - txt.end() == 0);
@@ -728,7 +728,7 @@ namespace
 	}
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	const unit_utf8 * point_prev_sse2_alt_naive(const unit_utf8 * s)
 	{
 		alignas(16) static const signed char m65[] = {
@@ -789,7 +789,7 @@ TEST_CASE("point_prev", "")
 	};
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("point_prev sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(point_prev_sse2(txt.end(), txt.npoints()) - txt.beg() == 0);
@@ -911,7 +911,7 @@ TEST_CASE("equal_cstr", "")
 	};
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("equal_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
@@ -963,7 +963,7 @@ TEST_CASE("find_unit", "")
 	};
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
@@ -1009,7 +1009,7 @@ TEST_CASE("less_cstr", "")
 	};
 #endif
 
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(__AVX__) || defined(_M_X64) || defined(_M_AMD64)))
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
 		REQUIRE(less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
