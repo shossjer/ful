@@ -8,10 +8,10 @@
 #include "ful/intrinsics.hpp"
 
 #include "string_none.hpp"
-#include "string_avx.hpp"
-#include "string_avx2.hpp"
 #include "string_sse2.hpp"
 #include "string_sse4_2.hpp"
+#include "string_avx.hpp"
+#include "string_avx2.hpp"
 
 namespace ful
 {
