@@ -34,6 +34,7 @@ namespace ful
 		const usize size = last - first;
 		switch (size)
 		{
+		case 16:
 		case 15:
 		case 14:
 		case 13:
@@ -41,7 +42,6 @@ namespace ful
 		case 11:
 		case 10:
 		case 9:
-		case 8:
 		{
 			const uint64 first_dword = *reinterpret_cast<const uint64 *>(first);
 			const uint64 last_dword = *reinterpret_cast<const uint64 *>(last - 8);
@@ -50,10 +50,10 @@ namespace ful
 
 			return begin + size;
 		}
+		case 8:
 		case 7:
 		case 6:
 		case 5:
-		case 4:
 		{
 			const uint32 first_dword = *reinterpret_cast<const uint32 *>(first);
 			const uint32 last_dword = *reinterpret_cast<const uint32 *>(last - 4);
@@ -62,8 +62,8 @@ namespace ful
 
 			return begin + size;
 		}
+		case 4:
 		case 3:
-		case 2:
 		{
 			const uint16 first_dword = *reinterpret_cast<const uint16 *>(first);
 			const uint16 last_dword = *reinterpret_cast<const uint16 *>(last - 2);
@@ -72,10 +72,15 @@ namespace ful
 
 			return begin + size;
 		}
+		case 2:
+		{
+			*reinterpret_cast<uint16 *>(begin) = *reinterpret_cast<const uint16 *>(first);
+
+			return begin + size;
+		}
 		case 1: begin[0] = first[0]; return begin + size;
 		case 0: return begin + size;
 		default:
-		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 			return detail::copy_large(first, last, begin);
 #elif defined(__AVX__)
@@ -83,7 +88,6 @@ namespace ful
 #else
 			return detail::copy_large_none(first, last, begin);
 #endif
-		}
 		}
 	}
 
@@ -95,6 +99,7 @@ namespace ful
 		const usize size = last - first;
 		switch (size)
 		{
+		case 16:
 		case 15:
 		case 14:
 		case 13:
@@ -102,7 +107,6 @@ namespace ful
 		case 11:
 		case 10:
 		case 9:
-		case 8:
 		{
 			const uint64 first_dword = *reinterpret_cast<const uint64 *>(first);
 			const uint64 last_dword = *reinterpret_cast<const uint64 *>(last - 8);
@@ -111,10 +115,10 @@ namespace ful
 
 			return end - size;
 		}
+		case 8:
 		case 7:
 		case 6:
 		case 5:
-		case 4:
 		{
 			const uint32 first_dword = *reinterpret_cast<const uint32 *>(first);
 			const uint32 last_dword = *reinterpret_cast<const uint32 *>(last - 4);
@@ -123,8 +127,8 @@ namespace ful
 
 			return end - size;
 		}
+		case 4:
 		case 3:
-		case 2:
 		{
 			const uint16 first_dword = *reinterpret_cast<const uint16 *>(first);
 			const uint16 last_dword = *reinterpret_cast<const uint16 *>(last - 2);
@@ -133,10 +137,15 @@ namespace ful
 
 			return end - size;
 		}
-		case 1: end[-1] = first[0]; return end - size;
+		case 2:
+		{
+			*reinterpret_cast<uint16 *>(end - 2) = *reinterpret_cast<const uint16 *>(first);
+
+			return end - size;
+		}
+		case 1: end[-1] = first[0]; ful_fallthrough;
 		case 0: return end - size;
 		default:
-		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 			return detail::rcopy_large(first, last, end);
 #elif defined(__AVX__)
@@ -144,7 +153,6 @@ namespace ful
 #else
 			return detail::rcopy_large_none(first, last, end);
 #endif
-		}
 		}
 	}
 
@@ -179,6 +187,7 @@ namespace ful
 		const usize size = to - from;
 		switch (size)
 		{
+		case 16:
 		case 15:
 		case 14:
 		case 13:
@@ -186,44 +195,40 @@ namespace ful
 		case 11:
 		case 10:
 		case 9:
-		case 8:
 		{
-			// todo
-			alignas(8) uint8 bytes[] = {(uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u};
+			const uint64 bytes = 0x0101010101010101u * (uint8)u;
 
-			*reinterpret_cast<uint64 *>(from) = *reinterpret_cast<const uint64 *>(bytes);
-			*reinterpret_cast<uint64 *>(from + size - 8) = *reinterpret_cast<const uint64 *>(bytes);
+			*reinterpret_cast<uint64 *>(from) = bytes;
+			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 
 			return;
 		}
+		case 8:
 		case 7:
 		case 6:
 		case 5:
-		case 4:
 		{
-			// todo
-			alignas(4) uint8 bytes[] = {(uint8)u, (uint8)u, (uint8)u, (uint8)u};
+			const uint32 bytes = 0x01010101u * (uint8)u;
 
-			*reinterpret_cast<uint32 *>(from) = *reinterpret_cast<const uint32 *>(bytes);
-			*reinterpret_cast<uint32 *>(from + size - 4) = *reinterpret_cast<const uint32 *>(bytes);
+			*reinterpret_cast<uint32 *>(from) = bytes;
+			*reinterpret_cast<uint32 *>(to - 4) = bytes;
 
 			return;
 		}
+		case 4:
 		case 3:
-		case 2:
 		{
-			// todo
-			alignas(2) uint8 bytes[] = {(uint8)u, (uint8)u};
+			alignas(2) uint8 bytes[2] = {(uint8)u, (uint8)u};
 
 			*reinterpret_cast<uint16 *>(from) = *reinterpret_cast<const uint16 *>(bytes);
-			*reinterpret_cast<uint16 *>(from + size - 2) = *reinterpret_cast<const uint16 *>(bytes);
+			*reinterpret_cast<uint16 *>(to - 2) = *reinterpret_cast<const uint16 *>(bytes);
 
 			return;
 		}
-		case 1: from[0] = u; return;
+		case 2: from[1] = u; ful_fallthrough;
+		case 1: from[0] = u; ful_fallthrough;
 		case 0: return;
 		default:
-		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 			return detail::fill_large(from, to, u);
 #elif defined(__AVX__)

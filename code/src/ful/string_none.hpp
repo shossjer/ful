@@ -64,27 +64,74 @@ namespace ful
 				if (*beg1 != *beg2)
 					return false;
 			}
-			return *beg2 == '\0';
+			return *beg2 == unit_utf8{};
 		}
 
 		ful_generic() inline
 		void fill_large_none(char8 * from, char8 * to, char8 u)
 		{
-			if (!ful_expect(16 <= to - from))
+			const usize size = to - from;
+			if (!ful_expect(16 <= size))
 				return;
 
-			// todo
-			alignas(8) uint8 bytes[] = {(uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u, (uint8)u};
+#if defined(_MSC_VER)
+			// todo benchmark this more
+			//
+			// https://stackoverflow.com/a/33485055
+			// https://agner.org/optimize/optimizing_assembly.pdf 16.9 String instructions (all processors)
+			const uint64 bytes = 0x0101010101010101u * (uint8)u;
 
-			char8 * const to_word = to - 8;
-			while (from < to_word)
+			*reinterpret_cast<uint64 *>(from) = bytes;
+
+			from = ful_align_next_8(from);
+
+			__stosq(reinterpret_cast<unsigned long long *>(from), bytes, (to - from) / 8);
+
+			*reinterpret_cast<uint64 *>(to - 8) = bytes;
+#else
+			// todo gcc does not support stosq?
+			//
+			// https://stackoverflow.com/q/10761950
+			if (size <= 32)
 			{
-				*reinterpret_cast<uint64 *>(from) = *reinterpret_cast<const uint64 *>(bytes);
+				const uint64 bytes = 0x0101010101010101u * (uint8)u;
 
-				from += 8;
+				*reinterpret_cast<uint64 *>(from) = bytes;
+				*reinterpret_cast<uint64 *>(from + 8) = bytes;
+				*reinterpret_cast<uint64 *>(to - 16) = bytes;
+				*reinterpret_cast<uint64 *>(to - 8) = bytes;
 			}
+			else
+			{
+				const uint64 bytes = 0x0101010101010101u * (uint8)u;
 
-			*reinterpret_cast<uint64 *>(to_word) = *reinterpret_cast<const uint64 *>(bytes);
+				*reinterpret_cast<uint64 *>(from) = bytes;
+
+				from = ful_align_next_8(from);
+
+				char8 * const to_word = to - 32;
+				if (from < to_word)
+				{
+					do
+					{
+						*reinterpret_cast<uint64 *>(from) = bytes;
+						*reinterpret_cast<uint64 *>(from + 8) = bytes;
+						*reinterpret_cast<uint64 *>(from + 16) = bytes;
+						*reinterpret_cast<uint64 *>(from + 24) = bytes;
+
+						from += 32;
+					}
+					while (from < to_word);
+
+					from = ful_align_next_8(to_word);
+				}
+
+				*reinterpret_cast<uint64 *>(from) = bytes;
+				*reinterpret_cast<uint64 *>(from + 8) = bytes;
+				*reinterpret_cast<uint64 *>(from + 16) = bytes;
+				*reinterpret_cast<uint64 *>(to_word + 24) = bytes;
+			}
+#endif
 		}
 
 		ful_generic() inline
@@ -95,7 +142,7 @@ namespace ful
 				if (*beg1 != *beg2)
 					return *beg1 < *beg2;
 			}
-			return *beg2 != '\0';
+			return *beg2 != unit_utf8{};
 		}
 	}
 }
