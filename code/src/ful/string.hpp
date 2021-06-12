@@ -6,15 +6,12 @@
 #include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-#include "ful/unsafe_ptr.hpp"
 
 #include "string_none.hpp"
 #include "string_avx.hpp"
 #include "string_avx2.hpp"
 #include "string_sse2.hpp"
 #include "string_sse4_2.hpp"
-
-#include <memory>
 
 namespace ful
 {

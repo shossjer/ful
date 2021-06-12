@@ -21,6 +21,5 @@ set(FULLIB_HEADERS
 	src/ful/unicode.hpp
 	src/ful/unicode_avx2.hpp
 	src/ful/unicode_none.hpp
-	src/ful/unsafe_ptr.hpp
 	src/private/cpuid.hpp
 	)
