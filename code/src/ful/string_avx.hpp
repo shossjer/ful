@@ -170,9 +170,8 @@ namespace ful
 				const __m256i u256 = _mm256_set1_epi8(u);
 
 				_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), u256);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(from + 32), u256);
 
-				from = unsafe_cast<char8 *>((unsafe_ptr<1>(from) + 64) & -64);
+				from = ful_align_next_32(from);
 
 				char8 * const to_word = to - 64;
 				while (from < to_word)

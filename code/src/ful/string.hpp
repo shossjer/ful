@@ -6,7 +6,6 @@
 #include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-#include "ful/unsafe_ptr.hpp"
 
 #include "string_none.hpp"
 #include "string_avx.hpp"

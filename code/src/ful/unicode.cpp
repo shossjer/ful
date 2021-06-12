@@ -8,7 +8,6 @@
 
 #include "ful/intrinsics.hpp"
 #include "ful/point_utils.hpp"
-#include "ful/unsafe_ptr.hpp"
 
 #include "ful/unicode_none.hpp"
 #include "ful/unicode_avx2.hpp"
