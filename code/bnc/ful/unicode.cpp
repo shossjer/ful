@@ -1,3 +1,4 @@
+#include "ful/compiler.hpp"
 #include "ful/types.hpp"
 
 #include "ful/point_utils.hpp"
