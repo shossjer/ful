@@ -1,15 +1,107 @@
 #pragma once
 
-// #include "ful/intrinsics.hpp"
-// #include "ful/stdint.hpp"
-// #include "ful/unicode.hpp"
-
-// #include <immintrin.h>
-
 namespace ful
 {
 	namespace detail
 	{
+		ful_target("sse2") ful_inline
+		char8 * copy_8_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		{
+			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), a);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 16), b);
+
+			return end;
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * copy_8_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		{
+			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 16));
+			const __m128i c = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 32));
+			const __m128i d = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), a);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 16), b);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 32), c);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 16), d);
+
+			return end;
+		}
+
+		ful_inline
+		char8 * copy_8_sse2(const char8 * first, const char8 * last, char8 * begin)
+		{
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
+				return begin;
+
+			if (size <= 32)
+			{
+				return copy_8_sse2_16(first, last, begin, begin + size);
+			}
+			else if (size <= 64)
+			{
+				return copy_8_sse2_32(first, last, begin, begin + size);
+			}
+			else
+			{
+				extern char8 * copy_8_sse2_64(const char8 * first, usize size, char8 * begin);
+
+				return copy_8_sse2_64(first, size, begin);
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * rcopy_8_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		{
+			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), a);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 16), b);
+
+			return begin;
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * rcopy_8_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		{
+			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 16));
+			const __m128i c = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 32));
+			const __m128i d = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), a);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 16), b);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 32), c);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 16), d);
+
+			return begin;
+		}
+
+		ful_inline
+		char8 * rcopy_8_sse2(const char8 * first, const char8 * last, char8 * end)
+		{
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
+				return end;
+
+			if (size <= 32)
+			{
+				return rcopy_8_sse2_16(first, last, end - size, end);
+			}
+			else if (size <= 64)
+			{
+				return rcopy_8_sse2_32(first, last, end - size, end);
+			}
+			else
+			{
+				extern char8 * rcopy_8_sse2_64(usize size, const char8 * last, char8 * end);
+
+				return rcopy_8_sse2_64(size, last, end);
+			}
+		}
+
 		ful_target("sse2") inline
 		__m128i rotate(__m128i ab, unsigned int n)
 		{

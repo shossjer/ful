@@ -4,143 +4,71 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_target("avx") inline
-		char8 * copy_large_avx(const char8 * first, const char8 * last, char8 * begin)
+		ful_target("avx") ful_inline
+		char8 * copy_8_avx_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
-			if (!ful_expect(16 <= last - first))
+			const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
+			const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), a);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 32), b);
+
+			return end;
+		}
+
+		ful_inline
+		char8 * copy_8_avx(const char8 * first, const char8 * last, char8 * begin)
+		{
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
 				return begin;
 
-			const usize size = last - first;
 			if (size <= 32)
 			{
-				const auto first_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
-				const auto last_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
-				_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), first_half);
-				_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + size - 16), last_half);
-
-				return begin + size;
+				return copy_8_sse2_16(first, last, begin, begin + size);
 			}
 			else if (size <= 64)
 			{
-				const auto first_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				const auto last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), first_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin + size - 32), last_word);
-
-				return begin + size;
-			}
-			else if (size <= 128)
-			{
-				const auto first_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				const auto second_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first + 32));
-				const auto s2last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 64));
-				const auto last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), first_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin + 32), second_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin + size - 64), s2last_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin + size - 32), last_word);
-
-				return begin + size;
+				return copy_8_avx_32(first, last, begin, begin + size);
 			}
 			else
 			{
-				char8 * begin_aligned = reinterpret_cast<char8 *>(reinterpret_cast<puint>(begin + 32) & -32);
-				const char8 * first_aligned = first + (begin_aligned - begin); // although it is not aligned
+				extern char8 * copy_8_avx_64(const char8 * first, usize size, char8 * begin);
 
-				const __m256i head = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				const __m256i head_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first_aligned));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), head);
-				_mm256_store_si256(reinterpret_cast<__m256i *>(begin_aligned), head_aligned);
-
-				first_aligned += 32;
-				begin_aligned += 32;
-
-				const char8 * const last_aligned = last - 64;
-				while (first_aligned < last_aligned)
-				{
-					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first_aligned));
-					_mm256_store_si256(reinterpret_cast<__m256i *>(begin_aligned), word);
-
-					first_aligned += 32;
-					begin_aligned += 32;
-				}
-
-				const __m256i tail_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first_aligned));
-				const __m256i tail = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				_mm256_store_si256(reinterpret_cast<__m256i *>(begin_aligned), tail_aligned);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin_aligned + (last - first_aligned) - 32), tail);
-
-				return begin_aligned + (last - first_aligned);
+				return copy_8_avx_64(first, size, begin);
 			}
 		}
 
-		ful_target("avx") inline
-		char8 * rcopy_large_avx(const char8 * first, const char8 * last, char8 * end)
+		ful_target("avx") ful_inline
+		char8 * rcopy_8_avx_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
-			if (!ful_expect(16 <= last - first))
+			const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
+			const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), a);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 32), b);
+
+			return begin;
+		}
+
+		ful_inline
+		char8 * rcopy_8_avx(const char8 * first, const char8 * last, char8 * end)
+		{
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
 				return end;
 
-			const usize size = last - first;
 			if (size <= 32)
 			{
-				const auto first_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
-				const auto last_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
-				_mm_storeu_si128(reinterpret_cast<__m128i *>(end - size), first_half);
-				_mm_storeu_si128(reinterpret_cast<__m128i *>(end - 16), last_half);
-
-				return end - size;
+				return rcopy_8_sse2_16(first, last, end - size, end);
 			}
 			else if (size <= 64)
 			{
-				const auto first_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				const auto last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - size), first_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 32), last_word);
-
-				return end - size;
-			}
-			else if (size <= 128)
-			{
-				const auto first_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				const auto second_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first + 32));
-				const auto s2last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 64));
-				const auto last_word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - size), first_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - size + 32), second_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 64), s2last_word);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 32), last_word);
-
-				return end - size;
+				return rcopy_8_avx_32(first, last, end - size, end);
 			}
 			else
 			{
-				char8 * end_aligned = reinterpret_cast<char8 *>(reinterpret_cast<puint>(end - 1) & -32);
-				const char8 * last_aligned = last - (end - end_aligned); // although it is not aligned
+				extern char8 * rcopy_8_avx_64(usize size, const char8 * last, char8 * end);
 
-				const __m256i tail = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
-				const __m256i tail_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last_aligned - 32));
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end - 32), tail);
-				_mm256_store_si256(reinterpret_cast<__m256i *>(end_aligned - 32), tail_aligned);
-
-				last_aligned -= 32;
-				end_aligned -= 32;
-
-				const char8 * const first_aligned = first + 64;
-				while (first_aligned < last_aligned)
-				{
-					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last_aligned - 32));
-					_mm256_store_si256(reinterpret_cast<__m256i *>(end_aligned - 32), word);
-
-					last_aligned -= 32;
-					end_aligned -= 32;
-				}
-
-				const __m256i head_aligned = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last_aligned - 32));
-				const __m256i head = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
-				_mm256_store_si256(reinterpret_cast<__m256i *>(end_aligned - 32), head_aligned);
-				_mm256_storeu_si256(reinterpret_cast<__m256i *>(end_aligned - (last_aligned - first)), head);
-
-				return end_aligned - (last_aligned - first);
+				return rcopy_8_avx_64(size, last, end);
 			}
 		}
 

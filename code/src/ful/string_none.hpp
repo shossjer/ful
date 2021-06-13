@@ -4,56 +4,61 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic() inline
-		char8 * copy_large_none(const char8 * first, const char8 * last, char8 * begin)
+		ful_inline
+		char8 * copy_8_none(const char8 * first, const char8 * last, char8 * begin)
 		{
-			if (!ful_expect(16 <= last - first))
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
 				return begin;
 
-			const char8 * const last_word = last - 8;
-			while (first <= last_word)
+			if (size <= 32)
 			{
-				const uint64 word = *reinterpret_cast<const uint64 *>(first);
-				*reinterpret_cast<uint64 *>(begin) = word;
+				const uint64 a = *reinterpret_cast<const uint64 *>(first);
+				const uint64 b = *reinterpret_cast<const uint64 *>(first + 8);
+				const uint64 c = *reinterpret_cast<const uint64 *>(last - 16);
+				const uint64 d = *reinterpret_cast<const uint64 *>(last - 8);
+				*reinterpret_cast<uint64 *>(begin) = a;
+				*reinterpret_cast<uint64 *>(begin + 8) = b;
+				*reinterpret_cast<uint64 *>(begin + size - 16) = c;
+				*reinterpret_cast<uint64 *>(begin + size - 8) = d;
 
-				first += 8;
-				begin += 8;
+				return begin + size;
 			}
-
-			while (first != last)
+			else
 			{
-				*begin = *first;
+				// todo 64 bytes a time is slightly faster
+				extern char8 * copy_8_x86_32(const char8 * first, usize size, char8 * begin);
 
-				++first, ++begin;
+				return copy_8_x86_32(first, size, begin);
 			}
-
-			return begin;
 		}
 
-		ful_generic() inline
-		char8 * rcopy_large_none(const char8 * first, const char8 * last, char8 * end)
+		ful_inline
+		char8 * rcopy_8_none(const char8 * first, const char8 * last, char8 * end)
 		{
-			if (!ful_expect(16 <= last - first))
+			const usize size = last - first;
+			if (!ful_expect(16u < size))
 				return end;
 
-			const char8 * const first_word = first + 8;
-			while (first_word <= last)
+			if (size <= 32)
 			{
-				last -= 8;
-				end -= 8;
+				const uint64 a = *reinterpret_cast<const uint64 *>(first);
+				const uint64 b = *reinterpret_cast<const uint64 *>(first + 8);
+				const uint64 c = *reinterpret_cast<const uint64 *>(last - 16);
+				const uint64 d = *reinterpret_cast<const uint64 *>(last - 8);
+				*reinterpret_cast<uint64 *>(end - size) = a;
+				*reinterpret_cast<uint64 *>(end - size + 8) = b;
+				*reinterpret_cast<uint64 *>(end - 16) = c;
+				*reinterpret_cast<uint64 *>(end - 8) = d;
 
-				const uint64 word = *reinterpret_cast<const uint64 *>(last);
-				*reinterpret_cast<uint64 *>(end) = word;
+				return end - size;
 			}
-
-			while (first != last)
+			else
 			{
-				--last, --end;
+				extern char8 * rcopy_8_x86_32(usize size, const char8 * last, char8 * end);
 
-				*end = *last;
+				return rcopy_8_x86_32(size, last, end);
 			}
-
-			return end;
 		}
 
 		ful_generic() inline

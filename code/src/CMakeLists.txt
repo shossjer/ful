@@ -1,5 +1,9 @@
 set(FULLIB_SOURCES
 	src/ful/string.cpp
+	src/ful/string_avx.cpp
+	src/ful/string_sse.cpp
+	src/ful/string_sse2.cpp
+	src/ful/string_x86.cpp
 	src/ful/unicode.cpp
 	src/private/cpuid.cpp
 	)
@@ -15,6 +19,7 @@ set(FULLIB_HEADERS
 	src/ful/string_avx.hpp
 	src/ful/string_avx2.hpp
 	src/ful/string_none.hpp
+	src/ful/string_sse.hpp
 	src/ful/string_sse2.hpp
 	src/ful/string_sse4_2.hpp
 	src/ful/types.hpp
