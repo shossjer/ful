@@ -42,7 +42,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf16le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_8_16le(first, last, begin, end);
@@ -51,7 +51,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf16be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_8_16be(first, last, begin, end);
@@ -60,7 +60,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf32le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_8_32le(first, last, begin, end);
@@ -71,7 +71,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf32be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_8_32be(first, last, begin, end);
@@ -80,7 +80,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf8 * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf8 * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16le_8(first, last, begin, end);
@@ -89,7 +89,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf16be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16le_16be(first, last, begin, end);
@@ -98,7 +98,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32le * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf32le * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16le_32le(first, last, begin, end);
@@ -107,7 +107,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf32be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16le_32be(first, last, begin, end);
@@ -116,7 +116,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf8 * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf8 * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16be_8(first, last, begin, end);
@@ -125,7 +125,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf16le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16be_16le(first, last, begin, end);
@@ -134,7 +134,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf32le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16be_32le(first, last, begin, end);
@@ -143,7 +143,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32be * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf32be * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_16be_32be(first, last, begin, end);
@@ -152,7 +152,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf8 * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf8 * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32le_8(first, last, begin, end);
@@ -161,7 +161,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16le * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf16le * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32le_16le(first, last, begin, end);
@@ -170,7 +170,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf16be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32le_16be(first, last, begin, end);
@@ -179,7 +179,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf32be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32le_32be(first, last, begin, end);
@@ -188,7 +188,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf8 * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf8 * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32be_8(first, last, begin, end);
@@ -197,7 +197,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf16le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32be_16le(first, last, begin, end);
@@ -206,7 +206,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf16be * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf16be * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32be_16be(first, last, begin, end);
@@ -215,7 +215,7 @@ namespace ful
 #endif
 	}
 
-	inline unit_utf32le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf32le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::convert_32be_32le(first, last, begin, end);
@@ -224,7 +224,7 @@ namespace ful
 #endif
 	}
 
-	inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
+	ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::point_count(beg, end);
@@ -233,7 +233,7 @@ namespace ful
 #endif
 	}
 
-	inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
+	ful_inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::point_next(s, n);
@@ -242,7 +242,7 @@ namespace ful
 #endif
 	}
 
-	inline const unit_utf8 * point_prev(const unit_utf8 * s, usize n)
+	ful_inline const unit_utf8 * point_prev(const unit_utf8 * s, usize n)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 		return detail::point_prev(s, n);

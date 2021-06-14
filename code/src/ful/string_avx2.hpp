@@ -37,7 +37,7 @@ namespace ful
 			return _mm256_or_si256(ab_shuf, ba_shuf);
 		}
 
-		inline __m256i rotate(__m256i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (32 - 1)); }
+		ful_target("avx2") ful_inline __m256i rotate(__m256i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (32 - 1)); }
 
 		ful_target("avx2") inline
 		const unit_utf8 * point_prev_avx2(const unit_utf8 * s, ssize n)

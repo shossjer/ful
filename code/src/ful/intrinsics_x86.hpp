@@ -368,7 +368,7 @@ namespace ful
 
 #if defined(__LP64__)
 		// zero high bits starting with specified bit position
-		ful_target("bmi2") ful_inline unsigned int bzhi(unsigned long x, unsigned int index) { return bzhi(static_cast<unsigned int>(x), index); }
+		ful_target("bmi2") ful_inline unsigned long bzhi(unsigned long x, unsigned int index) { return bzhi(static_cast<unsigned long long>(x), index); }
 
 		// zero high bits starting with specified bit position
 		ful_target("bmi2") ful_inline long bzhi(long x, unsigned int index) { return bzhi(static_cast<unsigned long>(x), index); }

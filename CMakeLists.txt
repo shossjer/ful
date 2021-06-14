@@ -492,9 +492,9 @@ if(FUL_PROBE_CONFTIME AND NOT FUL_PROBE_CONFTIME_RUN_RESULT EQUAL 0)
 	endif()
 endif()
 
-add_library(lib_cpuid INTERFACE)
+add_library(lib_arch INTERFACE)
 if(FUL_CPUID_SSE)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -502,7 +502,7 @@ if(FUL_CPUID_SSE)
 		)
 endif()
 if(FUL_CPUID_SSE2)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -513,7 +513,7 @@ if(FUL_CPUID_SSE2)
 	endif()
 endif()
 if(FUL_CPUID_SSE3)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse3>
 		)
@@ -522,7 +522,7 @@ if(FUL_CPUID_SSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSSE3)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mssse3>
 		)
@@ -531,7 +531,7 @@ if(FUL_CPUID_SSSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_1)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.1>
 		)
@@ -540,7 +540,7 @@ if(FUL_CPUID_SSE4_1)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_2)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.2>
 		)
@@ -549,7 +549,7 @@ if(FUL_CPUID_SSE4_2)
 	endif()
 endif()
 if(FUL_CPUID_POPCNT)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mpopcnt>
 		)
@@ -558,7 +558,7 @@ if(FUL_CPUID_POPCNT)
 	endif()
 endif()
 if(FUL_CPUID_AVX)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -587,7 +587,7 @@ if(FUL_CPUID_AVX)
 	endif()
 endif()
 if(FUL_CPUID_AVX2)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -628,7 +628,7 @@ if(FUL_CPUID_AVX2)
 	endif()
 endif()
 if(FUL_CPUID_BMI)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi>
 		)
@@ -637,7 +637,7 @@ if(FUL_CPUID_BMI)
 	endif()
 endif()
 if(FUL_CPUID_BMI2)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi2>
 		)
@@ -646,7 +646,7 @@ if(FUL_CPUID_BMI2)
 	endif()
 endif()
 if(FUL_CPUID_LZCNT)
-	target_compile_options(lib_cpuid INTERFACE
+	target_compile_options(lib_arch INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mlzcnt>
 		)
@@ -655,6 +655,7 @@ if(FUL_CPUID_LZCNT)
 	endif()
 endif()
 
+add_library(lib_cpuid INTERFACE)
 if(FUL_PROBE_RUNTIME)
 	try_compile(
 		FUL_PROBE_RUNTIME_COMPILE_RESULT

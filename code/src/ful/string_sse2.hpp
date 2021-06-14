@@ -30,7 +30,7 @@ namespace ful
 			return end;
 		}
 
-		ful_inline
+		ful_target("sse2") ful_inline
 		char8 * copy_8_sse2(const char8 * first, const char8 * last, char8 * begin)
 		{
 			const usize size = last - first;
@@ -79,7 +79,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_inline
+		ful_target("sse2") ful_inline
 		char8 * rcopy_8_sse2(const char8 * first, const char8 * last, char8 * end)
 		{
 			const usize size = last - first;
@@ -136,7 +136,7 @@ namespace ful
 			}
 		}
 
-		inline __m128i rotate(__m128i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (16 - 1)); }
+		ful_target("sse2") ful_inline __m128i rotate(__m128i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (16 - 1)); }
 
 		ful_target("sse2") inline
 		__m128i loadu_first_sse2(const char8 * begin, const char8 * end)

@@ -5,7 +5,6 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic()
 		char8 * copy_8_x86_32(const char8 * first, usize size, char8 * begin)
 		{
 			const usize end_index = size - 32;
@@ -33,7 +32,6 @@ namespace ful
 			return begin + size;
 		}
 
-		ful_generic()
 		char8 * rcopy_8_x86_32(usize size, const char8 * last, char8 * end)
 		{
 			const usize begin_index = size - 32;

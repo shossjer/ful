@@ -15,7 +15,7 @@ namespace ful
 			return end;
 		}
 
-		ful_inline
+		ful_target("avx") ful_inline
 		char8 * copy_8_avx(const char8 * first, const char8 * last, char8 * begin)
 		{
 			const usize size = last - first;
@@ -49,7 +49,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_inline
+		ful_target("avx") ful_inline
 		char8 * rcopy_8_avx(const char8 * first, const char8 * last, char8 * end)
 		{
 			const usize size = last - first;
