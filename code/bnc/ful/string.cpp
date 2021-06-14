@@ -4,6 +4,7 @@
 #include "ful/string.hpp"
 
 #include "buffer.hpp"
+#include "constants.hpp"
 #include "data.hpp"
 
 #include <catch2/catch.hpp>
@@ -15,7 +16,6 @@
 #endif
 
 using namespace ful;
-using namespace ful::detail;
 
 namespace
 {
@@ -34,7 +34,7 @@ namespace
 #endif
 }
 
-TEST_CASE("rotate", "")
+TEST_CASE("rotate", "[.internal]")
 {
 #if defined(__AVX2__)
 	{
@@ -46,16 +46,16 @@ TEST_CASE("rotate", "")
 
 		BENCHMARK_ADVANCED("rotate avx")(Catch::Benchmark::Chronometer meter)
 		{
-			const __m256i x1 = rotate(x, 1);
-			const __m256i x15 = rotate(x, 15);
-			const __m256i x16 = rotate(x, 16);
-			const __m256i x31 = rotate(x, 31);
+			const __m256i x1 = detail::rotate(x, 1);
+			const __m256i x15 = detail::rotate(x, 15);
+			const __m256i x16 = detail::rotate(x, 16);
+			const __m256i x31 = detail::rotate(x, 31);
 			CHECK(std::memcmp(&x1, &y1, 32) == 0);
 			CHECK(std::memcmp(&x15, &y15, 32) == 0);
 			CHECK(std::memcmp(&x16, &y16, 32) == 0);
 			CHECK(std::memcmp(&x31, &y31, 32) == 0);
 
-			meter.measure([&](int n){ return rotate(x, static_cast<unsigned int>(n * 4711) & (32 - 1)); });
+			meter.measure([&](int n){ return detail::rotate(x, static_cast<unsigned int>(n * 4711) & (32 - 1)); });
 		};
 	}
 #endif
@@ -70,16 +70,16 @@ TEST_CASE("rotate", "")
 
 		BENCHMARK_ADVANCED("rotate sse2")(Catch::Benchmark::Chronometer meter)
 		{
-			const __m128i x1 = rotate(x, 1);
-			const __m128i x7 = rotate(x, 7);
-			const __m128i x8 = rotate(x, 8);
-			const __m128i x15 = rotate(x, 15);
+			const __m128i x1 = detail::rotate(x, 1);
+			const __m128i x7 = detail::rotate(x, 7);
+			const __m128i x8 = detail::rotate(x, 8);
+			const __m128i x15 = detail::rotate(x, 15);
 			CHECK(std::memcmp(&x1, &y1, 16) == 0);
 			CHECK(std::memcmp(&x7, &y7, 16) == 0);
 			CHECK(std::memcmp(&x8, &y8, 16) == 0);
 			CHECK(std::memcmp(&x15, &y15, 16) == 0);
 
-			meter.measure([&](int n){ return rotate(x, static_cast<unsigned int>(n * 4711) & (16 - 1)); });
+			meter.measure([&](int n){ return detail::rotate(x, static_cast<unsigned int>(n * 4711) & (16 - 1)); });
 		};
 
 		BENCHMARK_ADVANCED("rotate sse2 (write-read)")(Catch::Benchmark::Chronometer meter)
@@ -101,7 +101,7 @@ TEST_CASE("rotate", "")
 
 namespace
 {
-	unit_utf8 * copy_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+	char8 * copy_naive(const char8 * first, const char8 * last, char8 * begin)
 	{
 		for (; first != last;)
 		{
@@ -110,121 +110,192 @@ namespace
 		}
 		return begin;
 	}
+
+	void copy_test(unsigned long long size, unsigned int from, unsigned int to)
+	{
+		BENCHMARK_ADVANCED("copy (std copy)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size + 1);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return std::copy(first, last, begin); });
+		};
+
+#if HAVE_ASMLIB
+		BENCHMARK_ADVANCED("copy (asmlib memcpy)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return A_memcpy(begin, first, last - first); });
+		};
+
+		BENCHMARK_ADVANCED("copy (asmlib strcpy)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return A_strcpy(reinterpret_cast<char *>(begin), reinterpret_cast<const char *>(first)); });
+		};
+#endif
+
+		BENCHMARK_ADVANCED("copy (naive)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return copy_naive(first, last, begin); });
+		};
+
+		BENCHMARK_ADVANCED("copy")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return copy(first, last, begin); });
+		};
+
+		BENCHMARK_ADVANCED("copy 8 none")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::copy_8_none(first, last, begin); });
+		};
+
+#if defined(__AVX__)
+		BENCHMARK_ADVANCED("copy 8 avx")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::copy_8_avx(first, last, begin); });
+		};
+#endif
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		BENCHMARK_ADVANCED("copy 8 sse")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::copy_8_sse(first, last, begin); });
+		};
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_ADVANCED("copy 8 sse2")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::copy_8_sse2(first, last, begin); });
+		};
+#endif
+	}
 }
 
 TEST_CASE("copy", "")
 {
-	data_any_utf8 txt;
-	REQUIRE(txt.init());
-
-	const auto first = txt.beg() + 3;
-	const auto last = txt.end();
-
-	BENCHMARK_ADVANCED("copy (std)")(Catch::Benchmark::Chronometer meter)
+	SECTION("petty")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
+		copy_test(pettyval, 7, 1);
+	}
 
-		auto from = tyt.data() + 1;
-		auto to = tyt.end();
-
-		REQUIRE(std::copy(first, last, from) == to);
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return std::copy(first, last, from); });
-	};
-
-#if HAVE_ASMLIB
-	BENCHMARK_ADVANCED("copy (asmlib memcpy)")(Catch::Benchmark::Chronometer meter)
+	SECTION("small")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
+		copy_test(smallval, 7, 1);
+	}
 
-		auto from = tyt.data() + 1;
-
-		REQUIRE(A_memcpy(from, first, last - first) == from);
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return A_memcpy(from, first, last - first) == 0; });
-	};
-#endif
-
-#if HAVE_ASMLIB
-	BENCHMARK_ADVANCED("copy (asmlib strcpy)")(Catch::Benchmark::Chronometer meter)
+	SECTION("plain")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
+		copy_test(plainval, 7, 1);
+	}
 
-		auto from = tyt.data() + 1;
-
-		REQUIRE(A_strcpy(from, first) == from);
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return A_strcpy(from, first) == 0; });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("copy")(Catch::Benchmark::Chronometer meter)
+	SECTION("large")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
-
-		auto from = tyt.data() + 1;
-		auto to = tyt.end();
-
-		REQUIRE(copy(first, last, from) == to);
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy(first, last, from); });
-	};
-
-	BENCHMARK_ADVANCED("copy large none")(Catch::Benchmark::Chronometer meter)
-	{
-		if (last - first < 16)
-			return;
-
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
-
-		auto from = tyt.data() + 1;
-		auto to = tyt.end();
-
-		REQUIRE(copy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)) == reinterpret_cast<char8 *>(to));
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)); });
-	};
-
-#if defined(__AVX__)
-	BENCHMARK_ADVANCED("copy large avx")(Catch::Benchmark::Chronometer meter)
-	{
-		if (last - first < 16)
-			return;
-
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
-
-		auto from = tyt.data() + 1;
-		auto to = tyt.end();
-
-		REQUIRE(copy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)) == reinterpret_cast<char8 *>(to));
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(from)); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("copy (naive)")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(last - first + 1);
-
-		auto from = tyt.data() + 1;
-		auto to = tyt.end();
-
-		REQUIRE(copy_alt_naive(first, last, from) == to);
-		REQUIRE(std::memcmp(first, from, last - first) == 0);
-		meter.measure([&](int){ return copy_alt_naive(first, last, from); });
-	};
+		copy_test(largeval, 7, 1);
+	}
 }
 
 namespace
 {
-	inline unit_utf8 * rcopy_alt_naive(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+	inline char8 * rcopy_naive(const char8 * first, const char8 * last, char8 * end)
 	{
 		for (; first != last;)
 		{
@@ -233,127 +304,193 @@ namespace
 		}
 		return end;
 	}
+
+	void rcopy_test(unsigned long long size, unsigned int from, unsigned int to)
+	{
+		BENCHMARK_ADVANCED("rcopy (std copy_backward)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return std::copy_backward(first, last, end); });
+		};
+
+		BENCHMARK_ADVANCED("rcopy (std memmove)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			// char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return std::memmove(begin, first, size); });
+		};
+
+#if HAVE_ASMLIB
+		BENCHMARK_ADVANCED("rcopy (asmlib memmove)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			// char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return A_memmove(begin, first, size); });
+		};
+#endif
+
+		BENCHMARK_ADVANCED("rcopy (naive)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return rcopy_naive(first, last, end); });
+		};
+
+		BENCHMARK_ADVANCED("rcopy")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return rcopy(first, last, end); });
+		};
+
+		BENCHMARK_ADVANCED("rcopy 8 none")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::rcopy_8_none(first, last, end); });
+		};
+
+#if defined(__AVX__)
+		BENCHMARK_ADVANCED("rcopy 8 avx")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::rcopy_8_avx(first, last, end); });
+		};
+#endif
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		BENCHMARK_ADVANCED("rcopy 8 sse")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::rcopy_8_sse(first, last, end); });
+		};
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_ADVANCED("rcopy 8 sse2")(Catch::Benchmark::Chronometer meter)
+		{
+			if (size <= 16u)
+				return;
+
+			buffer_utf8 buffer;
+			buffer.allocate((from < to ? to : from) + size);
+
+			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
+			char8 * const last = first + size;
+			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
+			char8 * const end = begin + size;
+
+			std::fill(first, last, 'Z');
+			*last = 0;
+
+			meter.measure([&](int){ return detail::rcopy_8_sse2(first, last, end); });
+		};
+#endif
+	}
 }
 
 TEST_CASE("rcopy", "")
 {
-	data_any_utf8 txt;
-	REQUIRE(txt.init());
-
-	const auto before_offset = 1;
-	const auto after_offset = 5;
-
-	BENCHMARK_ADVANCED("rcopy (std copy_backward)")(Catch::Benchmark::Chronometer meter)
+	SECTION("petty")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
+		rcopy_test(pettyval, 1, 7);
+	}
 
-		auto first = tyt.data() + before_offset;
-		auto last = tyt.data() + before_offset + txt.size();
-		auto begin = tyt.data() + after_offset;
-		auto end = tyt.data() + after_offset + txt.size();
-
-		REQUIRE(std::copy_backward(first, last, end) == begin);
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return std::copy_backward(first, last, end); });
-	};
-
-	BENCHMARK_ADVANCED("rcopy (std memmove)")(Catch::Benchmark::Chronometer meter)
+	SECTION("small")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
+		rcopy_test(smallval, 1, 7);
+	}
 
-		auto first = tyt.data() + before_offset;
-		auto begin = tyt.data() + after_offset;
-
-		REQUIRE(std::memmove(begin, first, txt.size()) == begin);
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return std::memmove(begin, first, txt.size()); });
-	};
-
-#if HAVE_ASMLIB
-	BENCHMARK_ADVANCED("rcopy (asmlib memmove)")(Catch::Benchmark::Chronometer meter)
+	SECTION("plain")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
+		rcopy_test(plainval, 1, 7);
+	}
 
-		auto first = tyt.data() + before_offset;
-		auto begin = tyt.data() + after_offset;
-
-		REQUIRE(A_memmove(begin, first, txt.size()) == begin);
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return A_memmove(begin, first, txt.size()); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("rcopy")(Catch::Benchmark::Chronometer meter)
+	SECTION("large")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
-
-		auto first = tyt.data() + before_offset;
-		auto last = tyt.data() + before_offset + txt.size();
-		auto begin = tyt.data() + after_offset;
-		auto end = tyt.data() + after_offset + txt.size();
-
-		REQUIRE(rcopy(first, last, end) == begin);
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy(first, last, end); });
-	};
-
-	BENCHMARK_ADVANCED("rcopy large none")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
-
-		auto first = tyt.data() + before_offset;
-		auto last = tyt.data() + before_offset + txt.size();
-		auto begin = tyt.data() + after_offset;
-		auto end = tyt.data() + after_offset + txt.size();
-
-		REQUIRE(rcopy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)) == reinterpret_cast<char8 *>(begin));
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy_large_none(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)); });
-	};
-
-#if defined(__AVX__)
-	BENCHMARK_ADVANCED("rcopy large avx")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
-
-		auto first = tyt.data() + before_offset;
-		auto last = tyt.data() + before_offset + txt.size();
-		auto begin = tyt.data() + after_offset;
-		auto end = tyt.data() + after_offset + txt.size();
-
-		REQUIRE(rcopy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)) == reinterpret_cast<char8 *>(begin));
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy_large_avx(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("rcopy (naive)")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(txt.size() + before_offset);
-		std::copy(txt.beg(), txt.end(), tyt.data() + before_offset);
-
-		auto first = tyt.data() + before_offset;
-		auto last = tyt.data() + before_offset + txt.size();
-		auto begin = tyt.data() + after_offset;
-		auto end = tyt.data() + after_offset + txt.size();
-
-		REQUIRE(rcopy_alt_naive(first, last, end) == begin);
-		REQUIRE(std::memcmp(begin, txt.beg(), txt.size()) == 0);
-		meter.measure([&](int){ return rcopy_alt_naive(first, last, end); });
-	};
+		rcopy_test(largeval, 1, 7);
+	}
 }
 
 namespace
@@ -365,64 +502,87 @@ namespace
 			*from = u;
 		}
 	}
+
+	void fill_test(unsigned long long size, unsigned int offset)
+	{
+		BENCHMARK_ADVANCED("fill (std)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ std::fill(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+
+#if HAVE_ASMLIB
+		BENCHMARK_ADVANCED("fill (asmlib memset)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ return A_memset(tyt.data() + offset, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1)), size); });
+		};
+#endif
+
+		BENCHMARK_ADVANCED("fill large none")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::fill_large_none(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		BENCHMARK_ADVANCED("fill large sse")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::fill_large_sse(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+#endif
+
+#if defined(__AVX__)
+		BENCHMARK_ADVANCED("fill large avx")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::fill_large_avx(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+
+#endif
+
+		BENCHMARK_ADVANCED("fill (naive)")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ fill_alt_naive(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+	}
 }
 
 TEST_CASE("fill", "")
 {
-	const unsigned long long size = 4711;
-	const unsigned int offset = 1;
-
-	BENCHMARK_ADVANCED("fill (std)")(Catch::Benchmark::Chronometer meter)
+	SECTION("petty")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
+		fill_test(pettyval, 1);
+	}
 
-		meter.measure([&](int n){ return std::fill(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); });
-	};
-
-#if HAVE_ASMLIB
-	BENCHMARK_ADVANCED("fill (asmlib memset)")(Catch::Benchmark::Chronometer meter)
+	SECTION("small")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
+		fill_test(smallval, 1);
+	}
 
-		meter.measure([&](int n){ return A_memset(tyt.data() + offset, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1)), size); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("fill")(Catch::Benchmark::Chronometer meter)
+	SECTION("plain")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
+		fill_test(plainval, 1);
+	}
 
-		meter.measure([&](int n){ return fill(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); });
-	};
-
-	BENCHMARK_ADVANCED("fill large none")(Catch::Benchmark::Chronometer meter)
+	SECTION("large")
 	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
-
-		meter.measure([&](int n){ return fill_large_none(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); });
-	};
-
-#if defined(__AVX__)
-	BENCHMARK_ADVANCED("fill large avx")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
-
-		meter.measure([&](int n){ return fill_large_avx(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); });
-	};
-#endif
-
-	BENCHMARK_ADVANCED("fill (naive)")(Catch::Benchmark::Chronometer meter)
-	{
-		buffer_utf8 tyt;
-		tyt.allocate(offset + size);
-
-		meter.measure([&](int n){ return fill_alt_naive(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); });
-	};
+		fill_test(largeval, 1);
+	}
 }
 
 namespace
@@ -651,7 +811,7 @@ namespace
 		unsigned int mask = zero_low_bits(_mm256_movemask_epi8(cmpi), offset);
 		while (true)
 		{
-			const unsigned int npoints = popcnt(mask);
+			const unsigned int npoints = detail::popcnt(mask);
 
 			if (n <= npoints)
 				break;
@@ -686,7 +846,7 @@ namespace
 		unsigned int mask = zero_low_bits(_mm_movemask_epi8(cmpi), offset);
 		while (true)
 		{
-			const unsigned int npoints = popcnt(mask);
+			const unsigned int npoints = detail::popcnt(mask);
 
 			if (n <= npoints)
 				break;
@@ -867,8 +1027,8 @@ TEST_CASE("point_prev", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("point_prev avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_avx2(txt.end(), txt.npoints()) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_avx2(txt.end(), txt.npoints()); });
+		REQUIRE(detail::point_prev_avx2(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return detail::point_prev_avx2(txt.end(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev avx2 (naive)")(Catch::Benchmark::Chronometer meter)
@@ -881,8 +1041,8 @@ TEST_CASE("point_prev", "")
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("point_prev sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(point_prev_sse2(txt.end(), txt.npoints()) - txt.beg() == 0);
-		meter.measure([&](int){ return point_prev_sse2(txt.end(), txt.npoints()); });
+		REQUIRE(detail::point_prev_sse2(txt.end(), txt.npoints()) - txt.beg() == 0);
+		meter.measure([&](int){ return detail::point_prev_sse2(txt.end(), txt.npoints()); });
 	};
 
 	BENCHMARK_ADVANCED("point_prev sse2 (naive)")(Catch::Benchmark::Chronometer meter)
@@ -995,16 +1155,16 @@ TEST_CASE("equal_cstr", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("equal_cstr avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
-		meter.measure([&](int){ return equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(detail::equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
+		meter.measure([&](int){ return detail::equal_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("equal_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
-		meter.measure([&](int){ return equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
+		REQUIRE(detail::equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
+		meter.measure([&](int){ return detail::equal_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
 	};
 #endif
 
@@ -1018,8 +1178,8 @@ TEST_CASE("equal_cstr", "")
 
 	BENCHMARK_ADVANCED("equal_cstr none")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
-		meter.measure([&](int){ return equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(detail::equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		meter.measure([&](int){ return detail::equal_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 }
 
@@ -1047,16 +1207,16 @@ TEST_CASE("find_unit", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
-		meter.measure([&](int){ return find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
+		REQUIRE(detail::find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
+		meter.measure([&](int){ return detail::find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
 	};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
-		meter.measure([&](int){ return find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())); });
+		REQUIRE(detail::find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
+		meter.measure([&](int){ return detail::find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())); });
 	};
 #endif
 }
@@ -1092,18 +1252,18 @@ TEST_CASE("less_cstr", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("less_cstr avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
-		REQUIRE_FALSE(less_cstr_avx2(tyt.beg(), tyt.end(), txt.cstr()));
-		meter.measure([&](int){ return less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(detail::less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(detail::less_cstr_avx2(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return detail::less_cstr_avx2(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("less_cstr sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
-		REQUIRE_FALSE(less_cstr_sse2(reinterpret_cast<const char8 *>(tyt.beg()), reinterpret_cast<const char8 *>(tyt.end()), reinterpret_cast<const char8 *>(txt.cstr())));
-		meter.measure([&](int){ return less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
+		REQUIRE(detail::less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())));
+		REQUIRE_FALSE(detail::less_cstr_sse2(reinterpret_cast<const char8 *>(tyt.beg()), reinterpret_cast<const char8 *>(tyt.end()), reinterpret_cast<const char8 *>(txt.cstr())));
+		meter.measure([&](int){ return detail::less_cstr_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), reinterpret_cast<const char8 *>(tyt.cstr())); });
 	};
 #endif
 
@@ -1118,8 +1278,8 @@ TEST_CASE("less_cstr", "")
 
 	BENCHMARK_ADVANCED("less_cstr none")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(less_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
-		REQUIRE_FALSE(less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
-		meter.measure([&](int){ return less_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
+		REQUIRE(detail::less_cstr_none(txt.beg(), txt.end(), tyt.cstr()));
+		REQUIRE_FALSE(detail::less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
+		meter.measure([&](int){ return detail::less_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
 	};
 }

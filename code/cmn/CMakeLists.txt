@@ -4,5 +4,6 @@ set(FULCMN_SOURCES
 
 set(FULCMN_HEADERS
 	cmn/buffer.hpp
+	cmn/constants.hpp
 	cmn/data.hpp
 	)
