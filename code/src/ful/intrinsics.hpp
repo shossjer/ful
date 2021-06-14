@@ -23,7 +23,8 @@
 namespace ful
 {
 	// generate mask where the n least significant bits are set
-	inline unsigned int low_mask(unsigned int n)
+	ful_inline
+	unsigned int low_mask(unsigned int n)
 	{
 		ful_expect(0 < n);
 		ful_expect(n <= sizeof(unsigned int) * byte_size);
@@ -33,6 +34,7 @@ namespace ful
 
 	// get the index of the least significant set bit
 	template <typename T>
+	ful_inline
 	unsigned int least_significant_set_bit(T x)
 	{
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
@@ -44,6 +46,7 @@ namespace ful
 
 	// get the index of the most significant set bit
 	template <typename T>
+	ful_inline
 	unsigned int most_significant_set_bit(T x)
 	{
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
@@ -54,7 +57,8 @@ namespace ful
 	}
 
 	// get the index of the nth set bit
-	inline unsigned int index_set_bit(unsigned int x, unsigned int n)
+	ful_inline
+	unsigned int index_set_bit(unsigned int x, unsigned int n)
 	{
 #if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		const unsigned int nth_mask = detail::pdep(1u << n, x);
@@ -69,6 +73,7 @@ namespace ful
 
 	// get the number of leading zero bits
 	template <typename T>
+	ful_inline
 	auto count_leading_zeros(T x)
 #if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(detail::lzcnt(x))
@@ -83,6 +88,7 @@ namespace ful
 
 	// get the number of trailing zero bits
 	template <typename T>
+	ful_inline
 	auto count_trailing_zeros(T x)
 #if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(detail::tzcnt(x))
@@ -102,6 +108,7 @@ namespace ful
 
 	// if `0 < n < Po2`, where Po2 is a power of two, computes `Po2 - n`
 	template <unsigned int Po2>
+	ful_inline
 	unsigned int mirror(unsigned int n)
 	{
 		ful_expect(0 < n);
@@ -111,7 +118,8 @@ namespace ful
 	}
 
 	// set all bits more significant than the specified index
-	inline unsigned int set_higher_bits(unsigned int x, unsigned int index)
+	ful_inline
+	unsigned int set_higher_bits(unsigned int x, unsigned int index)
 	{
 		ful_expect(index < sizeof(unsigned int) * byte_size);
 
@@ -120,7 +128,8 @@ namespace ful
 	}
 
 	// reset all bits more significant than the specified index
-	inline unsigned int zero_higher_bits(unsigned int x, unsigned int index)
+	ful_inline
+	unsigned int zero_higher_bits(unsigned int x, unsigned int index)
 	{
 		ful_expect(index < sizeof(unsigned int) * byte_size);
 
@@ -133,7 +142,8 @@ namespace ful
 	}
 
 	// resets the n least significant bits
-	inline unsigned int zero_low_bits(unsigned int x, unsigned int n)
+	ful_inline
+	unsigned int zero_low_bits(unsigned int x, unsigned int n)
 	{
 		ful_expect(n < sizeof(unsigned int) * byte_size);
 
@@ -144,7 +154,8 @@ namespace ful
 	}
 
 	// resets all but the n least significant set bits
-	inline unsigned int keep_low_set_bits(unsigned int x, unsigned int n)
+	ful_inline
+	unsigned int keep_low_set_bits(unsigned int x, unsigned int n)
 	{
 #if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return detail::pdep(low_mask(n), x);
@@ -157,6 +168,7 @@ namespace ful
 
 	// reorder bytes for converting between little- and big-endian
 	template <typename T>
+	ful_inline
 	T byte_swap(T x)
 	{
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
