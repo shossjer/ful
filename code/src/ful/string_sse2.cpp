@@ -8,7 +8,7 @@ namespace ful
 	namespace detail
 	{
 		ful_target("sse2")
-		char8 * copy_8_sse2_64(const char8 * first, usize size, char8 * begin)
+		char8 * memcopy_sse2_64(const char8 * first, usize size, char8 * begin)
 		{
 			const usize end_index = size - 64;
 			usize index = 0;
@@ -36,7 +36,7 @@ namespace ful
 		}
 
 		ful_target("sse2")
-		char8 * rcopy_8_sse2_64(usize size, const char8 * last, char8 * end)
+		char8 * memypoc_sse2_64(usize size, const char8 * last, char8 * end)
 		{
 			const usize begin_index = size - 64;
 			usize index = 0;
@@ -61,6 +61,80 @@ namespace ful
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(end - begin_index - 64), d);
 
 			return end - size;
+		}
+
+		ful_target("sse2")
+		char8 * memswap_sse2_64(char8 * beg1, usize size, char8 * beg2)
+		{
+			const usize end_index = size - 64;
+			usize index = 0;
+			do
+			{
+				const __m128i a1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
+				const __m128i b1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index + 16));
+				const __m128i a2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index));
+				const __m128i b2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index + 16));
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + index), a1);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + index + 16), b1);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + index), a2);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + index + 16), b2);
+
+				index += 32;
+			}
+			while (index <= end_index);
+
+			const __m128i a1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
+			const __m128i b1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index + 16));
+			const __m128i c1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_index + 32));
+			const __m128i d1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_index + 48));
+			const __m128i a2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index));
+			const __m128i b2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index + 16));
+			const __m128i c2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_index + 32));
+			const __m128i d2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_index + 48));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + index), a1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + index + 16), b1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + end_index + 32), c1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + end_index + 48), d1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + index), a2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + index + 16), b2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + end_index + 32), c2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + end_index + 48), d2);
+
+			return beg2 + size;
+		}
+
+		ful_target("sse2")
+		void memset8_sse2_64(char8 * from, char8 * to, char8 u)
+		{
+			const __m128i u128 = _mm_set1_epi8(u);
+
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), u128);
+
+			from = ful_align_next_16(from);
+
+			char8 * const to_word = to - 64;
+			if (from < to_word)
+			{
+				do
+				{
+					_mm_stream_si128(reinterpret_cast<__m128i *>(from), u128);
+					_mm_stream_si128(reinterpret_cast<__m128i *>(from + 16), u128);
+					_mm_stream_si128(reinterpret_cast<__m128i *>(from + 32), u128);
+					_mm_stream_si128(reinterpret_cast<__m128i *>(from + 48), u128);
+
+					from += 64;
+				}
+				while (from < to_word);
+
+				from = ful_align_next_16(to_word);
+			}
+
+			_mm_stream_si128(reinterpret_cast<__m128i *>(from), u128);
+			_mm_stream_si128(reinterpret_cast<__m128i *>(from + 16), u128);
+			_mm_stream_si128(reinterpret_cast<__m128i *>(from + 32), u128);
+			_mm_sfence();
+
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(to_word + 48), u128);
 		}
 	}
 }

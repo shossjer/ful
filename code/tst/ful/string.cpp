@@ -6,36 +6,53 @@
 
 namespace
 {
-	void copy_rcopy_test(unsigned long long size, unsigned int from, unsigned int to)
+	void mem_test(unsigned long long size)
 	{
+		const long long offset = 1;
+		const long long shift = 1;
+
 		buffer_utf8 buffer;
-		buffer.allocate((from < to ? to : from) + size);
+		buffer.allocate(offset + size + shift + size);
 
 		for (int i = 0; i < size; i++)
 		{
-			buffer.data()[from + i] = static_cast<ful::char8>(i % (126 - 32) + 32);
+			buffer.data()[offset + size + shift + i] = static_cast<ful::char8>(i % (127 - 32) + 32);
+			buffer.data()[offset + i] = static_cast<ful::char8>(126 - i % (127 - 32));
 		}
 
-		ful::char8 * const from_begin = reinterpret_cast<ful::char8 *>(buffer.data() + from);
-		ful::char8 * const from_end = reinterpret_cast<ful::char8 *>(buffer.data() + from + size);
-		ful::char8 * const to_begin = reinterpret_cast<ful::char8 *>(buffer.data() + to);
-		ful::char8 * const to_end = reinterpret_cast<ful::char8 *>(buffer.data() + to + size);
+		ful::char8 * const copy_begin = reinterpret_cast<ful::char8 *>(buffer.data() + offset + size + shift);
+		ful::char8 * const copy_end = reinterpret_cast<ful::char8 *>(buffer.data() + offset + size + shift + size);
+		ful::char8 * const swap_begin = reinterpret_cast<ful::char8 *>(buffer.data() + offset);
+		ful::char8 * const swap_end = reinterpret_cast<ful::char8 *>(buffer.data() + offset + size);
 
 		if (16u < size)
 		{
 #if defined(__AVX__)
 			SECTION("avx")
 			{
-				CHECK(ful::detail::copy_8_avx(from_begin, from_end, to_begin) == to_end);
+				CHECK(ful::detail::memcopy_avx(copy_begin, copy_end, copy_begin - shift) == copy_end - shift);
 				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[to + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK((copy_begin - shift)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				CHECK(ful::detail::rcopy_8_avx(to_begin, to_end, from_end) == from_begin);
-				for (int i = 0; i < buffer.size() - 2; i++)
+				CHECK(ful::detail::memypoc_avx(copy_begin - shift, copy_end - shift, copy_end) == copy_begin);
+				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[from + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+				}
+
+				CHECK(ful::detail::memswap_avx(copy_begin, copy_end, swap_begin) == swap_end);
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(swap_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(126 - i % (127 - 32)));
+				}
+
+				ful::detail::memset8_avx(copy_begin, copy_end, static_cast<ful::char8>(7));
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(copy_begin[i] == static_cast<ful::char8>(7));
 				}
 			}
 #endif
@@ -43,16 +60,29 @@ namespace
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			SECTION("sse")
 			{
-				CHECK(ful::detail::copy_8_sse(from_begin, from_end, to_begin) == to_end);
+				CHECK(ful::detail::memcopy_sse(copy_begin, copy_end, copy_begin - shift) == copy_end - shift);
 				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[to + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK((copy_begin - shift)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				CHECK(ful::detail::rcopy_8_sse(to_begin, to_end, from_end) == from_begin);
-				for (int i = 0; i < buffer.size() - 2; i++)
+				CHECK(ful::detail::memypoc_sse(copy_begin - shift, copy_end - shift, copy_end) == copy_begin);
+				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[from + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+				}
+
+				CHECK(ful::detail::memswap_sse(copy_begin, copy_end, swap_begin) == swap_end);
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(swap_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(126 - i % (127 - 32)));
+				}
+
+				ful::detail::memset8_sse(copy_begin, copy_end, static_cast<ful::char8>(7));
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(copy_begin[i] == static_cast<ful::char8>(7));
 				}
 			}
 #endif
@@ -60,133 +90,172 @@ namespace
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 			SECTION("sse2")
 			{
-				CHECK(ful::detail::copy_8_sse2(from_begin, from_end, to_begin) == to_end);
+				CHECK(ful::detail::memcopy_sse2(copy_begin, copy_end, copy_begin - shift) == copy_end - shift);
 				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[to + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK((copy_begin - shift)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				CHECK(ful::detail::rcopy_8_sse2(to_begin, to_end, from_end) == from_begin);
-				for (int i = 0; i < buffer.size() - 2; i++)
+				CHECK(ful::detail::memypoc_sse2(copy_begin - shift, copy_end - shift, copy_end) == copy_begin);
+				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[from + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+				}
+
+				CHECK(ful::detail::memswap_sse2(copy_begin, copy_end, swap_begin) == swap_end);
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(swap_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(126 - i % (127 - 32)));
+				}
+
+				ful::detail::memset8_sse2(copy_begin, copy_end, static_cast<ful::char8>(7));
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(copy_begin[i] == static_cast<ful::char8>(7));
 				}
 			}
 #endif
 
 			SECTION("none")
 			{
-				CHECK(ful::detail::copy_8_none(from_begin, from_end, to_begin) == to_end);
+				CHECK(ful::detail::memcopy_none(copy_begin, copy_end, copy_begin - shift) == copy_end - shift);
 				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[to + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK((copy_begin - shift)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				CHECK(ful::detail::rcopy_8_none(to_begin, to_end, from_end) == from_begin);
-				for (int i = 0; i < buffer.size() - 2; i++)
+				CHECK(ful::detail::memypoc_none(copy_begin - shift, copy_end - shift, copy_end) == copy_begin);
+				for (int i = 0; i < size; i++)
 				{
-					CHECK(buffer.data()[from + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+				}
+
+				CHECK(ful::detail::memswap_none(copy_begin, copy_end, swap_begin) == swap_end);
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(swap_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+					CHECK(copy_begin[i] == static_cast<ful::char8>(126 - i % (127 - 32)));
+				}
+
+				ful::detail::memset8_none(copy_begin, copy_end, static_cast<ful::char8>(7));
+				for (int i = 0; i < size; i++)
+				{
+					CHECK(copy_begin[i] == static_cast<ful::char8>(7));
 				}
 			}
 		}
 
 		SECTION("default")
 		{
-			CHECK(ful::copy(from_begin, from_end, to_begin) == to_end);
+			CHECK(ful::memcopy(copy_begin, copy_end, copy_begin - shift) == copy_end - shift);
 			for (int i = 0; i < size; i++)
 			{
-				CHECK(buffer.data()[to + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+				CHECK((copy_begin - shift)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 			}
 
-			CHECK(ful::rcopy(to_begin, to_end, from_end) == from_begin);
-			for (int i = 0; i < buffer.size() - 2; i++)
+			CHECK(ful::memypoc(copy_begin - shift, copy_end - shift, copy_end) == copy_begin);
+			for (int i = 0; i < size; i++)
 			{
-				CHECK(buffer.data()[from + i] == static_cast<ful::char8>(i % (126 - 32) + 32));
+				CHECK(copy_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+			}
+
+			CHECK(ful::memswap(copy_begin, copy_end, swap_begin) == swap_end);
+			for (int i = 0; i < size; i++)
+			{
+				CHECK(swap_begin[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
+				CHECK(copy_begin[i] == static_cast<ful::char8>(126 - i % (127 - 32)));
+			}
+
+			ful::memset(copy_begin, copy_end, static_cast<ful::char8>(7));
+			for (int i = 0; i < size; i++)
+			{
+				CHECK(copy_begin[i] == static_cast<ful::char8>(7));
 			}
 		}
 	}
 }
 
-TEST_CASE("copy/rcopy", "")
+TEST_CASE("mem", "")
 {
 	SECTION("nullptr")
 	{
-		CHECK(ful::copy(nullptr, nullptr, nullptr) == nullptr);
-		CHECK(ful::rcopy(nullptr, nullptr, nullptr) == nullptr);
+		CHECK(ful::memcopy(nullptr, nullptr, nullptr) == nullptr);
+		CHECK(ful::memypoc(nullptr, nullptr, nullptr) == nullptr);
 	}
 
 	SECTION("size 1")
 	{
-		copy_rcopy_test(1, 2, 1);
+		mem_test(1);
 	}
 
 	SECTION("size 3")
 	{
-		copy_rcopy_test(3, 2, 1);
+		mem_test(3);
 	}
 
 	SECTION("size 5")
 	{
-		copy_rcopy_test(5, 2, 1);
+		mem_test(5);
 	}
 
 	SECTION("size 7")
 	{
-		copy_rcopy_test(7, 2, 1);
+		mem_test(7);
 	}
 
 	SECTION("size 9")
 	{
-		copy_rcopy_test(9, 2, 1);
+		mem_test(9);
 	}
 
 	SECTION("size 15")
 	{
-		copy_rcopy_test(15, 2, 1);
+		mem_test(15);
 	}
 
 	SECTION("size 17")
 	{
-		copy_rcopy_test(17, 2, 1);
+		mem_test(17);
 	}
 
 	SECTION("size 31")
 	{
-		copy_rcopy_test(31, 2, 1);
+		mem_test(31);
 	}
 
 	SECTION("size 33")
 	{
-		copy_rcopy_test(33, 2, 1);
+		mem_test(33);
 	}
 
 	SECTION("size 63")
 	{
-		copy_rcopy_test(63, 2, 1);
+		mem_test(63);
 	}
 
 	SECTION("size 65")
 	{
-		copy_rcopy_test(65, 2, 1);
+		mem_test(65);
 	}
 
 	SECTION("size 127")
 	{
-		copy_rcopy_test(127, 2, 1);
+		mem_test(127);
 	}
 
 	SECTION("size 129")
 	{
-		copy_rcopy_test(129, 2, 1);
+		mem_test(129);
 	}
 
 	SECTION("size 255")
 	{
-		copy_rcopy_test(255, 2, 1);
+		mem_test(255);
 	}
 
 	SECTION("size 257")
 	{
-		copy_rcopy_test(257, 2, 1);
+		mem_test(257);
 	}
 }

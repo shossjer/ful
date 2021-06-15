@@ -113,7 +113,7 @@ namespace
 
 	void copy_test(unsigned long long size, unsigned int from, unsigned int to)
 	{
-		BENCHMARK_ADVANCED("copy (std copy)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("copy (std)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size + 1);
@@ -129,7 +129,7 @@ namespace
 		};
 
 #if HAVE_ASMLIB
-		BENCHMARK_ADVANCED("copy (asmlib memcpy)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy (asmlib)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -144,7 +144,7 @@ namespace
 			meter.measure([&](int){ return A_memcpy(begin, first, last - first); });
 		};
 
-		BENCHMARK_ADVANCED("copy (asmlib strcpy)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("strcpy (asmlib)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -160,7 +160,7 @@ namespace
 		};
 #endif
 
-		BENCHMARK_ADVANCED("copy (naive)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("naive for-loop")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -175,7 +175,7 @@ namespace
 			meter.measure([&](int){ return copy_naive(first, last, begin); });
 		};
 
-		BENCHMARK_ADVANCED("copy")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -187,10 +187,10 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return copy(first, last, begin); });
+			meter.measure([&](int){ return memcopy(first, last, begin); });
 		};
 
-		BENCHMARK_ADVANCED("copy 8 none")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy none")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -205,11 +205,11 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::copy_8_none(first, last, begin); });
+			meter.measure([&](int){ return detail::memcopy_none(first, last, begin); });
 		};
 
 #if defined(__AVX__)
-		BENCHMARK_ADVANCED("copy 8 avx")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy avx")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -224,12 +224,12 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::copy_8_avx(first, last, begin); });
+			meter.measure([&](int){ return detail::memcopy_avx(first, last, begin); });
 		};
 #endif
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-		BENCHMARK_ADVANCED("copy 8 sse")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy sse")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -244,12 +244,12 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::copy_8_sse(first, last, begin); });
+			meter.measure([&](int){ return detail::memcopy_sse(first, last, begin); });
 		};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		BENCHMARK_ADVANCED("copy 8 sse2")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memcopy sse2")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -264,7 +264,7 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::copy_8_sse2(first, last, begin); });
+			meter.measure([&](int){ return detail::memcopy_sse2(first, last, begin); });
 		};
 #endif
 	}
@@ -307,7 +307,7 @@ namespace
 
 	void rcopy_test(unsigned long long size, unsigned int from, unsigned int to)
 	{
-		BENCHMARK_ADVANCED("rcopy (std copy_backward)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("copy_backward (std)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -323,7 +323,7 @@ namespace
 			meter.measure([&](int){ return std::copy_backward(first, last, end); });
 		};
 
-		BENCHMARK_ADVANCED("rcopy (std memmove)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memmove (std)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -340,7 +340,7 @@ namespace
 		};
 
 #if HAVE_ASMLIB
-		BENCHMARK_ADVANCED("rcopy (asmlib memmove)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memmove (asmlib)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -357,7 +357,7 @@ namespace
 		};
 #endif
 
-		BENCHMARK_ADVANCED("rcopy (naive)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("naive for-loop")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -373,7 +373,7 @@ namespace
 			meter.measure([&](int){ return rcopy_naive(first, last, end); });
 		};
 
-		BENCHMARK_ADVANCED("rcopy")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memypoc")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -386,10 +386,10 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return rcopy(first, last, end); });
+			meter.measure([&](int){ return memypoc(first, last, end); });
 		};
 
-		BENCHMARK_ADVANCED("rcopy 8 none")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memypoc none")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
@@ -402,11 +402,11 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::rcopy_8_none(first, last, end); });
+			meter.measure([&](int){ return detail::memypoc_none(first, last, end); });
 		};
 
 #if defined(__AVX__)
-		BENCHMARK_ADVANCED("rcopy 8 avx")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memypoc avx")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -422,12 +422,12 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::rcopy_8_avx(first, last, end); });
+			meter.measure([&](int){ return detail::memypoc_avx(first, last, end); });
 		};
 #endif
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-		BENCHMARK_ADVANCED("rcopy 8 sse")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memypoc sse")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -443,12 +443,12 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::rcopy_8_sse(first, last, end); });
+			meter.measure([&](int){ return detail::memypoc_sse(first, last, end); });
 		};
 #endif
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		BENCHMARK_ADVANCED("rcopy 8 sse2")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memypoc sse2")(Catch::Benchmark::Chronometer meter)
 		{
 			if (size <= 16u)
 				return;
@@ -464,7 +464,7 @@ namespace
 			std::fill(first, last, 'Z');
 			*last = 0;
 
-			meter.measure([&](int){ return detail::rcopy_8_sse2(first, last, end); });
+			meter.measure([&](int){ return detail::memypoc_sse2(first, last, end); });
 		};
 #endif
 	}
@@ -514,7 +514,7 @@ namespace
 		};
 
 #if HAVE_ASMLIB
-		BENCHMARK_ADVANCED("fill (asmlib memset)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("memset (asmlib)")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 tyt;
 			tyt.allocate(offset + size);
@@ -523,42 +523,49 @@ namespace
 		};
 #endif
 
-		BENCHMARK_ADVANCED("fill large none")(Catch::Benchmark::Chronometer meter)
-		{
-			buffer_utf8 tyt;
-			tyt.allocate(offset + size);
-
-			meter.measure([&](int n){ detail::fill_large_none(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
-		};
-
-#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-		BENCHMARK_ADVANCED("fill large sse")(Catch::Benchmark::Chronometer meter)
-		{
-			buffer_utf8 tyt;
-			tyt.allocate(offset + size);
-
-			meter.measure([&](int n){ detail::fill_large_sse(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
-		};
-#endif
-
-#if defined(__AVX__)
-		BENCHMARK_ADVANCED("fill large avx")(Catch::Benchmark::Chronometer meter)
-		{
-			buffer_utf8 tyt;
-			tyt.allocate(offset + size);
-
-			meter.measure([&](int n){ detail::fill_large_avx(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
-		};
-
-#endif
-
-		BENCHMARK_ADVANCED("fill (naive)")(Catch::Benchmark::Chronometer meter)
+		BENCHMARK_ADVANCED("naive for-loop")(Catch::Benchmark::Chronometer meter)
 		{
 			buffer_utf8 tyt;
 			tyt.allocate(offset + size);
 
 			meter.measure([&](int n){ fill_alt_naive(tyt.data() + offset, tyt.data() + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
 		};
+
+		BENCHMARK_ADVANCED("memset")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ memset(reinterpret_cast<char8 *>(tyt.data()) + offset, reinterpret_cast<char8 *>(tyt.data()) + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+
+		BENCHMARK_ADVANCED("memset8 none")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::memset8_none(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_ADVANCED("memset8 sse2")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::memset8_sse2(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+#endif
+
+#if defined(__AVX__)
+		BENCHMARK_ADVANCED("memset8 avx")(Catch::Benchmark::Chronometer meter)
+		{
+			buffer_utf8 tyt;
+			tyt.allocate(offset + size);
+
+			meter.measure([&](int n){ detail::memset8_avx(reinterpret_cast<char8 *>(tyt.data() + offset), reinterpret_cast<char8 *>(tyt.data() + offset + size), static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+		};
+#endif
 	}
 }
 

@@ -5,7 +5,7 @@ namespace ful
 	namespace detail
 	{
 		ful_target("sse2") ful_inline
-		char8 * copy_8_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		char8 * memcopy_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
 			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
@@ -16,7 +16,7 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline
-		char8 * copy_8_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		char8 * memcopy_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
 			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 16));
@@ -31,7 +31,7 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline
-		char8 * copy_8_sse2(const char8 * first, const char8 * last, char8 * begin)
+		char8 * memcopy_sse2(const char8 * first, const char8 * last, char8 * begin)
 		{
 			const usize size = last - first;
 			if (!ful_expect(16u < size))
@@ -39,22 +39,22 @@ namespace ful
 
 			if (size <= 32)
 			{
-				return copy_8_sse2_16(first, last, begin, begin + size);
+				return memcopy_sse2_16(first, last, begin, begin + size);
 			}
 			else if (size <= 64)
 			{
-				return copy_8_sse2_32(first, last, begin, begin + size);
+				return memcopy_sse2_32(first, last, begin, begin + size);
 			}
 			else
 			{
-				extern char8 * copy_8_sse2_64(const char8 * first, usize size, char8 * begin);
+				extern char8 * memcopy_sse2_64(const char8 * first, usize size, char8 * begin);
 
-				return copy_8_sse2_64(first, size, begin);
+				return memcopy_sse2_64(first, size, begin);
 			}
 		}
 
 		ful_target("sse2") ful_inline
-		char8 * rcopy_8_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		char8 * memypoc_sse2_16(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
 			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(last - 16));
@@ -65,7 +65,7 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline
-		char8 * rcopy_8_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		char8 * memypoc_sse2_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
 		{
 			const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 			const __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 16));
@@ -80,7 +80,7 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline
-		char8 * rcopy_8_sse2(const char8 * first, const char8 * last, char8 * end)
+		char8 * memypoc_sse2(const char8 * first, const char8 * last, char8 * end)
 		{
 			const usize size = last - first;
 			if (!ful_expect(16u < size))
@@ -88,17 +88,109 @@ namespace ful
 
 			if (size <= 32)
 			{
-				return rcopy_8_sse2_16(first, last, end - size, end);
+				return memypoc_sse2_16(first, last, end - size, end);
 			}
 			else if (size <= 64)
 			{
-				return rcopy_8_sse2_32(first, last, end - size, end);
+				return memypoc_sse2_32(first, last, end - size, end);
 			}
 			else
 			{
-				extern char8 * rcopy_8_sse2_64(usize size, const char8 * last, char8 * end);
+				extern char8 * memypoc_sse2_64(usize size, const char8 * last, char8 * end);
 
-				return rcopy_8_sse2_64(size, last, end);
+				return memypoc_sse2_64(size, last, end);
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * memswap_sse2_16(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		{
+			const __m128i a1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
+			const __m128i b1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
+			const __m128i a2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2));
+			const __m128i b2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2), a1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end2 - 16), b1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1), a2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end1 - 16), b2);
+
+			return end2;
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * memswap_sse2_32(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		{
+			const __m128i a1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1));
+			const __m128i b1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 16));
+			const __m128i c1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 32));
+			const __m128i d1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
+			const __m128i a2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2));
+			const __m128i b2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 16));
+			const __m128i c2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 32));
+			const __m128i d2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2), a1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg2 + 16), b1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end2 - 32), c1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end2 - 16), d1);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1), a2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(beg1 + 16), b2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end1 - 32), c2);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(end1 - 16), d2);
+
+			return end2;
+		}
+
+		ful_target("sse2") ful_inline
+		char8 * memswap_sse2(char8 * beg1, char8 * end1, char8 * beg2)
+		{
+			const usize size = end1 - beg1;
+			if (!ful_expect(16u < size))
+				return beg2;
+
+			if (size <= 32)
+			{
+				return memswap_sse2_16(beg1, end1, beg2, beg2 + size);
+			}
+			else if (size <= 64)
+			{
+				return memswap_sse2_32(beg1, end1, beg2, beg2 + size);
+			}
+			else
+			{
+				extern char8 * memswap_sse2_64(char8 * beg1, usize size, char8 * beg2);
+
+				return memswap_sse2_64(beg1, size, beg2);
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		void memset8_sse2(char8 * from, char8 * to, char8 u)
+		{
+			const usize size = to - from;
+			if (!ful_expect(16u < size))
+				return;
+
+			if (size <= 32)
+			{
+				const __m128i u128 = _mm_set1_epi8(u);
+
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(from), u128);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(to - 16), u128);
+			}
+			else if (size <= 64)
+			{
+				const __m128i u128 = _mm_set1_epi8(u);
+
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(from), u128);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(from + 16), u128);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(to - 32), u128);
+				_mm_storeu_si128(reinterpret_cast<__m128i *>(to - 16), u128);
+			}
+			else
+			{
+				extern void memset8_sse2_64(char8 * from, char8 * to, char8 u);
+
+				memset8_sse2_64(from, to, u);
 			}
 		}
 

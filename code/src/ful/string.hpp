@@ -19,16 +19,17 @@ namespace ful
 	namespace detail
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		extern char8 * ful_dispatch(copy_8)(const char8 * first, const char8 * last, char8 * begin);
-		extern char8 * ful_dispatch(rcopy_8)(const char8 * first, const char8 * last, char8 * end);
-		extern void ful_dispatch(fill_large)(char8 * from, char8 * to, char8 u);
+		extern char8 * ful_dispatch(memcopy)(const char8 * first, const char8 * last, char8 * begin);
+		extern char8 * ful_dispatch(memypoc)(const char8 * first, const char8 * last, char8 * end);
+		extern char8 * ful_dispatch(memswap)(char8 * beg1, char8 * end1, char8 * beg2);
+		extern void ful_dispatch(memset8)(char8 * from, char8 * to, char8 u);
 		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 #endif
 	}
 
 	ful_inline
-	char8 * copy(const char8 * first, const char8 * last, char8 * begin)
+	char8 * memcopy(const char8 * first, const char8 * last, char8 * begin)
 	{
 		if (!ful_expect(begin <= first || last <= begin))
 			return begin;
@@ -80,25 +81,30 @@ namespace ful
 
 			return begin + size;
 		}
-		case 1: begin[0] = first[0]; return begin + size;
+		case 1:
+		{
+			*reinterpret_cast<uint8 *>(begin) = *reinterpret_cast<const uint8 *>(first);
+
+			return begin + size;
+		}
 		case 0: return begin + size;
 		default:
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::copy_8(first, last, begin);
+			return detail::memcopy(first, last, begin);
 #elif defined(__AVX__)
-			return detail::copy_8_avx(first, last, begin);
+			return detail::memcopy_avx(first, last, begin);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::copy_8_sse2(first, last, begin);
+			return detail::memcopy_sse2(first, last, begin);
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-			return detail::copy_8_sse(first, last, begin);
+			return detail::memcopy_sse(first, last, begin);
 #else
-			return detail::copy_8_none(first, last, begin);
+			return detail::memcopy_none(first, last, begin);
 #endif
 		}
 	}
 
 	ful_inline
-	char8 * rcopy(const char8 * first, const char8 * last, char8 * end)
+	char8 * memypoc(const char8 * first, const char8 * last, char8 * end)
 	{
 		if (!ful_expect(end <= first || last <= end))
 			return end;
@@ -150,50 +156,123 @@ namespace ful
 
 			return end - size;
 		}
-		case 1: end[-1] = first[0]; return end - size;
+		case 1:
+		{
+			*reinterpret_cast<uint8 *>(end - 2) = *reinterpret_cast<const uint8 *>(first);
+
+			return end - size;
+		}
 		case 0: return end - size;
 		default:
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::rcopy_8(first, last, end);
+			return detail::memypoc(first, last, end);
 #elif defined(__AVX__)
-			return detail::rcopy_8_avx(first, last, end);
+			return detail::memypoc_avx(first, last, end);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::rcopy_8_sse2(first, last, end);
+			return detail::memypoc_sse2(first, last, end);
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-			return detail::rcopy_8_sse(first, last, end);
+			return detail::memypoc_sse(first, last, end);
 #else
-			return detail::rcopy_8_none(first, last, end);
+			return detail::memypoc_none(first, last, end);
 #endif
 		}
 	}
 
-	inline bool equal(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+	ful_inline
+	char8 * memswap(char8 * beg1, char8 * end1, char8 * beg2)
 	{
+		const usize size = end1 - beg1;
+		if (!ful_expect(end1 <= beg2 || beg2 + size <= beg1))
+			return beg2;
+
+		switch (size)
+		{
+		case 16:
+		case 15:
+		case 14:
+		case 13:
+		case 12:
+		case 11:
+		case 10:
+		case 9:
+		{
+			const uint64 a1 = *reinterpret_cast<const uint64 *>(beg1);
+			const uint64 b1 = *reinterpret_cast<const uint64 *>(end1 - 8);
+			const uint64 a2 = *reinterpret_cast<const uint64 *>(beg2);
+			const uint64 b2 = *reinterpret_cast<const uint64 *>(beg2 + size - 8);
+			*reinterpret_cast<uint64 *>(beg2) = a1;
+			*reinterpret_cast<uint64 *>(beg2 + size - 8) = b1;
+			*reinterpret_cast<uint64 *>(beg1) = a2;
+			*reinterpret_cast<uint64 *>(end1 - 8) = b2;
+
+			return beg2 + size;
+		}
+		case 8:
+		case 7:
+		case 6:
+		case 5:
+		{
+			const uint32 a1 = *reinterpret_cast<const uint32 *>(beg1);
+			const uint32 b1 = *reinterpret_cast<const uint32 *>(end1 - 4);
+			const uint32 a2 = *reinterpret_cast<const uint32 *>(beg2);
+			const uint32 b2 = *reinterpret_cast<const uint32 *>(beg2 + size - 4);
+			*reinterpret_cast<uint32 *>(beg2) = a1;
+			*reinterpret_cast<uint32 *>(beg2 + size - 4) = b1;
+			*reinterpret_cast<uint32 *>(beg1) = a2;
+			*reinterpret_cast<uint32 *>(end1 - 4) = b2;
+
+			return beg2 + size;
+		}
+		case 4:
+		case 3:
+		{
+			const uint16 a1 = *reinterpret_cast<const uint16 *>(beg1);
+			const uint16 b1 = *reinterpret_cast<const uint16 *>(end1 - 2);
+			const uint16 a2 = *reinterpret_cast<const uint16 *>(beg2);
+			const uint16 b2 = *reinterpret_cast<const uint16 *>(beg2 + size - 2);
+			*reinterpret_cast<uint16 *>(beg2) = a1;
+			*reinterpret_cast<uint16 *>(beg2 + size - 2) = b1;
+			*reinterpret_cast<uint16 *>(beg1) = a2;
+			*reinterpret_cast<uint16 *>(end1 - 2) = b2;
+
+			return beg2 + size;
+		}
+		case 2:
+		{
+			const uint16 a1 = *reinterpret_cast<const uint16 *>(beg1);
+			const uint16 a2 = *reinterpret_cast<const uint16 *>(beg2);
+			*reinterpret_cast<uint16 *>(beg2) = a1;
+			*reinterpret_cast<uint16 *>(beg1) = a2;
+
+			return beg2 + size;
+		}
+		case 1:
+		{
+			const uint8 a1 = *reinterpret_cast<const uint8 *>(beg1);
+			const uint8 a2 = *reinterpret_cast<const uint8 *>(beg2);
+			*reinterpret_cast<uint8 *>(beg2) = a1;
+			*reinterpret_cast<uint8 *>(beg1) = a2;
+
+			return beg2 + size;
+		}
+		case 0: return beg2 + size;
+		default:
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::equal_cstr(beg1, end1, beg2);
-#elif defined(__AVX2__)
-		return detail::equal_cstr_avx2(beg1, end1, beg2);
+			return detail::memswap(beg1, end1, beg2);
+#elif defined(__AVX__)
+			return detail::memswap_avx(beg1, end1, beg2);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::equal_cstr_sse2(beg1, end1, beg2);
+			return detail::memswap_sse2(first, last, end);
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			return detail::memswap_sse(first, last, end);
 #else
-		return detail::equal_cstr_none(beg1, end1, beg2);
+			return detail::memswap_none(beg1, end1, beg2);
 #endif
+		}
 	}
 
-	inline bool less(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
-	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::less_cstr(beg1, end1, beg2);
-#elif defined(__AVX2__)
-		return detail::less_cstr_avx2(beg1, end1, beg2);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::less_cstr_sse2(beg1, end1, beg2);
-#else
-		return detail::less_cstr_none(beg1, end1, beg2);
-#endif
-	}
-
-	inline void fill(char8 * from, char8 * to, char8 u)
+	ful_inline
+	void memset(char8 * from, char8 * to, char8 u)
 	{
 		const usize size = to - from;
 		switch (size)
@@ -241,13 +320,43 @@ namespace ful
 		case 0: return;
 		default:
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::fill_large(from, to, u);
+			return detail::memset8(from, to, u);
 #elif defined(__AVX__)
-			return detail::fill_large_avx(from, to, u);
+			return detail::memset8_avx(from, to, u);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			return detail::memset8_sse2(from, to, u);
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			return detail::memset8_sse(from, to, u);
 #else
-			return detail::fill_large_none(from, to, u);
+			return detail::memset8_none(from, to, u);
 #endif
 		}
-		}
 	}
+
+	ful_inline bool equal(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::equal_cstr(beg1, end1, beg2);
+#elif defined(__AVX2__)
+		return detail::equal_cstr_avx2(beg1, end1, beg2);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::equal_cstr_sse2(beg1, end1, beg2);
+#else
+		return detail::equal_cstr_none(beg1, end1, beg2);
+#endif
+	}
+
+	ful_inline bool less(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::less_cstr(beg1, end1, beg2);
+#elif defined(__AVX2__)
+		return detail::less_cstr_avx2(beg1, end1, beg2);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::less_cstr_sse2(beg1, end1, beg2);
+#else
+		return detail::less_cstr_none(beg1, end1, beg2);
+#endif
+	}
+
 }

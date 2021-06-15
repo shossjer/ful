@@ -5,7 +5,7 @@ namespace ful
 	namespace detail
 	{
 		ful_inline
-		char8 * copy_8_none(const char8 * first, const char8 * last, char8 * begin)
+		char8 * memcopy_none(const char8 * first, const char8 * last, char8 * begin)
 		{
 			const usize size = last - first;
 			if (!ful_expect(16u < size))
@@ -27,14 +27,14 @@ namespace ful
 			else
 			{
 				// todo 64 bytes a time is slightly faster
-				extern char8 * copy_8_x86_32(const char8 * first, usize size, char8 * begin);
+				extern char8 * memcopy_x86_32(const char8 * first, usize size, char8 * begin);
 
-				return copy_8_x86_32(first, size, begin);
+				return memcopy_x86_32(first, size, begin);
 			}
 		}
 
 		ful_inline
-		char8 * rcopy_8_none(const char8 * first, const char8 * last, char8 * end)
+		char8 * memypoc_none(const char8 * first, const char8 * last, char8 * end)
 		{
 			const usize size = last - first;
 			if (!ful_expect(16u < size))
@@ -55,25 +55,50 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * rcopy_8_x86_32(usize size, const char8 * last, char8 * end);
+				extern char8 * memypoc_x86_32(usize size, const char8 * last, char8 * end);
 
-				return rcopy_8_x86_32(size, last, end);
+				return memypoc_x86_32(size, last, end);
 			}
 		}
 
-		ful_generic() inline
-		bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		ful_inline
+		char8 * memswap_none(char8 * beg1, char8 * end1, char8 * beg2)
 		{
-			for (; beg1 != end1; ++beg1, ++beg2)
+			const usize size = end1 - beg1;
+			if (!ful_expect(16u < size))
+				return beg2;
+
+			if (size <= 32)
 			{
-				if (*beg1 != *beg2)
-					return false;
+				const uint64 a1 = *reinterpret_cast<const uint64 *>(beg1);
+				const uint64 b1 = *reinterpret_cast<const uint64 *>(beg1 + 8);
+				const uint64 c1 = *reinterpret_cast<const uint64 *>(end1 - 16);
+				const uint64 d1 = *reinterpret_cast<const uint64 *>(end1 - 8);
+				const uint64 a2 = *reinterpret_cast<const uint64 *>(beg2);
+				const uint64 b2 = *reinterpret_cast<const uint64 *>(beg2 + 8);
+				const uint64 c2 = *reinterpret_cast<const uint64 *>(beg2 + size - 16);
+				const uint64 d2 = *reinterpret_cast<const uint64 *>(beg2 + size - 8);
+				*reinterpret_cast<uint64 *>(beg2) = a1;
+				*reinterpret_cast<uint64 *>(beg2 + 8) = b1;
+				*reinterpret_cast<uint64 *>(beg2 + size - 16) = c1;
+				*reinterpret_cast<uint64 *>(beg2 + size - 8) = d1;
+				*reinterpret_cast<uint64 *>(beg1) = a2;
+				*reinterpret_cast<uint64 *>(beg1 + 8) = b2;
+				*reinterpret_cast<uint64 *>(end1 - 16) = c2;
+				*reinterpret_cast<uint64 *>(end1 - 8) = d2;
+
+				return beg2 + size;
 			}
-			return *beg2 == unit_utf8{};
+			else
+			{
+				extern char8 * memswap_x86_32(char8 * beg1, usize size, char8 * beg2);
+
+				return memswap_x86_32(beg1, size, beg2);
+			}
 		}
 
 		ful_generic() inline
-		void fill_large_none(char8 * from, char8 * to, char8 u)
+		void memset8_none(char8 * from, char8 * to, char8 u)
 		{
 			const usize size = to - from;
 			if (!ful_expect(16 <= size))
@@ -137,6 +162,17 @@ namespace ful
 				*reinterpret_cast<uint64 *>(to_word + 24) = bytes;
 			}
 #endif
+		}
+
+		ful_generic() inline
+		bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+		{
+			for (; beg1 != end1; ++beg1, ++beg2)
+			{
+				if (*beg1 != *beg2)
+					return false;
+			}
+			return *beg2 == unit_utf8{};
 		}
 
 		ful_generic() inline
