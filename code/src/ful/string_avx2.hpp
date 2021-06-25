@@ -254,7 +254,7 @@ namespace ful
 		}
 
 		ful_target("avx2") inline
-		const char8 * find_unit_8_avx2(const char8 * beg, const char8 * end, char8 c)
+		const char8 * find_unit_8_8_avx2(const char8 * beg, const char8 * end, char8 c)
 		{
 			ful_expect(beg != end);
 

@@ -225,6 +225,74 @@ namespace ful
 		}
 
 		ful_target("avx") inline
+		void set24_avx_32_64(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
+			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
+			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
+			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 32), hi_u256);
+		}
+
+		ful_target("avx") inline
+		void set24_avx_64_96(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
+			// mi 0100000100000100 0001000001000001 0000010000010000 0100000100000100
+			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
+			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
+			const __m256i mi_u256 = _mm256_set_epi64x(bytes1, bytes0, bytes2, bytes1);
+			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(from) + 32), mi_u256);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 32), hi_u256);
+		}
+
+		ful_target("avx") inline
+		void memset24_avx(char24 * from, char24 * to, char24 u)
+		{
+			const usize size = (to - from) * sizeof(char24);
+#if defined(__AVX__)
+			if (!ful_expect(64u < size))
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_expect(16u < size))
+#endif
+				return;
+
+			if (size <= 32u)
+			{
+				set24_sse2_16_32(from, to, u);
+			}
+			else if (size <= 64u)
+			{
+				set24_avx_32_64(from, to, u);
+			}
+			else if (size <= 96u)
+			{
+				set24_avx_64_96(from, to, u);
+			}
+			else
+			{
+				extern void memset24_avx_96(char24 * from, char24 * to, char24 u);
+
+				memset24_avx_96(from, to, u);
+			}
+		}
+
+		ful_target("avx") inline
 		void set32_avx_32_64(char32 * from, char32 * to, char32 u)
 		{
 			const __m256i u256 = _mm256_set1_epi32(u);

@@ -324,29 +324,69 @@ namespace ful
 		return reinterpret_cast<unit_utf32be *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
 	}
 
-	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char8 u)
 	{
-		memset(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), static_cast<char8>(u));
+		memset(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u);
 	}
 
-	ful_inline void memset(unit_utf16le * from, unit_utf16le * to, unit_utf16le u)
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char16 u)
 	{
-		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), static_cast<char16>(u));
+		if (!ful_expect((to - from) % sizeof(char16) == 0))
+			return;
+
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), u);
 	}
 
-	ful_inline void memset(unit_utf16be * from, unit_utf16be * to, unit_utf16be u)
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char24 u)
 	{
-		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), static_cast<char16>(u));
+		if (!ful_expect((to - from) % sizeof(char24) == 0))
+			return;
+
+		memset(reinterpret_cast<char24 *>(from), reinterpret_cast<char24 *>(to), u);
 	}
 
-	ful_inline void memset(unit_utf32le * from, unit_utf32le * to, unit_utf32le u)
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char32 u)
 	{
-		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), static_cast<char32>(u));
+		if (!ful_expect((to - from) % sizeof(char32) == 0))
+			return;
+
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
 	}
 
-	ful_inline void memset(unit_utf32be * from, unit_utf32be * to, unit_utf32be u)
+	ful_inline void memset(unit_utf16le * from, unit_utf16le * to, char16 u)
 	{
-		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), static_cast<char32>(u));
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), u);
+	}
+
+	ful_inline void memset(unit_utf16le * from, unit_utf16le * to, char32 u)
+	{
+		if (!ful_expect((to - from) * sizeof(unit_utf16be) % sizeof(char32) == 0))
+			return;
+
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
+	}
+
+	ful_inline void memset(unit_utf16be * from, unit_utf16be * to, char16 u)
+	{
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), u);
+	}
+
+	ful_inline void memset(unit_utf16be * from, unit_utf16be * to, char32 u)
+	{
+		if (!ful_expect((to - from) * sizeof(unit_utf16be) % sizeof(char32) == 0))
+			return;
+
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
+	}
+
+	ful_inline void memset(unit_utf32le * from, unit_utf32le * to, char32 u)
+	{
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
+	}
+
+	ful_inline void memset(unit_utf32be * from, unit_utf32be * to, char32 u)
+	{
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
 	}
 
 	ful_inline unit_utf8 * memswap(unit_utf8 * beg1, unit_utf8 * end1, unit_utf8 * beg2)

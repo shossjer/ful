@@ -550,7 +550,7 @@ namespace
 			buffer_utf8 tyt;
 			tyt.allocate(offset + size);
 
-			meter.measure([&](int n){ memset(reinterpret_cast<char8 *>(tyt.data()) + offset, reinterpret_cast<char8 *>(tyt.data()) + offset + size, static_cast<unit_utf8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
+			meter.measure([&](int n){ memset(reinterpret_cast<char8 *>(tyt.data()) + offset, reinterpret_cast<char8 *>(tyt.data()) + offset + size, static_cast<char8>('a' + n % ('z' - 'a' + 1))); return tyt.data() + offset; });
 		};
 
 		BENCHMARK_ADVANCED("memset8 none")(Catch::Benchmark::Chronometer meter)
@@ -687,8 +687,8 @@ TEST_CASE("find_unit", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		REQUIRE(detail::find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
-		meter.measure([&](int){ return detail::find_unit_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
+		REQUIRE(detail::find_unit_8_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
+		meter.measure([&](int){ return detail::find_unit_8_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
 	};
 #endif
 

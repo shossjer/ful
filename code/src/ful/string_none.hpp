@@ -177,6 +177,24 @@ namespace ful
 		}
 
 		ful_generic() inline
+		void memset24_none(char24 * from, char24 * to, char24 u)
+		{
+			const usize size = (to - from) * sizeof(char24);
+#if defined(__AVX__)
+			if (!ful_expect(64u < size))
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_expect(16u < size))
+#endif
+				return;
+
+			// todo
+			ful_unused(u);
+			ful_break();
+		}
+
+		ful_generic() inline
 		void memset32_none(char32 * from, char32 * to, char32 u)
 		{
 			const usize size = (to - from) * sizeof(char32);

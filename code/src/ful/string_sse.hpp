@@ -228,6 +228,102 @@ namespace ful
 		}
 
 		ful_target("sse") inline
+		void set24_sse_16_32(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes[3] = {bytes0, bytes1, bytes2};
+			// lo 0100000100000100 0001000001000001
+			// hi 0000010000010000 0100000100000100
+			const __m128 lo_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes));
+			const __m128 hi_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes + 1));
+
+			_mm_storeu_ps(reinterpret_cast<float *>(from), lo_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse") inline
+		void set24_sse_32_64(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes[4] = {bytes0, bytes1, bytes2, bytes0};
+			// lo 0100000100000100 0001000001000001
+			// mi 0001000001000001 0000010000010000
+			// hi 0000010000010000 0100000100000100
+			const __m128 lo_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes));
+			const __m128 mi_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes + 2));
+			const __m128 hi_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes + 1));
+
+			_mm_storeu_ps(reinterpret_cast<float *>(from), lo_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(to) - 32), mi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse") inline
+		void set24_sse_64_96(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes[4] = {bytes0, bytes1, bytes2, bytes0};
+			// lo 0100000100000100 0001000001000001
+			// mi 0001000001000001 0000010000010000
+			// hi 0000010000010000 0100000100000100
+			const __m128 lo_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes));
+			const __m128 mi_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes + 2));
+			const __m128 hi_u128 = _mm_load_ps1(reinterpret_cast<const float *>(bytes + 1));
+
+			_mm_storeu_ps(reinterpret_cast<float *>(from), lo_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 32), hi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 48), lo_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 64), mi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(from) + 80), hi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(to) - 32), mi_u128);
+			_mm_storeu_ps(reinterpret_cast<float *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse") ful_inline
+		void memset24_sse(char24 * from, char24 * to, char24 u)
+		{
+			const usize size = (to - from) * sizeof(char24);
+#if defined(__AVX__)
+			if (!ful_expect(64u < size))
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_expect(16u < size))
+#endif
+				return;
+
+			if (size <= 32u)
+			{
+				set24_sse_16_32(from, to, u);
+			}
+			else if (size <= 64u)
+			{
+				set24_sse_32_64(from, to, u);
+			}
+			else if (size <= 96u)
+			{
+				set24_sse_64_96(from, to, u);
+			}
+			else
+			{
+				extern void memset24_sse_96(char24 * from, char24 * to, char24 u);
+
+				memset24_sse_96(from, to, u);
+			}
+		}
+
+		ful_target("sse") inline
 		void set32_sse_16_32(char32 * from, char32 * to, char32 u)
 		{
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&u));

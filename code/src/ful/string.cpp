@@ -94,6 +94,19 @@ ful_resolve(memset16, void, char16 * from, char16 * to, char16 u)
 		return ful_cpucall(memset16, none, from, to, u);
 }
 
+ful_resolve(memset24, void, char24 * from, char24 * to, char24 u)
+{
+	ful_cpuinit();
+	if (ful_cpucheck(AVX))
+		return ful_cpucall(memset24, avx, from, to, u);
+	else if (ful_cpucheck(SSE2))
+		return ful_cpucall(memset24, sse2, from, to, u);
+	else if (ful_cpucheck(SSE))
+		return ful_cpucall(memset24, sse, from, to, u);
+	else
+		return ful_cpucall(memset24, none, from, to, u);
+}
+
 ful_resolve(memset32, void, char32 * from, char32 * to, char32 u)
 {
 	ful_cpuinit();

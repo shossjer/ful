@@ -25,6 +25,7 @@ namespace ful
 		extern char8 * ful_dispatch(memswap)(char8 * beg1, char8 * end1, char8 * beg2);
 		extern void ful_dispatch(memset8)(char8 * from, char8 * to, char8 u);
 		extern void ful_dispatch(memset16)(char16 * from, char16 * to, char16 u);
+		extern void ful_dispatch(memset24)(char24 * from, char24 * to, char24 u);
 		extern void ful_dispatch(memset32)(char32 * from, char32 * to, char32 u);
 		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
@@ -327,7 +328,7 @@ namespace ful
 			case 12:
 			case 10:
 			{
-				const uint64 bytes = 0x0001000100010001u * (uint8)u;
+				const uint64 bytes = 0x0001000100010001u * (uint16)u;
 
 				*reinterpret_cast<uint64 *>(from) = bytes;
 				*reinterpret_cast<uint64 *>(to - 4) = bytes;
@@ -337,7 +338,7 @@ namespace ful
 			case 8:
 			case 6:
 			{
-				const uint32 bytes = 0x00010001u * (uint8)u;
+				const uint32 bytes = 0x00010001u * (uint16)u;
 
 				*reinterpret_cast<uint32 *>(from) = bytes;
 				*reinterpret_cast<uint32 *>(to - 2) = bytes;
@@ -346,6 +347,76 @@ namespace ful
 			}
 			case 4: from[1] = u; ful_fallthrough;
 			case 2: from[0] = u; ful_fallthrough;
+			case 0: break;
+			default: ful_unreachable();
+			}
+		}
+
+		ful_inline
+		void set_small(char24 * from, char24 * to, char24 u)
+		{
+			switch ((to - from) * sizeof(char24))
+			{
+#if defined(__AVX__)
+			case 63:
+			case 60:
+			case 57:
+			case 54:
+			case 51:
+			case 48:
+			case 45:
+			case 42:
+			case 39:
+			case 36:
+			case 33:
+			{
+				detail::set24_avx_32_64(from, to, u);
+
+				break;
+			}
+#endif
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			case 30:
+			case 27:
+			case 24:
+			case 21:
+			case 18:
+			{
+# if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				detail::set24_sse2_16_32(from, to, u);
+# else
+				detail::set24_sse_16_32(from, to, u);
+# endif
+
+				break;
+			}
+#endif
+			case 15:
+			case 12:
+			case 9:
+			{
+				// todo benchmark
+				const uint64 lo_bytes = 0x0001000001000001u * (uint32)u;
+				const uint64 hi_bytes = (lo_bytes << 16) | ((uint32)u >> 8);
+				// lo 0001000001000001
+				// hi 0000010000010000
+
+				*reinterpret_cast<uint64 *>(from) = lo_bytes;
+				*reinterpret_cast<uint64 *>(reinterpret_cast<char8 *>(to) - 8) = hi_bytes;
+
+				break;
+			}
+			case 6:
+			{
+				// todo benchmark
+				const uint32 bytes = 0x01000001u * (uint32)u;
+
+				*reinterpret_cast<uint32 *>(from) = bytes;
+				*reinterpret_cast<uint16 *>(reinterpret_cast<char8 *>(to) - 8) = static_cast<uint16>((uint32)u >> 8);
+
+				break;
+			}
+			case 3: from[0] = u; ful_fallthrough;
 			case 0: break;
 			default: ful_unreachable();
 			}
@@ -389,7 +460,7 @@ namespace ful
 			case 16:
 			case 12:
 			{
-				const uint64 bytes = 0x0000000100000001u * (uint8)u;
+				const uint64 bytes = 0x0000000100000001u * (uint32)u;
 
 				*reinterpret_cast<uint64 *>(from) = bytes;
 				*reinterpret_cast<uint64 *>(to - 2) = bytes;
@@ -715,6 +786,11 @@ namespace ful
 		}
 	}
 
+	// prevents implicit casts from inbuilt characters with single quotes
+	// (e.g. 'a') to int/char32
+	template <typename T>
+	void memset(T * from, T * to, char u) = delete;
+
 	ful_inline
 	void memset(char8 * from, char8 * to, char8 u)
 	{
@@ -775,6 +851,38 @@ namespace ful
 			return detail::memset16_sse(from, to, u);
 #else
 			return detail::memset16_none(from, to, u);
+#endif
+		}
+	}
+
+	ful_inline
+	void memset(char24 * from, char24 * to, char24 u)
+	{
+		const usize size = (to - from) * sizeof(char24);
+#if defined(__AVX__)
+		if (size <= 64u)
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		if (size <= 32u)
+#else
+		if (size <= 16u)
+#endif
+		{
+			detail::set_small(from, to, u);
+
+			return;
+		}
+		else
+		{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+			return detail::memset24(from, to, u);
+#elif defined(__AVX__)
+			return detail::memset24_avx(from, to, u);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			return detail::memset24_sse2(from, to, u);
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			return detail::memset24_sse(from, to, u);
+#else
+			return detail::memset24_none(from, to, u);
 #endif
 		}
 	}

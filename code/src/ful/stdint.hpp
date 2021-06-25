@@ -114,4 +114,41 @@ namespace ful
 	using char16 = sint16;
 	using char32 = sint32;
 	using char64 = sint64;
+
+	struct char24
+	{
+		char8 values_[3];
+
+		char24() = default;
+
+		/*ful_inline*/ explicit char24(char value) { values_[0] = value; *reinterpret_cast<uint16 *>(values_ + 1) = 0; }
+		/*ful_inline*/ explicit char24(signed char value) { values_[0] = value; *reinterpret_cast<uint16 *>(values_ + 1) = 0; }
+		/*ful_inline*/ explicit char24(unsigned char value) { values_[0] = value; *reinterpret_cast<uint16 *>(values_ + 1) = 0; }
+		/*ful_inline*/ explicit char24(char16_t value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = 0; }
+		/*ful_inline*/ explicit char24(short value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = 0; }
+		/*ful_inline*/ explicit char24(unsigned short value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = 0; }
+		/*ful_inline*/ explicit char24(char32_t value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(int value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(unsigned int value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(long value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(unsigned long value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(long long value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+		/*ful_inline*/ explicit char24(unsigned long long value) { *reinterpret_cast<uint16 *>(values_) = static_cast<uint16>(value); values_[2] = static_cast<char8>(static_cast<uint32>(value) >> 16); }
+
+		/*ful_inline*/ explicit operator char () const { return static_cast<char>(values_[0]); }
+		/*ful_inline*/ explicit operator signed char () const { return static_cast<signed char>(values_[0]); }
+		/*ful_inline*/ explicit operator unsigned char () const { return static_cast<unsigned char>(values_[0]); }
+		/*ful_inline*/ explicit operator char16_t () const { return *reinterpret_cast<const char16_t *>(values_); }
+		/*ful_inline*/ explicit operator short () const { return *reinterpret_cast<const short *>(values_); }
+		/*ful_inline*/ explicit operator unsigned short () const { return *reinterpret_cast<const unsigned short *>(values_); }
+		/*ful_inline*/ explicit operator char32_t () const { return static_cast<char32_t>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator int () const { return static_cast<int>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator unsigned int () const { return static_cast<unsigned int>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator long () const { return static_cast<long>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator unsigned long () const { return static_cast<unsigned long>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator long long () const { return static_cast<long long>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+		/*ful_inline*/ explicit operator unsigned long long () const { return static_cast<unsigned long long>((static_cast<uint32>(values_[2]) << 16) | (*reinterpret_cast<const uint16 *>(values_))); }
+	};
+
+	static_assert(sizeof(char24) == 3 * sizeof(char8), "");
 }

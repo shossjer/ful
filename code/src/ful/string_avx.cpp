@@ -32,6 +32,26 @@ namespace
 
 		_mm256_storeu_si256(reinterpret_cast<__m256i *>(to_word + 32), u256);
 	}
+
+	ful_target("avx")
+	void memset_avx_96(ful::char8 * from, ful::char8 * to, __m256i lo_u256, __m256i mi_u256, __m256i hi_u256)
+	{
+		ful::char8 * const to_word = to - 96;
+		if (from < to_word)
+		{
+			do
+			{
+				_mm256_stream_si256(reinterpret_cast<__m256i *>(from), lo_u256);
+				_mm256_stream_si256(reinterpret_cast<__m256i *>(from + 32), mi_u256);
+				_mm256_stream_si256(reinterpret_cast<__m256i *>(from + 64), hi_u256);
+
+				from += 96;
+			}
+			while (from < to_word);
+
+			_mm_sfence();
+		}
+	}
 }
 
 namespace ful
@@ -159,6 +179,65 @@ namespace ful
 			const __m256i u256 = _mm256_set1_epi16(u);
 
 			memset_avx_64(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u256);
+		}
+
+		ful_target("avx")
+		void memset24_avx_96(char24 * from, char24 * to, char24 u)
+		{
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
+			// mi 0100000100000100 0001000001000001 0000010000010000 0100000100000100
+			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
+			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
+			const __m256i mi_u256 = _mm256_set_epi64x(bytes1, bytes0, bytes2, bytes1);
+			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
+
+			char24 * const from_aligned = ful_align_next_32(from);
+
+			switch (reinterpret_cast<char8 *>(from_aligned) - reinterpret_cast<char8 *>(from))
+			{
+			case 1: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 2: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 3: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 4: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 5: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 6: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 7: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 8: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 9: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 10: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 11: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 12: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 13: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 14: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 15: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 16: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 17: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 18: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 19: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 20: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 21: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 22: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 23: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 24: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 25: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 26: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 27: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 28: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 29: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			case 30: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u256, mi_u256, hi_u256); break;
+			case 31: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u256, lo_u256, mi_u256); break;
+			case 32: memset_avx_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u256, hi_u256, lo_u256); break;
+			default: ful_unreachable();
+			}
+
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 96), lo_u256);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 64), mi_u256);
+			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 32), hi_u256);
 		}
 
 		ful_target("avx")

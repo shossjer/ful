@@ -224,6 +224,99 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
+		void set24_sse2_16_32(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0100000100000100 0001000001000001
+			// hi 0000010000010000 0100000100000100
+			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
+			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse2") inline
+		void set24_sse2_32_64(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0100000100000100 0001000001000001
+			// mi 0001000001000001 0000010000010000
+			// hi 0000010000010000 0100000100000100
+			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
+			const __m128i mi_u128 = _mm_set_epi64x(bytes0, bytes2);
+			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 32), mi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse2") inline
+		void set24_sse2_64_96(char24 * from, char24 * to, char24 u)
+		{
+			// todo benchmark
+			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
+			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			// lo 0100000100000100 0001000001000001
+			// mi 0001000001000001 0000010000010000
+			// hi 0000010000010000 0100000100000100
+			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
+			const __m128i mi_u128 = _mm_set_epi64x(bytes0, bytes2);
+			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 32), hi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 48), lo_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 64), mi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 80), hi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 32), mi_u128);
+			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
+		}
+
+		ful_target("sse2") ful_inline
+		void memset24_sse2(char24 * from, char24 * to, char24 u)
+		{
+			const usize size = (to - from) * sizeof(char24);
+#if defined(__AVX__)
+			if (!ful_expect(64u < size))
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_expect(16u < size))
+#endif
+				return;
+
+			if (size <= 32u)
+			{
+				set24_sse2_16_32(from, to, u);
+			}
+			else if (size <= 64u)
+			{
+				set24_sse2_32_64(from, to, u);
+			}
+			else if (size <= 96u)
+			{
+				set24_sse2_64_96(from, to, u);
+			}
+			else
+			{
+				extern void memset24_sse2_96(char24 * from, char24 * to, char24 u);
+
+				memset24_sse2_96(from, to, u);
+			}
+		}
+
+		ful_target("sse2") inline
 		void set32_sse2_16_32(char32 * from, char32 * to, char32 u)
 		{
 			const __m128i u128 = _mm_set1_epi32(u);
