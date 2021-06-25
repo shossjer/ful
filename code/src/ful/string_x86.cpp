@@ -13,6 +13,37 @@ namespace ful
 			{
 				const uint64 a = *reinterpret_cast<const uint64 *>(first + index);
 				const uint64 b = *reinterpret_cast<const uint64 *>(first + index + 8);
+				const uint64 c = *reinterpret_cast<const uint64 *>(first + index + 16);
+				const uint64 d = *reinterpret_cast<const uint64 *>(first + index + 24);
+				*reinterpret_cast<uint64 *>(begin + index) = a;
+				*reinterpret_cast<uint64 *>(begin + index + 8) = b;
+				*reinterpret_cast<uint64 *>(begin + index + 16) = c;
+				*reinterpret_cast<uint64 *>(begin + index + 24) = d;
+
+				index += 32;
+			}
+			while (index < end_index);
+
+			const uint64 a = *reinterpret_cast<const uint64 *>(first + end_index);
+			const uint64 b = *reinterpret_cast<const uint64 *>(first + end_index + 8);
+			const uint64 c = *reinterpret_cast<const uint64 *>(first + end_index + 16);
+			const uint64 d = *reinterpret_cast<const uint64 *>(first + end_index + 24);
+			*reinterpret_cast<uint64 *>(begin + end_index) = a;
+			*reinterpret_cast<uint64 *>(begin + end_index + 8) = b;
+			*reinterpret_cast<uint64 *>(begin + end_index + 16) = c;
+			*reinterpret_cast<uint64 *>(begin + end_index + 24) = d;
+
+			return begin + size;
+		}
+
+		char8 * memmovef_x86_32(const char8 * first, usize size, char8 * begin)
+		{
+			const usize end_index = size - 32;
+			usize index = 0;
+			do
+			{
+				const uint64 a = *reinterpret_cast<const uint64 *>(first + index);
+				const uint64 b = *reinterpret_cast<const uint64 *>(first + index + 8);
 				*reinterpret_cast<uint64 *>(begin + index) = a;
 				*reinterpret_cast<uint64 *>(begin + index + 8) = b;
 
@@ -32,7 +63,7 @@ namespace ful
 			return begin + size;
 		}
 
-		char8 * memypoc_x86_32(usize size, const char8 * last, char8 * end)
+		char8 * memmover_x86_32(usize size, const char8 * last, char8 * end)
 		{
 			const usize begin_index = size - 32;
 			usize index = 0;

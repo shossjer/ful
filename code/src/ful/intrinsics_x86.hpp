@@ -35,6 +35,20 @@ namespace ful
 		// byte swap
 		ful_inline unsigned int bswap(unsigned int x) { return bswap(static_cast<int>(x)); }
 
+		// move data from string to string
+		ful_inline void repmovf(const unsigned int * src, unsigned int cnt, unsigned int * dst)
+		{
+			// note missing intrinsics
+			__asm__ volatile("rep movsd" : "=D" (dst), "=S" (src), "=c" (cnt) : "0" (dst), "1" (src), "2" (cnt) : "memory");
+		}
+
+		// store string
+		ful_inline void repstosf(unsigned int * dst, unsigned int cnt, unsigned int val)
+		{
+			// note missing intrinsics
+			__asm__ volatile("rep stosd" : "=D" (dst), "=a" (val), "=c" (cnt) : "0" (dst), "1" (val), "2" (cnt) : "memory");
+		}
+
 		// rotate left
 		ful_inline unsigned int rotl(unsigned int x, int shift) { return __rold(x, shift); }
 
@@ -78,6 +92,20 @@ namespace ful
 		// byte swap
 		ful_inline unsigned long long bswap(unsigned long long x) { return bswap(static_cast<long long>(x)); }
 
+		// move data from string to string
+		ful_inline void repmovf(const unsigned long long * src, unsigned long long cnt, unsigned long long * dst)
+		{
+			// note missing intrinsics
+			__asm__ volatile("rep movsq" : "=D" (dst), "=S" (src), "=c" (cnt) : "0" (dst), "1" (src), "2" (cnt) : "memory");
+		}
+
+		// store string
+		ful_inline void repstosf(unsigned long long * dst, unsigned long long cnt, unsigned long long val)
+		{
+			// note missing intrinsics
+			__asm__ volatile("rep stosq" : "=D" (dst), "=a" (val), "=c" (cnt) : "0" (dst), "1" (val), "2" (cnt) : "memory");
+		}
+
 		// rotate left
 		ful_inline unsigned long long rotl(unsigned long long x, int shift) { return __rolq(x, shift); }
 
@@ -109,6 +137,12 @@ namespace ful
 
 		// byte swap
 		ful_inline unsigned long bswap(unsigned long x) { return bswap(static_cast<long>(x)); }
+
+		// move data from string to string
+		ful_inline void repmovf(const unsigned long * src, unsigned long cnt, unsigned long * dst) { repmovf(reinterpret_cast<const unsigned long long *>(src), static_cast<unsigned long long>(cnt), reinterpret_cast<unsigned long long *>(dst)); }
+
+		// store string
+		ful_inline void repstosf(unsigned long * dst, unsigned long cnt, unsigned long val) { repstosf(reinterpret_cast<unsigned long long *>(dst), static_cast<unsigned long long>(cnt), static_cast<unsigned long long>(val)); }
 # else
 		// bit scan forward
 		ful_inline unsigned int bsf(long x) { return bsf(static_cast<int>(x)); }
@@ -127,6 +161,12 @@ namespace ful
 
 		// byte swap
 		ful_inline unsigned long bswap(unsigned long x) { return bswap(static_cast<long>(x)); }
+
+		// move data from string to string
+		ful_inline void repmovf(const unsigned long * src, unsigned long cnt, unsigned long * dst) { repmovf(reinterpret_cast<const unsigned int *>(src), static_cast<unsigned int>(cnt), reinterpret_cast<unsigned int *>(dst)); }
+
+		// store string
+		ful_inline void repstosf(unsigned long * dst, unsigned long cnt, unsigned long val) { repstosf(reinterpret_cast<unsigned int *>(dst), static_cast<unsigned int>(cnt), static_cast<unsigned int>(val)); }
 # endif
 #elif defined(_MSC_VER)
 		// bit scan forward
@@ -180,6 +220,18 @@ namespace ful
 
 		// byte swap
 		ful_inline int bswap(int x) { return bswap(static_cast<unsigned int>(x)); }
+
+		// move data from string to string
+		ful_inline void repmovf(const unsigned long * src, unsigned long cnt, unsigned long * dst) { __movsd(dst, src, cnt); }
+
+		// move data from string to string
+		ful_inline void repmovf(const unsigned int * src, unsigned int cnt, unsigned int * dst) { repmovf(reinterpret_cast<const unsigned long *>(src), static_cast<unsigned long>(cnt), reinterpret_cast<unsigned long *>(dst)); }
+
+		// store string
+		ful_inline void repstosf(unsigned long * dst, unsigned long cnt, unsigned long val) { __stosd(dst, val, cnt); }
+
+		// store string
+		ful_inline void repstosf(unsigned int * dst, unsigned int cnt, unsigned int val) { repstosf(reinterpret_cast<unsigned long *>(dst), static_cast<unsigned long>(cnt), static_cast<unsigned long>(val)); }
 
 		// rotate left
 		ful_inline unsigned int rotl(unsigned int x, int shift) { return _rotl(x, shift); }
@@ -239,6 +291,12 @@ namespace ful
 
 		// byte swap
 		ful_inline long long bswap(long long x) { return bswap(static_cast<unsigned long long>(x)); }
+
+		// move data from string to string
+		ful_inline void repmovf(const unsigned long long * src, unsigned long long cnt, unsigned long long * dst) { __movsq(dst, src, cnt); }
+
+		// store string
+		ful_inline void repstosf(unsigned long long * dst, unsigned long long cnt, unsigned long long val) { __stosq(dst, val, cnt); }
 
 		// rotate left
 		ful_inline unsigned long long rotl(unsigned long long x, int shift) { return _rotl64(x, shift); }

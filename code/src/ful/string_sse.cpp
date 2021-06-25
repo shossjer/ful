@@ -3,6 +3,41 @@
 
 #include "ful/intrinsics.hpp"
 
+namespace
+{
+	ful_target("sse")
+	void memset_sse_64(ful::char8 * from, ful::char8 * to, __m128 u128)
+	{
+		_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
+
+		from = ful_align_next_16(from);
+
+		ful::char8 * const to_word = to - 64;
+		if (from < to_word)
+		{
+			do
+			{
+				_mm_stream_ps(reinterpret_cast<float *>(from), u128);
+				_mm_stream_ps(reinterpret_cast<float *>(from + 16), u128);
+				_mm_stream_ps(reinterpret_cast<float *>(from + 32), u128);
+				_mm_stream_ps(reinterpret_cast<float *>(from + 48), u128);
+
+				from += 64;
+			}
+			while (from < to_word);
+
+			from = ful_align_next_16(to_word);
+		}
+
+		_mm_stream_ps(reinterpret_cast<float *>(from), u128);
+		_mm_stream_ps(reinterpret_cast<float *>(from + 16), u128);
+		_mm_stream_ps(reinterpret_cast<float *>(from + 32), u128);
+		_mm_sfence();
+
+		_mm_storeu_ps(reinterpret_cast<float *>(to_word + 48), u128);
+	}
+}
+
 namespace ful
 {
 	namespace detail
@@ -10,6 +45,50 @@ namespace ful
 		ful_target("sse")
 		char8 * memcopy_sse_64(const char8 * first, usize size, char8 * begin)
 		{
+			const usize begin_offset = ful_align_next_16(begin) - begin;
+			{
+				const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first));
+				_mm_storeu_ps(reinterpret_cast<float *>(begin), a);
+			}
+
+			const usize end_index = size - 64;
+			usize index = begin_offset;
+			if (index < end_index)
+			{
+				do
+				{
+					const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first + index));
+					const __m128 b = _mm_loadu_ps(reinterpret_cast<const float *>(first + index + 16));
+					const __m128 c = _mm_loadu_ps(reinterpret_cast<const float *>(first + index + 32));
+					const __m128 d = _mm_loadu_ps(reinterpret_cast<const float *>(first + index + 48));
+					_mm_stream_ps(reinterpret_cast<float *>(begin + index), a);
+					_mm_stream_ps(reinterpret_cast<float *>(begin + index + 16), b);
+					_mm_stream_ps(reinterpret_cast<float *>(begin + index + 32), c);
+					_mm_stream_ps(reinterpret_cast<float *>(begin + index + 48), d);
+
+					index += 64;
+				}
+				while (index < end_index);
+
+				_mm_sfence();
+			}
+
+			const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first + end_index));
+			const __m128 b = _mm_loadu_ps(reinterpret_cast<const float *>(first + end_index + 16));
+			const __m128 c = _mm_loadu_ps(reinterpret_cast<const float *>(first + end_index + 32));
+			const __m128 d = _mm_loadu_ps(reinterpret_cast<const float *>(first + end_index + 48));
+			_mm_storeu_ps(reinterpret_cast<float *>(begin + end_index), a);
+			_mm_storeu_ps(reinterpret_cast<float *>(begin + end_index + 16), b);
+			_mm_storeu_ps(reinterpret_cast<float *>(begin + end_index + 32), c);
+			_mm_storeu_ps(reinterpret_cast<float *>(begin + end_index + 48), d);
+
+			return begin + size;
+		}
+
+		ful_target("sse")
+		char8 * memmovef_sse_64(const char8 * first, usize size, char8 * begin)
+		{
+			// todo benchmark stream vs unaligned
 			const usize end_index = size - 64;
 			usize index = 0;
 			do
@@ -36,7 +115,7 @@ namespace ful
 		}
 
 		ful_target("sse")
-		char8 * memypoc_sse_64(usize size, const char8 * last, char8 * end)
+		char8 * memmover_sse_64(usize size, const char8 * last, char8 * end)
 		{
 			const usize begin_index = size - 64;
 			usize index = 0;
@@ -61,6 +140,32 @@ namespace ful
 			_mm_storeu_ps(reinterpret_cast<float *>(end - begin_index - 64), d);
 
 			return end - size;
+		}
+
+		ful_target("sse")
+		void memset8_sse_64(char8 * from, char8 * to, char8 u)
+		{
+			uint32 bytes = 0x01010101u * u;
+			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
+
+			memset_sse_64(from, to, u128);
+		}
+
+		ful_target("sse")
+		void memset16_sse_64(char16 * from, char16 * to, char16 u)
+		{
+			uint32 bytes = 0x00010001u * u;
+			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
+
+			memset_sse_64(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u128);
+		}
+
+		ful_target("sse")
+		void memset32_sse_64(char32 * from, char32 * to, char32 u)
+		{
+			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&u));
+
+			memset_sse_64(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u128);
 		}
 
 		ful_target("sse2")
@@ -101,41 +206,6 @@ namespace ful
 			_mm_storeu_ps(reinterpret_cast<float *>(beg1 + end_index + 48), d2);
 
 			return beg2 + size;
-		}
-
-		ful_target("sse")
-		void memset8_sse_64(char8 * from, char8 * to, char8 u)
-		{
-			alignas(4) uint32 bytes = 0x01010101u * u;
-			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
-
-			_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
-
-			from = ful_align_next_16(from);
-
-			char8 * const to_word = to - 64;
-			if (from < to_word)
-			{
-				do
-				{
-					_mm_stream_ps(reinterpret_cast<float *>(from), u128);
-					_mm_stream_ps(reinterpret_cast<float *>(from + 16), u128);
-					_mm_stream_ps(reinterpret_cast<float *>(from + 32), u128);
-					_mm_stream_ps(reinterpret_cast<float *>(from + 48), u128);
-
-					from += 64;
-				}
-				while (from < to_word);
-
-				from = ful_align_next_16(to_word);
-			}
-
-			_mm_stream_ps(reinterpret_cast<float *>(from), u128);
-			_mm_stream_ps(reinterpret_cast<float *>(from + 16), u128);
-			_mm_stream_ps(reinterpret_cast<float *>(from + 32), u128);
-			_mm_sfence();
-
-			_mm_storeu_ps(reinterpret_cast<float *>(to_word + 48), u128);
 		}
 	}
 }

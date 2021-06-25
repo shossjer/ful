@@ -249,29 +249,104 @@ namespace ful
 		return reinterpret_cast<unit_utf32be *>(memcopy(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
 	}
 
-	ful_inline unit_utf8 * memypoc(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+	ful_inline unit_utf8 * memmove(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
 	{
-		return reinterpret_cast<unit_utf8 *>(memypoc(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+		return reinterpret_cast<unit_utf8 *>(memmove(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
 	}
 
-	ful_inline unit_utf16le * memypoc(const unit_utf16le * first, const unit_utf16le * last, unit_utf16le * end)
+	ful_inline unit_utf16le * memmove(const unit_utf16le * first, const unit_utf16le * last, unit_utf16le * begin)
 	{
-		return reinterpret_cast<unit_utf16le *>(memypoc(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+		return reinterpret_cast<unit_utf16le *>(memmove(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
 	}
 
-	ful_inline unit_utf16be * memypoc(const unit_utf16be * first, const unit_utf16be * last, unit_utf16be * end)
+	ful_inline unit_utf16be * memmove(const unit_utf16be * first, const unit_utf16be * last, unit_utf16be * begin)
 	{
-		return reinterpret_cast<unit_utf16be *>(memypoc(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+		return reinterpret_cast<unit_utf16be *>(memmove(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
 	}
 
-	ful_inline unit_utf32le * memypoc(const unit_utf32le * first, const unit_utf32le * last, unit_utf32le * end)
+	ful_inline unit_utf32le * memmove(const unit_utf32le * first, const unit_utf32le * last, unit_utf32le * begin)
 	{
-		return reinterpret_cast<unit_utf32le *>(memypoc(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+		return reinterpret_cast<unit_utf32le *>(memmove(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
 	}
 
-	ful_inline unit_utf32be * memypoc(const unit_utf32be * first, const unit_utf32be * last, unit_utf32be * end)
+	ful_inline unit_utf32be * memmove(const unit_utf32be * first, const unit_utf32be * last, unit_utf32be * begin)
 	{
-		return reinterpret_cast<unit_utf32be *>(memypoc(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+		return reinterpret_cast<unit_utf32be *>(memmove(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf8 * memmovef(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * begin)
+	{
+		return reinterpret_cast<unit_utf8 *>(memmovef(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf16le * memmovef(const unit_utf16le * first, const unit_utf16le * last, unit_utf16le * begin)
+	{
+		return reinterpret_cast<unit_utf16le *>(memmovef(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf16be * memmovef(const unit_utf16be * first, const unit_utf16be * last, unit_utf16be * begin)
+	{
+		return reinterpret_cast<unit_utf16be *>(memmovef(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf32le * memmovef(const unit_utf32le * first, const unit_utf32le * last, unit_utf32le * begin)
+	{
+		return reinterpret_cast<unit_utf32le *>(memmovef(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf32be * memmovef(const unit_utf32be * first, const unit_utf32be * last, unit_utf32be * begin)
+	{
+		return reinterpret_cast<unit_utf32be *>(memmovef(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(begin)));
+	}
+
+	ful_inline unit_utf8 * memmover(const unit_utf8 * first, const unit_utf8 * last, unit_utf8 * end)
+	{
+		return reinterpret_cast<unit_utf8 *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+	}
+
+	ful_inline unit_utf16le * memmover(const unit_utf16le * first, const unit_utf16le * last, unit_utf16le * end)
+	{
+		return reinterpret_cast<unit_utf16le *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+	}
+
+	ful_inline unit_utf16be * memmover(const unit_utf16be * first, const unit_utf16be * last, unit_utf16be * end)
+	{
+		return reinterpret_cast<unit_utf16be *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+	}
+
+	ful_inline unit_utf32le * memmover(const unit_utf32le * first, const unit_utf32le * last, unit_utf32le * end)
+	{
+		return reinterpret_cast<unit_utf32le *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+	}
+
+	ful_inline unit_utf32be * memmover(const unit_utf32be * first, const unit_utf32be * last, unit_utf32be * end)
+	{
+		return reinterpret_cast<unit_utf32be *>(memmover(reinterpret_cast<const char8 *>(first), reinterpret_cast<const char8 *>(last), reinterpret_cast<char8 *>(end)));
+	}
+
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+	{
+		memset(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), static_cast<char8>(u));
+	}
+
+	ful_inline void memset(unit_utf16le * from, unit_utf16le * to, unit_utf16le u)
+	{
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), static_cast<char16>(u));
+	}
+
+	ful_inline void memset(unit_utf16be * from, unit_utf16be * to, unit_utf16be u)
+	{
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), static_cast<char16>(u));
+	}
+
+	ful_inline void memset(unit_utf32le * from, unit_utf32le * to, unit_utf32le u)
+	{
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), static_cast<char32>(u));
+	}
+
+	ful_inline void memset(unit_utf32be * from, unit_utf32be * to, unit_utf32be u)
+	{
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), static_cast<char32>(u));
 	}
 
 	ful_inline unit_utf8 * memswap(unit_utf8 * beg1, unit_utf8 * end1, unit_utf8 * beg2)
@@ -279,9 +354,24 @@ namespace ful
 		return reinterpret_cast<unit_utf8 *>(memswap(reinterpret_cast<char8 *>(beg1), reinterpret_cast<char8 *>(end1), reinterpret_cast<char8 *>(beg2)));
 	}
 
-	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, unit_utf8 u)
+	ful_inline unit_utf16le * memswap(unit_utf16le * beg1, unit_utf16le * end1, unit_utf16le * beg2)
 	{
-		memset(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), static_cast<char8>(u));
+		return reinterpret_cast<unit_utf16le *>(memswap(reinterpret_cast<char8 *>(beg1), reinterpret_cast<char8 *>(end1), reinterpret_cast<char8 *>(beg2)));
+	}
+
+	ful_inline unit_utf16be * memswap(unit_utf16be * beg1, unit_utf16be * end1, unit_utf16be * beg2)
+	{
+		return reinterpret_cast<unit_utf16be *>(memswap(reinterpret_cast<char8 *>(beg1), reinterpret_cast<char8 *>(end1), reinterpret_cast<char8 *>(beg2)));
+	}
+
+	ful_inline unit_utf32le * memswap(unit_utf32le * beg1, unit_utf32le * end1, unit_utf32le * beg2)
+	{
+		return reinterpret_cast<unit_utf32le *>(memswap(reinterpret_cast<char8 *>(beg1), reinterpret_cast<char8 *>(end1), reinterpret_cast<char8 *>(beg2)));
+	}
+
+	ful_inline unit_utf32be * memswap(unit_utf32be * beg1, unit_utf32be * end1, unit_utf32be * beg2)
+	{
+		return reinterpret_cast<unit_utf32be *>(memswap(reinterpret_cast<char8 *>(beg1), reinterpret_cast<char8 *>(end1), reinterpret_cast<char8 *>(beg2)));
 	}
 
 	ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
