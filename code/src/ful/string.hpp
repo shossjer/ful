@@ -7,12 +7,12 @@
 
 #include "ful/intrinsics.hpp"
 
-#include "string_none.hpp"
-#include "string_sse.hpp"
-#include "string_sse2.hpp"
-#include "string_sse4_2.hpp"
-#include "string_avx.hpp"
-#include "string_avx2.hpp"
+#include "ful/string_none.hpp"
+#include "ful/string_sse.hpp"
+#include "ful/string_sse2.hpp"
+#include "ful/string_sse4_2.hpp"
+#include "ful/string_avx.hpp"
+#include "ful/string_avx2.hpp"
 
 namespace ful
 {

@@ -491,40 +491,6 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		const unit_utf8 * point_prev_sse2(const unit_utf8 * s, ssize n)
-		{
-			ful_expect(0 < n);
-
-			alignas(16) static const signed char m65[] = {
-				-65, -65, -65, -65, -65, -65, -65, -65,
-				-65, -65, -65, -65, -65, -65, -65, -65,
-			};
-
-			--s;
-			const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -16);
-			const unsigned int offset = reinterpret_cast<puint>(s) & (16 - 1);
-
-			__m128i cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
-			unsigned int mask = zero_higher_bits(_mm_movemask_epi8(cmpi), offset);
-			while (true)
-			{
-				const unsigned int npoints = popcnt(mask);
-
-				n -= npoints;
-				if (n <= 0)
-					break;
-
-				word -= 16;
-
-				cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
-				mask = _mm_movemask_epi8(cmpi);
-			}
-
-			const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(-n)); // -n < 32
-			return word + i;
-		}
-
-		ful_target("sse2") inline
 		bool equal_cstr_sse2(const char8 * beg1, const char8 * end1, const char8 * beg2)
 		{
 			ful_expect(beg1 != end1);

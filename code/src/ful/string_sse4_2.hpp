@@ -4,6 +4,5 @@ namespace ful
 {
 	namespace detail
 	{
-
 	}
 }

@@ -28,7 +28,7 @@ ret (* resolve_##stem())(__VA_ARGS__)
 
 # define ful_cpucall(stem, alt, ...) ful::detail::stem = ful::detail::stem##_##alt, ful::detail::stem##_##alt(__VA_ARGS__)
 # define ful_cpuinit() ful::cpuid_init()
-# define ful_cpucheck(feature) ful::cpuid_supports(cpuid_feature::feature)
+# define ful_cpucheck(feature) ful::cpuid_supports(ful::cpuid_feature::feature)
 # define ful_resolve(stem, ret, ...) \
 static ret resolve_##stem(__VA_ARGS__); \
 namespace ful { namespace detail { ret (* stem)(__VA_ARGS__) = resolve_##stem; }} \

@@ -13,7 +13,9 @@ namespace ful
 	using unit_utf32le = char32_t;
 
 	using unit_utf16 = unit_utf16le;
+	using unit_utf61 = unit_utf16be;
 	using unit_utf32 = unit_utf32le;
+	using unit_utf23 = unit_utf32be;
 	using unit_utfw = unit_utf16le;
 #elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	using unit_utf16be = uint16;
@@ -22,7 +24,9 @@ namespace ful
 	using unit_utf32le = char32_t;
 
 	using unit_utf16 = unit_utf16le;
+	using unit_utf61 = unit_utf16be;
 	using unit_utf32 = unit_utf32le;
+	using unit_utf23 = unit_utf32be;
 #elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 	using unit_utf16be = char16_t;
 	using unit_utf16le = uint16;
@@ -30,7 +34,9 @@ namespace ful
 	using unit_utf32le = uint32;
 
 	using unit_utf16 = unit_utf16be;
+	using unit_utf61 = unit_utf16le;
 	using unit_utf32 = unit_utf32be;
+	using unit_utf23 = unit_utf32le;
 #else
 # error Unknown endianess!
 #endif

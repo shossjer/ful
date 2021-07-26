@@ -5,6 +5,7 @@ set(FULLIB_SOURCES
 	src/ful/string_sse2.cpp
 	src/ful/string_x86.cpp
 	src/ful/unicode.cpp
+	src/ful/unicode_convert.cpp
 	src/private/cpuid.cpp
 	)
 
@@ -13,7 +14,6 @@ set(FULLIB_HEADERS
 	src/ful/dispatch.hpp
 	src/ful/intrinsics.hpp
 	src/ful/intrinsics_x86.hpp
-	src/ful/point_utils.hpp
 	src/ful/stdint.hpp
 	src/ful/string.hpp
 	src/ful/string_avx.hpp
@@ -25,6 +25,7 @@ set(FULLIB_HEADERS
 	src/ful/types.hpp
 	src/ful/unicode.hpp
 	src/ful/unicode_avx2.hpp
+	src/ful/unicode_convert.hpp
 	src/ful/unicode_none.hpp
 	src/private/cpuid.hpp
 	)

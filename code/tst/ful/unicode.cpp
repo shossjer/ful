@@ -3,7 +3,6 @@
 #include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
-#include "ful/point_utils.hpp"
 
 #include "ful/unicode.hpp"
 
@@ -23,14 +22,6 @@ TEST_CASE("data", "")
 
 		CHECK(data.nunits() == data.size());
 		CHECK(data.npoints() == point_count(data.beg(), data.end()));
-
-		SECTION("")
-		{
-			buffer_utf16 buff;
-			buff.allocate(data.size() * 2);
-
-			CHECK(data.nunits16() == convert(data.beg(), data.end(), buff.beg(), buff.end()) - buff.beg());
-		}
 	}
 
 	SECTION("got")
@@ -40,14 +31,6 @@ TEST_CASE("data", "")
 
 		CHECK(data.nunits() == data.size());
 		CHECK(data.npoints() == point_count(data.beg(), data.end()));
-
-		SECTION("")
-		{
-			buffer_utf16 buff;
-			buff.allocate(data.size() * 2);
-
-			CHECK(data.nunits16() == convert(data.beg(), data.end(), buff.beg(), buff.end()) - buff.beg());
-		}
 	}
 
 	SECTION("jap")
@@ -57,14 +40,6 @@ TEST_CASE("data", "")
 
 		CHECK(data.nunits() == data.size());
 		CHECK(data.npoints() == point_count(data.beg(), data.end()));
-
-		SECTION("")
-		{
-			buffer_utf16 buff;
-			buff.allocate(data.size() * 2);
-
-			CHECK(data.nunits16() == convert(data.beg(), data.end(), buff.beg(), buff.end()) - buff.beg());
-		}
 	}
 
 	SECTION("rus")
@@ -74,13 +49,5 @@ TEST_CASE("data", "")
 
 		CHECK(data.nunits() == data.size());
 		CHECK(data.npoints() == point_count(data.beg(), data.end()));
-
-		SECTION("")
-		{
-			buffer_utf16 buff;
-			buff.allocate(data.size() * 2);
-
-			CHECK(data.nunits16() == convert(data.beg(), data.end(), buff.beg(), buff.end()) - buff.beg());
-		}
 	}
 }

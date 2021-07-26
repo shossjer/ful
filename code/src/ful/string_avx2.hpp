@@ -40,42 +40,6 @@ namespace ful
 		ful_target("avx2") ful_inline __m256i rotate(__m256i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (32 - 1)); }
 
 		ful_target("avx2") inline
-		const unit_utf8 * point_prev_avx2(const unit_utf8 * s, ssize n)
-		{
-			ful_expect(0 < n);
-
-			alignas(32) static const signed char m65[] = {
-				-65, -65, -65, -65, -65, -65, -65, -65,
-				-65, -65, -65, -65, -65, -65, -65, -65,
-				-65, -65, -65, -65, -65, -65, -65, -65,
-				-65, -65, -65, -65, -65, -65, -65, -65,
-			};
-
-			--s;
-			const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -32);
-			const unsigned int offset = reinterpret_cast<puint>(s) & (32 - 1);
-
-			__m256i cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
-			unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(cmpi), offset);
-			while (true)
-			{
-				const unsigned int npoints = popcnt(mask);
-
-				n -= npoints;
-				if (n <= 0)
-					break;
-
-				word -= 32;
-
-				cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
-				mask = _mm256_movemask_epi8(cmpi);
-			}
-
-			const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(-n)); // -n < 32
-			return word + i;
-		}
-
-		ful_target("avx2") inline
 		bool equal_cstr_avx2(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
 		{
 			ful_expect(beg1 != end1);
