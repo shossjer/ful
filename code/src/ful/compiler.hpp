@@ -41,9 +41,13 @@
 #if defined(__GNUC__)
 // silence warning about side effects
 # define ful_const const __attribute__((const))
+// silence warning about side effects
+# define ful_pure __attribute__((const))
 #else
 // silence warning about side effects
 # define ful_const const
+// silence warning about side effects
+# define ful_pure
 #endif
 
 #if defined(_DEBUG) || !defined(NDEBUG)
@@ -72,7 +76,7 @@
 
 #if defined(__GNUC__)
 // overrides targeted architecture
-# define ful_target(m) __attribute__((target (m)))
+# define ful_target(...) __attribute__((target (__VA_ARGS__)))
 // https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#target
 // https://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html
 # if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
@@ -86,7 +90,7 @@
 # endif
 #elif defined(_MSC_VER)
 // overrides targeted architecture
-# define ful_target(m)
+# define ful_target(...)
 // overrides targeted architecture
 # define ful_generic()
 #else
