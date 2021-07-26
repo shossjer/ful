@@ -94,7 +94,7 @@ ful_resolve(memset16, void, char16 * from, char16 * to, char16 u)
 		return ful_cpucall(memset16, none, from, to, u);
 }
 
-ful_resolve(memset24, void, char24 * from, char24 * to, char24 u)
+ful_resolve(memset24, void, char24 * from, char24 * to, char_fast24 u)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))

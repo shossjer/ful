@@ -225,12 +225,12 @@ namespace ful
 		}
 
 		ful_target("avx") inline
-		void set24_avx_32_64(char24 * from, char24 * to, char24 u)
+		void set24_avx_32_64(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
 			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
 			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
@@ -241,12 +241,12 @@ namespace ful
 		}
 
 		ful_target("avx") inline
-		void set24_avx_64_96(char24 * from, char24 * to, char24 u)
+		void set24_avx_64_96(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
 			// mi 0100000100000100 0001000001000001 0000010000010000 0100000100000100
 			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
@@ -260,7 +260,7 @@ namespace ful
 		}
 
 		ful_target("avx") inline
-		void memset24_avx(char24 * from, char24 * to, char24 u)
+		void memset24_avx(char24 * from, char24 * to, char_fast24 u)
 		{
 			const usize size = (to - from) * sizeof(char24);
 #if defined(__AVX__)
@@ -286,7 +286,7 @@ namespace ful
 			}
 			else
 			{
-				extern void memset24_avx_96(char24 * from, char24 * to, char24 u);
+				extern void memset24_avx_96(char24 * from, char24 * to, char_fast24 u);
 
 				memset24_avx_96(from, to, u);
 			}

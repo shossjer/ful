@@ -25,7 +25,7 @@ namespace ful
 		extern char8 * ful_dispatch(memswap)(char8 * beg1, char8 * end1, char8 * beg2);
 		extern void ful_dispatch(memset8)(char8 * from, char8 * to, char8 u);
 		extern void ful_dispatch(memset16)(char16 * from, char16 * to, char16 u);
-		extern void ful_dispatch(memset24)(char24 * from, char24 * to, char24 u);
+		extern void ful_dispatch(memset24)(char24 * from, char24 * to, char_fast24 u);
 		extern void ful_dispatch(memset32)(char32 * from, char32 * to, char32 u);
 		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
 		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
@@ -353,7 +353,7 @@ namespace ful
 		}
 
 		ful_inline
-		void set_small(char24 * from, char24 * to, char24 u)
+		void set_small(char24 * from, char24 * to, char_fast24 u)
 		{
 			switch ((to - from) * sizeof(char24))
 			{
@@ -396,8 +396,8 @@ namespace ful
 			case 9:
 			{
 				// todo benchmark
-				const uint64 lo_bytes = 0x0001000001000001u * (uint32)u;
-				const uint64 hi_bytes = (lo_bytes << 16) | ((uint32)u >> 8);
+				const uint64 lo_bytes = 0x0001000001000001u * static_cast<uint32>(u);
+				const uint64 hi_bytes = (lo_bytes << 16) | (static_cast<uint32>(u) >> 8);
 				// lo 0001000001000001
 				// hi 0000010000010000
 
@@ -409,14 +409,14 @@ namespace ful
 			case 6:
 			{
 				// todo benchmark
-				const uint32 bytes = 0x01000001u * (uint32)u;
+				const uint32 bytes = 0x01000001u * static_cast<uint32>(u);
 
 				*reinterpret_cast<uint32 *>(from) = bytes;
-				*reinterpret_cast<uint16 *>(reinterpret_cast<char8 *>(to) - 8) = static_cast<uint16>((uint32)u >> 8);
+				*reinterpret_cast<uint16 *>(reinterpret_cast<char8 *>(to) - 8) = static_cast<uint16>(static_cast<uint32>(u) >> 8);
 
 				break;
 			}
-			case 3: from[0] = u; ful_fallthrough;
+			case 3: from[0] = static_cast<char24>(u); ful_fallthrough;
 			case 0: break;
 			default: ful_unreachable();
 			}
@@ -856,7 +856,7 @@ namespace ful
 	}
 
 	ful_inline
-	void memset(char24 * from, char24 * to, char24 u)
+	void memset(char24 * from, char24 * to, char_fast24 u)
 	{
 		const usize size = (to - from) * sizeof(char24);
 #if defined(__AVX__)

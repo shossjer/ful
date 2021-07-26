@@ -177,7 +177,7 @@ namespace ful
 		}
 
 		ful_generic() inline
-		void memset24_none(char24 * from, char24 * to, char24 u)
+		void memset24_none(char24 * from, char24 * to, char_fast24 u)
 		{
 			const usize size = (to - from) * sizeof(char24);
 #if defined(__AVX__)

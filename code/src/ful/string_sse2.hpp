@@ -224,12 +224,12 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		void set24_sse2_16_32(char24 * from, char24 * to, char24 u)
+		void set24_sse2_16_32(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0100000100000100 0001000001000001
 			// hi 0000010000010000 0100000100000100
 			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
@@ -240,12 +240,12 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		void set24_sse2_32_64(char24 * from, char24 * to, char24 u)
+		void set24_sse2_32_64(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000
 			// hi 0000010000010000 0100000100000100
@@ -260,12 +260,12 @@ namespace ful
 		}
 
 		ful_target("sse2") inline
-		void set24_sse2_64_96(char24 * from, char24 * to, char24 u)
+		void set24_sse2_64_96(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000
 			// hi 0000010000010000 0100000100000100
@@ -284,7 +284,7 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline
-		void memset24_sse2(char24 * from, char24 * to, char24 u)
+		void memset24_sse2(char24 * from, char24 * to, char_fast24 u)
 		{
 			const usize size = (to - from) * sizeof(char24);
 #if defined(__AVX__)
@@ -310,7 +310,7 @@ namespace ful
 			}
 			else
 			{
-				extern void memset24_sse2_96(char24 * from, char24 * to, char24 u);
+				extern void memset24_sse2_96(char24 * from, char24 * to, char_fast24 u);
 
 				memset24_sse2_96(from, to, u);
 			}

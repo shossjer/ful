@@ -184,12 +184,12 @@ namespace ful
 		}
 
 		ful_target("sse")
-		void memset24_sse_96(char24 * from, char24 * to, char24 u)
+		void memset24_sse_96(char24 * from, char24 * to, char_fast24 u)
 		{
 			// todo benchmark
-			const uint64 bytes0 = 0x0001000001000001u * (uint32)u;
-			const uint64 bytes1 = (bytes0 << 8) | ((uint32)u >> 16);
-			const uint64 bytes2 = (bytes0 << 16) | ((uint32)u >> 8);
+			const uint64 bytes0 = 0x0001000001000001u * static_cast<uint32>(u);
+			const uint64 bytes1 = (bytes0 << 8) | (static_cast<uint32>(u) >> 16);
+			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			const uint64 bytes[4] = {bytes0, bytes1, bytes2, bytes0};
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000

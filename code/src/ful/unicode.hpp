@@ -365,7 +365,7 @@ namespace ful
 		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), u);
 	}
 
-	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char24 u)
+	ful_inline void memset(unit_utf8 * from, unit_utf8 * to, char_fast24 u)
 	{
 		if (!ful_expect((to - from) % sizeof(char24) == 0))
 			return;
