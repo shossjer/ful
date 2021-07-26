@@ -663,44 +663,6 @@ TEST_CASE("equal_cstr", "")
 	};
 }
 
-TEST_CASE("find_unit", "")
-{
-	data_any_utf8 txt;
-	REQUIRE(txt.init());
-
-	BENCHMARK_ADVANCED("find_unit (std strchr)")(Catch::Benchmark::Chronometer meter)
-	{
-		REQUIRE(std::strchr(txt.cstr(), txt.cunit()) == txt.beg() + txt.iunit());
-		meter.measure([&](int){ return std::strchr(txt.cstr(), txt.cunit()); });
-	};
-
-#if HAVE_ASMLIB
-	BENCHMARK_ADVANCED("find_unit (asmlib strstr)")(Catch::Benchmark::Chronometer meter)
-	{
-		// note asmlib does not have strchr
-		const char str[2] = {txt.cunit(), '\0'};
-		REQUIRE(A_strstr(txt.cstr(), str) == txt.beg() + txt.iunit());
-		meter.measure([&](int){ return A_strstr(txt.cstr(), str); });
-	};
-#endif
-
-#if defined(__AVX2__)
-	BENCHMARK_ADVANCED("find_unit avx2")(Catch::Benchmark::Chronometer meter)
-	{
-		REQUIRE(detail::find_unit_8_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
-		meter.measure([&](int){ return detail::find_unit_8_8_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), txt.cunit()); });
-	};
-#endif
-
-#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-	BENCHMARK_ADVANCED("find_unit sse2")(Catch::Benchmark::Chronometer meter)
-	{
-		REQUIRE(detail::find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
-		meter.measure([&](int){ return detail::find_unit_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), static_cast<char8>(txt.cunit())); });
-	};
-#endif
-}
-
 TEST_CASE("less_cstr", "")
 {
 	data_any_utf8 txt;

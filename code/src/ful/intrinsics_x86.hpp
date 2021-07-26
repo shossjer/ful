@@ -17,6 +17,12 @@ namespace ful
 	namespace detail
 	{
 #if defined(__GNUC__)
+		// not and
+		ful_target("bmi") ful_inline unsigned int andn(unsigned int x, unsigned int y) { return __andn_u32(x, y); }
+
+		// not and
+		ful_target("bmi") ful_inline int andn(int x, int y) { return andn(static_cast<unsigned int>(x), static_cast<unsigned int>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(int x) { ful_expect(x != 0); return __bsfd(x); }
 
@@ -74,6 +80,12 @@ namespace ful
 		ful_generic() ful_inline long rotr(long x, int shift) { return rotr(static_cast<unsigned long>(x), shift); }
 
 # if defined(__x86_64__)
+		// not and
+		ful_target("bmi") ful_inline unsigned long long andn(unsigned long long x, unsigned long long y) { return __andn_u64(x, y); }
+
+		// not and
+		ful_target("bmi") ful_inline long long andn(long long x, long long y) { return andn(static_cast<unsigned long long>(x), static_cast<unsigned long long>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(long long x) { ful_expect(x != 0); return __bsfq(x); }
 
@@ -120,6 +132,12 @@ namespace ful
 # endif
 
 # if defined(__LP64__)
+		// not and
+		ful_target("bmi") ful_inline unsigned long andn(unsigned long x, unsigned long y) { return andn(static_cast<unsigned long long>(x), static_cast<unsigned long long>(y)); }
+
+		// not and
+		ful_target("bmi") ful_inline long andn(long x, long y) { return andn(static_cast<unsigned long>(x), static_cast<unsigned long>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(long x) { return bsf(static_cast<long long>(x)); }
 
@@ -144,6 +162,12 @@ namespace ful
 		// store string
 		ful_generic() ful_inline void repstosf(unsigned long * dst, unsigned long cnt, unsigned long val) { repstosf(reinterpret_cast<unsigned long long *>(dst), static_cast<unsigned long long>(cnt), static_cast<unsigned long long>(val)); }
 # else
+		// not and
+		ful_target("bmi") ful_inline unsigned long andn(unsigned long x, unsigned long y) { return andn(static_cast<unsigned int>(x), static_cast<unsigned int>(y)); }
+
+		// not and
+		ful_target("bmi") ful_inline long andn(long x, long y) { return andn(static_cast<unsigned long>(x), static_cast<unsigned long>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(long x) { return bsf(static_cast<int>(x)); }
 
@@ -169,6 +193,18 @@ namespace ful
 		ful_generic() ful_inline void repstosf(unsigned long * dst, unsigned long cnt, unsigned long val) { repstosf(reinterpret_cast<unsigned int *>(dst), static_cast<unsigned int>(cnt), static_cast<unsigned int>(val)); }
 # endif
 #elif defined(_MSC_VER)
+		// not and
+		ful_target("bmi") ful_inline unsigned int andn(unsigned int x, unsigned int y) { return _andn_u32(x, y); }
+
+		// not and
+		ful_target("bmi") ful_inline int andn(int x, int y) { return andn(static_cast<unsigned int>(x), static_cast<unsigned int>(y)); }
+
+		// not and
+		ful_target("bmi") ful_inline unsigned long andn(unsigned long x, unsigned long y) { return andn(static_cast<unsigned int>(x), static_cast<unsigned int>(y)); }
+
+		// not and
+		ful_target("bmi") ful_inline long andn(long x, long y) { return andn(static_cast<unsigned long>(x), static_cast<unsigned long>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(unsigned long x)
 		{
@@ -258,6 +294,12 @@ namespace ful
 		ful_generic() ful_inline long rotr(long x, int shift) { return rotr(static_cast<unsigned long>(x), shift); }
 
 # if defined(_M_X64) || defined(_M_AMD64)
+		// not and
+		ful_target("bmi") ful_inline unsigned long long andn(unsigned long long x, unsigned long long y) { return _andn_u64(x, y); }
+
+		// not and
+		ful_target("bmi") ful_inline long long andn(long long x, long long y) { return andn(static_cast<unsigned long long>(x), static_cast<unsigned long long>(y)); }
+
 		// bit scan forward
 		ful_generic() ful_inline unsigned int bsf(unsigned long long x)
 		{

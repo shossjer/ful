@@ -586,7 +586,7 @@ namespace ful
 			}
 
 		found:
-			const unsigned int i = count_trailing_zeros(mask);
+			const unsigned int i = count_trailing_zero_bits(mask, tag_generic); // todo
 			return beg_word + i;
 		}
 
@@ -613,7 +613,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(cmpi) | end_bits; // todo smsb(_mm256_movemask_epi8(cmpi), ); // set most significant bits
 				if (mask != static_cast<unsigned int>(-1))
 				{
-					const unsigned int i = least_significant_set_bit(~mask);
+					const unsigned int i = least_significant_set_bit(~mask, tag_generic);
 					return beg1[i] < beg2[i];
 				}
 
@@ -631,7 +631,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(cmpi);
 				if (mask != 0xffff)
 				{
-					const unsigned int i = least_significant_set_bit(~mask);
+					const unsigned int i = least_significant_set_bit(~mask, tag_generic);
 					return beg1[i] < beg2_word[i];
 				}
 
@@ -651,7 +651,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(cmpi) | end_bits;
 				if (mask != static_cast<unsigned int>(-1))
 				{
-					const unsigned int i = least_significant_set_bit(~mask);
+					const unsigned int i = least_significant_set_bit(~mask, tag_generic);
 					return beg1[i] < beg2_word[i];
 				}
 			}

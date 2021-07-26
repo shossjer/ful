@@ -1,7 +1,10 @@
 #pragma once
 
+#define FUL_INCLUDED_STRING_HPP
+
 #include "ful/compiler.hpp"
 #include "ful/dispatch.hpp"
+#include "ful/stdhacks.hpp"
 #include "ful/stdint.hpp"
 #include "ful/types.hpp"
 
