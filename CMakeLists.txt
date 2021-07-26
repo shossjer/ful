@@ -49,9 +49,19 @@ message(STATUS "System is ${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}")
 
 # build dependencies
 
-option(FUL_BUILD_CATCH "Build catch" ON)
+macro(_package_catch)
+	dep_package(catch ful_catch
+		${ARGV}
 
+		FILES
+		catch2/catch.hpp
+		)
+endmacro()
+
+option(FUL_BUILD_CATCH "Build catch" ON)
 if(FUL_BUILD_CATCH)
+	_package_catch(IGNORE_SYSTEM)
+
 	dep_build(catch
 		DOWNLOAD_STEP
 		GIT_REPOSITORY "https://github.com/philsquared/Catch.git"
@@ -65,10 +75,7 @@ if(FUL_BUILD_CATCH)
 		)
 endif()
 
-dep_package(catch ful_catch
-	FILES
-	catch2/catch.hpp
-	)
+_package_catch()
 
 # build settings
 
@@ -244,7 +251,7 @@ endif()
 
 # https://www.gnu.org/software/libiconv/
 macro(_package_libiconv)
-	dep_package(iconv ful_libiconv
+	dep_package(libiconv ful_libiconv
 		${ARGV}
 
 		FILES
