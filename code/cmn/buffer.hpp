@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ful/types.hpp"
+
 template <typename T>
 class buffer_base
 {
@@ -96,3 +98,8 @@ using buffer_utf32le = buffer_base<ful::unit_utf32le>;
 using buffer_utf32be = buffer_base<ful::unit_utf32be>;
 
 bool read_buffer(const char * fname, buffer_utf8 & buffer);
+
+bool convert_buffer(const buffer_utf8 & src, buffer_utf16le & dst);
+bool convert_buffer(const buffer_utf8 & src, buffer_utf16be & dst);
+bool convert_buffer(const buffer_utf8 & src, buffer_utf32le & dst);
+bool convert_buffer(const buffer_utf8 & src, buffer_utf32be & dst);

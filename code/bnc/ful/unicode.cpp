@@ -424,14 +424,17 @@ namespace
 	{
 		{
 			// todo this makes the first benchmark run faster?
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
+
 			REQUIRE(conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 		}
 
 #if defined(_MSC_VER)
 		BENCHMARK_ADVANCED("lib Win32")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			REQUIRE(conv_utf8_to_utf16le_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_win32(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
@@ -441,7 +444,8 @@ namespace
 //#if defined(HAVE_EASTL)
 //		BENCHMARK_ADVANCED("lib EASTL")(Catch::Benchmark::Chronometer meter)
 //		{
-//			std::vector<unit_utf16le> tyt(txt.size());
+//			buffer_utf16le tyt;
+//			tyt.allocate(txt.size());
 //
 //			REQUIRE(conv_utf8_to_utf16le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 //			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_eastl(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
@@ -451,7 +455,8 @@ namespace
 #if defined(HAVE_ICU4C)
 		BENCHMARK_ADVANCED("lib ICU4C")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			UErrorCode err = U_ZERO_ERROR;
 			UConverter * const converter8 = ucnv_open("UTF-8", &err);
@@ -467,7 +472,8 @@ namespace
 #if defined(HAVE_LIBICONV)
 		BENCHMARK_ADVANCED("lib libiconv")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			const iconv_t converter = iconv_open("UTF-16LE", "UTF-8");
 			REQUIRE(converter != reinterpret_cast<iconv_t>(-1));
@@ -482,7 +488,8 @@ namespace
 #if defined(HAVE_LIBUNISTRING)
 		BENCHMARK_ADVANCED("lib libunistring")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			REQUIRE(conv_utf8_to_utf16le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_libunistring(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
@@ -492,7 +499,8 @@ namespace
 #if defined(HAVE_UTFCPP)
 		BENCHMARK_ADVANCED("lib utfcpp")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			REQUIRE(conv_utf8_to_utf16le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 			meter.measure([&](int){ return conv_utf8_to_utf16le_lib_utfcpp(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
@@ -501,7 +509,8 @@ namespace
 
 		BENCHMARK_ADVANCED("naive")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			REQUIRE(conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 			meter.measure([&](int){ return conv_utf8_to_utf16le_alt_naive(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });
@@ -510,7 +519,8 @@ namespace
 #if defined(__AVX2__)
 		BENCHMARK_ADVANCED("avx2")(Catch::Benchmark::Chronometer meter)
 		{
-			std::vector<unit_utf16le> tyt(txt.size());
+			buffer_utf16le tyt;
+			tyt.allocate(txt.size());
 
 			REQUIRE(conv_utf8_to_utf16le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()) == tyt.data() + txt.nunits16());
 			meter.measure([&](int){ return conv_utf8_to_utf16le_alt_avx2(txt.beg(), txt.end(), tyt.data(), tyt.data() + tyt.size()); });

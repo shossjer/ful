@@ -79,6 +79,8 @@ _package_catch()
 
 # build settings
 
+add_library(lib_common INTERFACE)
+
 cmake_dependent_option(FUL_BUILD_TESTS "Build tests" ON "TARGET ful_catch" OFF)
 add_library(lib_test INTERFACE)
 if(FUL_BUILD_TESTS)
@@ -425,6 +427,22 @@ endif()
 
 # project options
 
+# todo this is a copy-paste from above, can this be solved better?
+if(TARGET ful_libiconv)
+	message(STATUS "Common buffer conversion using libiconv")
+	target_link_libraries(lib_common INTERFACE ful_libiconv)
+	target_compile_definitions(lib_common INTERFACE HAVE_LIBICONV)
+elseif(TARGET ful_icu4c)
+	message(STATUS "Common buffer conversion using icu4c")
+	target_link_libraries(lib_common INTERFACE ful_icu4c)
+	if(UNIX)
+		# todo dl is needed
+		# todo pthread is needed for some reason - https://bugzilla.redhat.com/show_bug.cgi?id=1954178
+		target_link_libraries(lib_common INTERFACE dl pthread)
+	endif()
+	target_compile_definitions(lib_common INTERFACE HAVE_ICU4C)
+endif()
+
 option(FUL_CPUID_SSE "Assume SSE intrinsics are available" OFF)
 option(FUL_CPUID_SSE2 "Assume SSE2 intrinsics are available" OFF)
 option(FUL_CPUID_SSE3 "Assume SSE3 intrinsics are available" OFF)
@@ -499,9 +517,8 @@ if(FUL_PROBE_CONFTIME AND NOT FUL_PROBE_CONFTIME_RUN_RESULT EQUAL 0)
 	endif()
 endif()
 
-add_library(lib_arch INTERFACE)
 if(FUL_CPUID_SSE)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -509,7 +526,7 @@ if(FUL_CPUID_SSE)
 		)
 endif()
 if(FUL_CPUID_SSE2)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -520,7 +537,7 @@ if(FUL_CPUID_SSE2)
 	endif()
 endif()
 if(FUL_CPUID_SSE3)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse3>
 		)
@@ -529,7 +546,7 @@ if(FUL_CPUID_SSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSSE3)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mssse3>
 		)
@@ -538,7 +555,7 @@ if(FUL_CPUID_SSSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_1)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.1>
 		)
@@ -547,7 +564,7 @@ if(FUL_CPUID_SSE4_1)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_2)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.2>
 		)
@@ -556,7 +573,7 @@ if(FUL_CPUID_SSE4_2)
 	endif()
 endif()
 if(FUL_CPUID_POPCNT)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mpopcnt>
 		)
@@ -565,7 +582,7 @@ if(FUL_CPUID_POPCNT)
 	endif()
 endif()
 if(FUL_CPUID_AVX)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -594,7 +611,7 @@ if(FUL_CPUID_AVX)
 	endif()
 endif()
 if(FUL_CPUID_AVX2)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -635,7 +652,7 @@ if(FUL_CPUID_AVX2)
 	endif()
 endif()
 if(FUL_CPUID_BMI)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi>
 		)
@@ -644,7 +661,7 @@ if(FUL_CPUID_BMI)
 	endif()
 endif()
 if(FUL_CPUID_BMI2)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi2>
 		)
@@ -653,7 +670,7 @@ if(FUL_CPUID_BMI2)
 	endif()
 endif()
 if(FUL_CPUID_LZCNT)
-	target_compile_options(lib_arch INTERFACE
+	target_compile_options(lib_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mlzcnt>
 		)
