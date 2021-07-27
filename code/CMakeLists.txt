@@ -73,7 +73,7 @@ endif()
 
 if(FUL_BUILD_BENCHMARKS)
 	add_executable(fulbnc "")
-	target_sources(fulbnc PRIVATE ${FULBNC_SOURCES})
+	target_sources(fulbnc PRIVATE ${FULBNC_SOURCES} ${FULBNC_HEADERS})
 	target_include_directories(fulbnc PRIVATE "bnc")
 	target_link_libraries(fulbnc PRIVATE fulcmn lib_benchmark)
 	target_compile_options(fulbnc PRIVATE ${_compile_options})

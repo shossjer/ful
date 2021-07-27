@@ -5,3 +5,7 @@ set(FULBNC_SOURCES
 	bnc/ful/string_search.cpp
 	bnc/ful/unicode.cpp
 	)
+
+set(FULBNC_HEADERS
+	bnc/catchhacks.hpp
+	)

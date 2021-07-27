@@ -4,5 +4,8 @@
 !code/
 !data/
 !dep/
+!plot/
 
 *.dll
+plot/*.dump
+plot/*.png

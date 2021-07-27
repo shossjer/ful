@@ -8,6 +8,7 @@
 #include "data.hpp"
 
 #include <catch2/catch.hpp>
+#include "catchhacks.hpp"
 
 #include <vector>
 
@@ -724,4 +725,63 @@ TEST_CASE("less_cstr", "")
 		REQUIRE_FALSE(detail::less_cstr_none(tyt.beg(), tyt.end(), txt.cstr()));
 		meter.measure([&](int){ return detail::less_cstr_none(txt.beg(), txt.end(), tyt.cstr()); });
 	};
+}
+
+TEST_CASE("dump memcopy", "[.][dump]")
+{
+#if defined(__AVX__)
+	constexpr int size_first = 7;
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+	constexpr int size_first = 6;
+#else
+	constexpr int size_first = 5;
+#endif
+
+	BENCHMARK_DUMP("plot/memcopy.dump", log_style, 1, size_first, 29)
+	{
+		BENCHMARK_GROUP("repmovf")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer_from;
+			buffer_from.allocate(meter.size());
+
+			buffer_utf8 buffer_to;
+			buffer_to.allocate(meter.size());
+
+			std::fill(buffer_from.beg(), buffer_from.end(), static_cast<ful::unit_utf8>('a'));
+
+			meter.measure([&](int)
+			{
+				const ful::char8 * const first = reinterpret_cast<const ful::char8 *>(buffer_from.beg());
+				const ful::char8 * const last = reinterpret_cast<const ful::char8 *>(buffer_from.end());
+				ful::char8 * const begin = reinterpret_cast<ful::char8 *>(buffer_to.beg());
+				const ful::usize size = last - first;
+
+				const int alignment_offset = 8 - static_cast<int>(reinterpret_cast<ful::puint>(begin) & (8 - 1));
+
+				*reinterpret_cast<ful::uint64 *>(begin) = *reinterpret_cast<const ful::uint64 *>(first);
+
+				ful::detail::repmovf(reinterpret_cast<const ful::uint64 *>(first + alignment_offset), (size - alignment_offset) / 8, reinterpret_cast<ful::uint64 *>(begin + alignment_offset));
+
+				ful::char8 * const end = begin + size;
+				*reinterpret_cast<ful::uint64 *>(end - 8) = *reinterpret_cast<const ful::uint64 *>(last - 8);
+
+				return end;
+			});
+		};
+
+#if defined(__AVX__)
+		BENCHMARK_GROUP("avx")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer_from;
+			buffer_from.allocate(meter.size());
+
+			buffer_utf8 buffer_to;
+			buffer_to.allocate(meter.size());
+
+			std::fill(buffer_from.beg(), buffer_from.end(), static_cast<ful::unit_utf8>('a'));
+
+			meter.measure([&](int){ return ful::detail::memcopy_avx(reinterpret_cast<const ful::char8 *>(buffer_from.beg()), reinterpret_cast<const ful::char8 *>(buffer_from.end()), reinterpret_cast<ful::char8 *>(buffer_to.data())); });
+		};
+#endif
+	}
 }

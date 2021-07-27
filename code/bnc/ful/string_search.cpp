@@ -6,6 +6,7 @@
 #include "data.hpp"
 
 #include <catch2/catch.hpp>
+#include "catchhacks.hpp"
 
 #if HAVE_ASMLIB
 # include <asmlib.h>
@@ -464,169 +465,59 @@ namespace
 
 TEST_CASE("dump find_8_8 small", "[.][dump]")
 {
-	constexpr int size_first = 1;
-	constexpr int size_last = 80;
-	constexpr int samples = 1000;
-	constexpr int reps = 1000;
-
-	struct result_t
+	BENCHMARK_DUMP("plot/find_8_8_small.dump", lin_style, 1000, 1, 80, 1)
 	{
-		const char * name;
-		uint64 xs[size_last - size_first];
-		uint64 ys[size_last - size_first][samples];
-	};
-	std::vector<result_t> results;
-
-	results.emplace_back();
-	results.back().name = "for";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_8_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b');
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 8";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_8_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b'); });
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 8")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_8_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b');
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 16";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_8_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b'); });
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 16")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_8_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b');
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "zero byte";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_8_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b'); });
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("zero byte")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_8_small_zero_byte(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b');
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_8_small_zero_byte(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b'); });
+		};
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-	results.emplace_back();
-	results.back().name = "sse2";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("sse2")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_8_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b');
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_8_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 'b'); });
+		};
 #endif
-
-	const char * const fname = "plot/data_find_8_8_small.dump";
-#if defined(_MSC_VER)
-	FILE * file;
-	if (ful_check(fopen_s(&file, fname, "wb") == 0))
-#else
-	FILE * const file = std::fopen(fname, "wb");
-	if (ful_check(file))
-#endif
-	{
-		std::fprintf(file, "results %u\n", static_cast<unsigned int>(results.size()));
-
-		for (unsigned int i = 0; i < results.size(); i++)
-		{
-			std::fprintf(file, "name %s\n", results[i].name);
-			std::fprintf(file, "points %d\n", size_last - size_first);
-			std::fprintf(file, "samples %d\n", samples);
-			for (int x = 0; x < size_last - size_first; x++)
-			{
-				std::fprintf(file, "x %llu\ny", static_cast<unsigned long long>(results[i].xs[x]));
-				for (int y = 0; y < samples; y++)
-				{
-					std::fprintf(file, " %llu", static_cast<unsigned long long>(results[i].ys[x][y]));
-				}
-				std::fprintf(file, "\n");
-			}
-		}
-
-		std::fclose(file);
 	}
 }
 
@@ -863,169 +754,59 @@ namespace
 
 TEST_CASE("dump find_8_16 small", "[.][dump]")
 {
-	constexpr int size_first = 1;
-	constexpr int size_last = 80;
-	constexpr int samples = 1000;
-	constexpr int reps = 1000;
-
-	struct result_t
+	BENCHMARK_DUMP("plot/find_8_16_small.dump", lin_style, 1000, 1, 80, 1)
 	{
-		const char * name;
-		uint64 xs[size_last - size_first];
-		uint64 ys[size_last - size_first][samples];
-	};
-	std::vector<result_t> results;
-
-	results.emplace_back();
-	results.back().name = "for";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_16_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); // 'bb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 8";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_16_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); }); // 'bb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 8")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_16_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); // 'bb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 16";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_16_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); }); // 'bb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 16")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_16_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); // 'bb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "zero byte";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_16_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); }); // 'bb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("zero byte")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_16_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); // 'bb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_16_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); }); // 'bb'
+		};
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-	results.emplace_back();
-	results.back().name = "sse2";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("sse2")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_16_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); // 'bb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_16_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x6262); }); // 'bb'
+		};
 #endif
-
-	const char * const fname = "plot/data_find_8_16_small.dump";
-#if defined(_MSC_VER)
-	FILE * file;
-	if (ful_check(fopen_s(&file, fname, "wb") == 0))
-#else
-	FILE * const file = std::fopen(fname, "wb");
-	if (ful_check(file))
-#endif
-	{
-		std::fprintf(file, "results %u\n", static_cast<unsigned int>(results.size()));
-
-		for (unsigned int i = 0; i < results.size(); i++)
-		{
-			std::fprintf(file, "name %s\n", results[i].name);
-			std::fprintf(file, "points %d\n", size_last - size_first);
-			std::fprintf(file, "samples %d\n", samples);
-			for (int x = 0; x < size_last - size_first; x++)
-			{
-				std::fprintf(file, "x %llu\ny", static_cast<unsigned long long>(results[i].xs[x]));
-				for (int y = 0; y < samples; y++)
-				{
-					std::fprintf(file, " %llu", static_cast<unsigned long long>(results[i].ys[x][y]));
-				}
-				std::fprintf(file, "\n");
-			}
-		}
-
-		std::fclose(file);
 	}
 }
 
@@ -1283,169 +1064,59 @@ namespace
 
 TEST_CASE("dump find_8_24 small", "[.][dump]")
 {
-	constexpr int size_first = 1;
-	constexpr int size_last = 80;
-	constexpr int samples = 1000;
-	constexpr int reps = 1000;
-
-	struct result_t
+	BENCHMARK_DUMP("plot/find_8_24_small.dump", lin_style, 1000, 1, 80, 1)
 	{
-		const char * name;
-		uint64 xs[size_last - size_first];
-		uint64 ys[size_last - size_first][samples];
-	};
-	std::vector<result_t> results;
-
-	results.emplace_back();
-	results.back().name = "for";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_24_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); // 'bbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 8";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_24_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); }); // 'bbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 8")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_24_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); // 'bbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 16";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_24_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); }); // 'bbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 16")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_24_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); // 'bbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "zero byte";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_24_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); }); // 'bbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("zero byte")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_24_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); // 'bbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_24_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); }); // 'bbb'
+		};
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-	results.emplace_back();
-	results.back().name = "sse2";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("sse2")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_24_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); // 'bbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_24_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), char_fast24{0x626262}); }); // 'bbb'
+		};
 #endif
-
-	const char * const fname = "plot/data_find_8_24_small.dump";
-#if defined(_MSC_VER)
-	FILE * file;
-	if (ful_check(fopen_s(&file, fname, "wb") == 0))
-#else
-	FILE * const file = std::fopen(fname, "wb");
-	if (ful_check(file))
-#endif
-	{
-		std::fprintf(file, "results %u\n", static_cast<unsigned int>(results.size()));
-
-		for (unsigned int i = 0; i < results.size(); i++)
-		{
-			std::fprintf(file, "name %s\n", results[i].name);
-			std::fprintf(file, "points %d\n", size_last - size_first);
-			std::fprintf(file, "samples %d\n", samples);
-			for (int x = 0; x < size_last - size_first; x++)
-			{
-				std::fprintf(file, "x %llu\ny", static_cast<unsigned long long>(results[i].xs[x]));
-				for (int y = 0; y < samples; y++)
-				{
-					std::fprintf(file, " %llu", static_cast<unsigned long long>(results[i].ys[x][y]));
-				}
-				std::fprintf(file, "\n");
-			}
-		}
-
-		std::fclose(file);
 	}
 }
 
@@ -1824,194 +1495,70 @@ namespace
 
 TEST_CASE("dump find_8_32 small", "[.][dump]")
 {
-	constexpr int size_first = 1;
-	constexpr int size_last = 80;
-	constexpr int samples = 1000;
-	constexpr int reps = 1000;
-
-	struct result_t
+	BENCHMARK_DUMP("plot/find_8_32_small.dump", lin_style, 1000, 1, 80, 1)
 	{
-		const char * name;
-		uint64 xs[size_last - size_first];
-		uint64 ys[size_last - size_first][samples];
-	};
-	std::vector<result_t> results;
-
-	results.emplace_back();
-	results.back().name = "for";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 8";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_32_small_for(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 8")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "if unroll 16";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_32_small_if_unroll_8(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("if unroll 16")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
 
-	results.emplace_back();
-	results.back().name = "zero byte";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
+			meter.measure([&](int){ return find_8_32_small_if_unroll_16(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("zero byte")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_32_small_zero_word(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-	results.emplace_back();
-	results.back().name = "sse2";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("sse2")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_32_small_sse2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 #endif
 
 #if defined(__AVX2__)
-	results.emplace_back();
-	results.back().name = "avx2";
-	for (int size = size_first; size < size_last; size++)
-	{
-		buffer_utf8 buffer;
-		buffer.allocate(size + 3);
-
-		std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
-
-		results.back().xs[size - size_first] = size;
-		for (int k = 0; k < samples; k++)
+		BENCHMARK_GROUP("avx2")(Catch::Benchmark::Groupometer meter)
 		{
-			const auto before = std::chrono::high_resolution_clock::now();
-			for (int r = 0; r < reps; r++)
-			{
-				auto ret = find_8_32_small_avx2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); // 'bbbb'
-				Catch::Benchmark::deoptimize_value(ret);
-			}
-			const auto after = std::chrono::high_resolution_clock::now();
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size() + 3);
 
-			results.back().ys[size - size_first][k] = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count();
-		}
-	}
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return find_8_32_small_avx2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
+		};
 #endif
-
-	const char * const fname = "plot/data_find_8_32_small.dump";
-#if defined(_MSC_VER)
-	FILE * file;
-	if (ful_check(fopen_s(&file, fname, "wb") == 0))
-#else
-	FILE * const file = std::fopen(fname, "wb");
-	if (ful_check(file))
-#endif
-	{
-		std::fprintf(file, "results %u\n", static_cast<unsigned int>(results.size()));
-
-		for (unsigned int i = 0; i < results.size(); i++)
-		{
-			std::fprintf(file, "name %s\n", results[i].name);
-			std::fprintf(file, "points %d\n", size_last - size_first);
-			std::fprintf(file, "samples %d\n", samples);
-			for (int x = 0; x < size_last - size_first; x++)
-			{
-				std::fprintf(file, "x %llu\ny", static_cast<unsigned long long>(results[i].xs[x]));
-				for (int y = 0; y < samples; y++)
-				{
-					std::fprintf(file, " %llu", static_cast<unsigned long long>(results[i].ys[x][y]));
-				}
-				std::fprintf(file, "\n");
-			}
-		}
-
-		std::fclose(file);
 	}
 }

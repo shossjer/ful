@@ -5,9 +5,10 @@
 function plot_dump(filename)
   fid = fopen(filename, "rb");
   if (fid == -1)
-    error ("could not open file");
+    error("could not open file");
   endif
 
+  style = fscanf(fid, "style %s\n");
   nresults = fscanf(fid, "results %u\n");
   results = struct("name", {}, "points", {}, "samples", {}, "xs", {}, "ys", {});
 
@@ -32,7 +33,7 @@ function plot_dump(filename)
   xs = results(1).xs;
   ys = zeros(nresults, length(xs));
   for r = 1:nresults
-    ys(r, :) = mean(results(r).ys(101:end, :));
+    ys(r, :) = mean(results(r).ys);
   endfor
 
   minx = min(xs);
@@ -40,17 +41,31 @@ function plot_dump(filename)
   miny = min(min(ys));
   maxy = max(nth_element(ys, length(xs) - 10, 2));
 
-  h = plot(xs, ys, '-o');
+  if strcmp(style, 'plot')
+    h = plot(xs, ys, '-o');
 
-  axis([(floor(minx / 10) * 10) (ceil(maxx / 10) * 10) (floor(miny / 5000) * 5000) (ceil(maxy / 5000) * 5000)])
+    axis([(floor(minx / 10) * 10) (ceil(maxx / 10) * 10) (floor(miny / 5000) * 5000) (ceil(maxy / 5000) * 5000)])
+  elseif strcmp(style, 'loglog')
+    h = loglog(xs, ys, '-o');
+  else
+    error("unknown style");
+  endif
+
   legend(results(:).name, "location", "northwest");
   hold on;
   set(gca,'ColorOrderIndex',1);
 
   for r = 1:nresults
-    ys(r, :) = min(results(r).ys(101:end, :));
+    ys(r, :) = min(results(r).ys);
   endfor
-  h = plot(xs, ys, ':');
+
+  if strcmp(style, 'plot')
+    h = plot(xs, ys, ':');
+  elseif strcmp(style, 'loglog')
+    h = loglog(xs, ys, ':');
+  else
+    error("unknown style");
+  endif
 
   hold off;
 
