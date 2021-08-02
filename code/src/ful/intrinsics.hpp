@@ -20,6 +20,14 @@
 #define ful_align_next_16(ptr) ful_align_next(ptr, 16)
 #define ful_align_next_32(ptr) ful_align_next(ptr, 32)
 
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
+# define ful_add_overflow(ptr, n, out) (out = (ptr) + (n), false)
+#elif defined(__GNUC__)
+# define ful_add_overflow(ptr, n, out) __builtin_add_overflow(reinterpret_cast<puint>(ptr), (n), reinterpret_cast<puint *>(&out))
+#else
+# define ful_add_overflow(ptr, n, out) _addcarry_u32(0, reinterpret_cast<puint>(ptr), (n), reinterpret_cast<puint *>(&out))
+#endif
+
 namespace ful
 {
 	namespace detail

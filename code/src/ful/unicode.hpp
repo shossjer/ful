@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ful/dispatch.hpp"
+#include "ful/stdhacks.hpp"
 #include "ful/stdint.hpp"
 #include "ful/types.hpp"
 

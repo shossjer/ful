@@ -616,14 +616,15 @@ TEST_CASE("memset large", "[large]")
 	memset_test(largeval, 1);
 }
 
-TEST_CASE("compare equal", "[compare]")
+namespace
 {
-	BENCHMARK_DUMP("plot/compare_equal.dump", log_style, 1000, 1, 17)
+	struct setup_compare_equal
 	{
 		const int unalignment1 = 0;
 		const int unalignment2 = 1;
 
-		auto setup_and_run = [=](Catch::Benchmark::Groupometer meter, auto && func)
+		template <typename F>
+		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
 		{
 			buffer_utf8 buffer1;
 			buffer1.allocate(meter.size() + unalignment1);
@@ -636,7 +637,15 @@ TEST_CASE("compare equal", "[compare]")
 
 			REQUIRE(func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2), reinterpret_cast<const ful::byte *>(buffer2.end())));
 			meter.measure([&](int){ return func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2), reinterpret_cast<const ful::byte *>(buffer2.end())); });
-		};
+		}
+	};
+}
+
+TEST_CASE("compare equal", "[compare]")
+{
+	BENCHMARK_DUMP("plot/compare_equal.dump", log_style, 1000, 1, 17)
+	{
+		const auto setup_and_run = setup_compare_equal{};
 
 #if HAVE_ASMLIB
 		BENCHMARK_GROUP("strcmp (asmlib)")(Catch::Benchmark::Groupometer meter)
@@ -681,12 +690,12 @@ TEST_CASE("compare equal", "[compare]")
 			eastl::string8 string1(meter.size(), 'a');
 
 			buffer_utf8 buffer2;
-			buffer2.allocate(meter.size() + unalignment2);
+			buffer2.allocate(meter.size() + setup_and_run.unalignment2);
 
 			std::fill(buffer2.beg(), buffer2.end(), static_cast<ful::unit_utf8>('a'));
 
-			REQUIRE(string1.compare(reinterpret_cast<const char *>(buffer2.beg() + unalignment2)) == 0);
-			meter.measure([&](int){ return string1.compare(reinterpret_cast<const char *>(buffer2.beg() + unalignment2)) == 0; });
+			REQUIRE(string1.compare(reinterpret_cast<const char *>(buffer2.beg() + setup_and_run.unalignment2)) == 0);
+			meter.measure([&](int){ return string1.compare(reinterpret_cast<const char *>(buffer2.beg() + setup_and_run.unalignment2)) == 0; });
 		};
 #endif
 
@@ -770,24 +779,16 @@ TEST_CASE("dump memcopy", "[.][dump]")
 	}
 }
 
-namespace ful
+namespace
 {
-	namespace detail
+	struct setup_equal_cstr
 	{
-		// todo move definition to bnc
-		extern bool equal8_cstr_x86_8(const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2);
-	}
-}
+		const int unalignment1 = 0;
+		const int unalignment2 = 1;
 
-TEST_CASE("dump equal_cstr", "[.][dump]")
-{
-	BENCHMARK_DUMP("plot/equal_cstr.dump", log_style, 1000, 1, 17)
-	{
-		auto setup_and_run = [](Catch::Benchmark::Groupometer meter, auto && func)
+		template <typename F>
+		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
 		{
-			const int unalignment1 = 0;
-			const int unalignment2 = 1;
-
 			buffer_utf8 buffer1;
 			buffer1.allocate(meter.size() + unalignment1);
 
@@ -800,6 +801,24 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 			REQUIRE(func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2)));
 			meter.measure([&](int){ return func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2)); });
 		};
+	};
+}
+
+#if defined(_MSC_VER)
+namespace ful
+{
+	namespace detail
+	{
+		extern bool equal8_cstr_x86_8(const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2);
+	}
+}
+#endif
+
+TEST_CASE("dump equal_cstr", "[.][dump]")
+{
+	BENCHMARK_DUMP("plot/equal_cstr.dump", log_style, 1000, 1, 17)
+	{
+		const auto setup_and_run = setup_equal_cstr{};
 
 		BENCHMARK_GROUP("for byte")(Catch::Benchmark::Groupometer meter)
 		{
@@ -976,6 +995,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 			});
 		};
 
+#if defined(_MSC_VER)
 		BENCHMARK_GROUP("repe cmpsb")(Catch::Benchmark::Groupometer meter)
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
@@ -983,6 +1003,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 				return ful::detail::equal8_cstr_x86_8(beg1, end1, beg2);
 			});
 		};
+#endif
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 		BENCHMARK_GROUP("sse")(Catch::Benchmark::Groupometer meter)
@@ -1603,15 +1624,16 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 	}
 }
 
-TEST_CASE("dump equal_range", "[.][dump]")
+namespace
 {
-	BENCHMARK_DUMP("plot/equal_range.dump", log_style, 1000, 1, 17)
+	struct setup_equal_range
 	{
-		auto setup_and_run = [](Catch::Benchmark::Groupometer meter, auto && func)
-		{
-			const int unalignment1 = 0;
-			const int unalignment2 = 1;
+		const int unalignment1 = 0;
+		const int unalignment2 = 1;
 
+		template <typename F>
+		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
+		{
 			buffer_utf8 buffer1;
 			buffer1.allocate(meter.size() + unalignment1);
 
@@ -1624,6 +1646,14 @@ TEST_CASE("dump equal_range", "[.][dump]")
 			REQUIRE(func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2), reinterpret_cast<const ful::byte *>(buffer2.end())));
 			meter.measure([&](int){ return func(reinterpret_cast<const ful::byte *>(buffer1.beg() + unalignment1), reinterpret_cast<const ful::byte *>(buffer1.end()), reinterpret_cast<const ful::byte *>(buffer2.beg() + unalignment2), reinterpret_cast<const ful::byte *>(buffer2.end())); });
 		};
+	};
+}
+
+TEST_CASE("dump equal_range", "[.][dump]")
+{
+	BENCHMARK_DUMP("plot/equal_range.dump", log_style, 1000, 1, 17)
+	{
+		const auto setup_and_run = setup_equal_range{};
 
 		BENCHMARK_GROUP("for byte")(Catch::Benchmark::Groupometer meter)
 		{
@@ -1800,6 +1830,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 			});
 		};
 
+#if defined(_MSC_VER)
 		BENCHMARK_GROUP("repe cmpsb")(Catch::Benchmark::Groupometer meter)
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
@@ -1811,6 +1842,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 				return ful::detail::equal8_cstr_x86_8(beg1, end1, beg2);
 			});
 		};
+#endif
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 		BENCHMARK_GROUP("sse")(Catch::Benchmark::Groupometer meter)

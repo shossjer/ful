@@ -1,4 +1,5 @@
 set(FULLIB_SOURCES
+	src/ful/heap.cpp
 	src/ful/string.cpp
 	src/ful/string_avx.cpp
 	src/ful/string_search.cpp
@@ -12,14 +13,22 @@ set(FULLIB_SOURCES
 
 set(FULLIB_HEADERS
 	src/ful/compiler.hpp
+	src/ful/container.hpp
 	src/ful/dispatch.hpp
+	src/ful/heap.hpp
+	src/ful/heapfwd.hpp
 	src/ful/intrinsics.hpp
 	src/ful/intrinsics_x86.hpp
+	src/ful/memory.hpp
+	src/ful/memoryfwd.hpp
+	src/ful/static.hpp
+	src/ful/staticfwd.hpp
 	src/ful/stdhacks.hpp
 	src/ful/stdint.hpp
 	src/ful/string.hpp
 	src/ful/string_avx.hpp
 	src/ful/string_avx2.hpp
+	src/ful/string_modify.hpp
 	src/ful/string_none.hpp
 	src/ful/string_search.hpp
 	src/ful/string_sse.hpp

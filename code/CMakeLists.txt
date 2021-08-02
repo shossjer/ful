@@ -56,7 +56,7 @@ endif()
 
 if(FUL_BUILD_TESTS)
 	add_executable(fultst "")
-	target_sources(fultst PRIVATE ${FULTST_SOURCES})
+	target_sources(fultst PRIVATE ${FULTST_SOURCES} ${FULTST_HEADERS})
 	target_include_directories(fultst PRIVATE "tst")
 	target_link_libraries(fultst PRIVATE fulcmn lib_test)
 	target_compile_options(fultst PRIVATE ${_compile_options})
