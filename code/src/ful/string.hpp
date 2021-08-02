@@ -6,7 +6,6 @@
 #include "ful/dispatch.hpp"
 #include "ful/stdhacks.hpp"
 #include "ful/stdint.hpp"
-#include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
 
@@ -30,8 +29,8 @@ namespace ful
 		extern void ful_dispatch(memset16)(char16 * from, char16 * to, char16 u);
 		extern void ful_dispatch(memset24)(char24 * from, char24 * to, char_fast24 u);
 		extern void ful_dispatch(memset32)(char32 * from, char32 * to, char32 u);
-		extern bool ful_dispatch(equal_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
-		extern bool ful_dispatch(less_cstr)(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2);
+		extern bool ful_dispatch(equal_cstr)(const byte * beg1, const byte * end1, const byte * beg2);
+		extern bool ful_dispatch(equal_range)(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2);
 #endif
 	}
 
@@ -957,30 +956,562 @@ namespace ful
 		}
 	}
 
-	ful_inline bool equal(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+	namespace detail
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::equal_cstr(beg1, end1, beg2);
-#elif defined(__AVX2__)
-		return detail::equal_cstr_avx2(beg1, end1, beg2);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::equal_cstr_sse2(beg1, end1, beg2);
+		ful_generic() ful_inline
+		bool equal_cstr_generic(const byte * beg1, const byte * end1, const byte * beg2)
+		{
+			const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
 #else
-		return detail::equal_cstr_none(beg1, end1, beg2);
+			if (!ful_except(16u < size))
 #endif
+				return false;
+
+			extern bool equal_cstr_generic_8(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_cstr_generic_8(beg1, size, beg2);
+		}
+
+		ful_target("sse") ful_inline
+		bool equal_cstr_sse(const byte * beg1, const byte * end1, const byte * beg2)
+		{
+			const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			extern bool equal_cstr_sse_16(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_cstr_sse_16(beg1, size, beg2);
+		}
+
+		ful_target("sse2") ful_inline
+		bool equal_cstr_sse2(const byte * beg1, const byte * end1, const byte * beg2)
+		{
+			const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			extern bool equal_cstr_sse2_16(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_cstr_sse2_16(beg1, size, beg2);
+		}
+
+		ful_target("avx") ful_inline
+		bool equal_cstr_avx(const byte * beg1, const byte * end1, const byte * beg2)
+		{
+			const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			if (size <= 32u)
+			{
+				ful::usize index = 0;
+
+				if (reinterpret_cast<puint>(beg2 + index) & 0x1) { if (*reinterpret_cast<const ful::char8 *>(beg1 + index) != *reinterpret_cast<const ful::char8 *>(beg2 + index)) return false; index += 1; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x2) { if (*reinterpret_cast<const ful::char16 *>(beg1 + index) != *reinterpret_cast<const ful::char16 *>(beg2 + index)) return false; index += 2; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x4) { if (*reinterpret_cast<const ful::char32 *>(beg1 + index) != *reinterpret_cast<const ful::char32 *>(beg2 + index)) return false; index += 4; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x8) { if (*reinterpret_cast<const ful::char64 *>(beg1 + index) != *reinterpret_cast<const ful::char64 *>(beg2 + index)) return false; index += 8; }
+
+				ful::usize end_line = size - 16;
+				if (index < end_line)
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
+					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+
+				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
+				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				if (mask != 0x0000ffff)
+					return false;
+
+				return beg2[end_line + 16] == ful::byte{};
+			}
+			else
+			{
+				extern bool equal_cstr_avx_32(const byte * beg1, usize size, const byte * beg2);
+
+				return equal_cstr_avx_32(beg1, size, beg2);
+			}
+		}
+
+		ful_target("avx2") ful_inline
+		bool equal_cstr_avx2(const byte * beg1, const byte * end1, const byte * beg2)
+		{
+			const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			if (size <= 32u)
+			{
+				ful::usize index = 0;
+
+				if (reinterpret_cast<puint>(beg2 + index) & 0x1) { if (*reinterpret_cast<const ful::char8 *>(beg1 + index) != *reinterpret_cast<const ful::char8 *>(beg2 + index)) return false; index += 1; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x2) { if (*reinterpret_cast<const ful::char16 *>(beg1 + index) != *reinterpret_cast<const ful::char16 *>(beg2 + index)) return false; index += 2; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x4) { if (*reinterpret_cast<const ful::char32 *>(beg1 + index) != *reinterpret_cast<const ful::char32 *>(beg2 + index)) return false; index += 4; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x8) { if (*reinterpret_cast<const ful::char64 *>(beg1 + index) != *reinterpret_cast<const ful::char64 *>(beg2 + index)) return false; index += 8; }
+
+				ful::usize end_line = size - 16;
+				if (index < end_line)
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
+					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+
+				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
+				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				if (mask != 0x0000ffff)
+					return false;
+
+				return beg2[end_line + 16] == ful::byte{};
+			}
+			else
+			{
+				extern bool equal_cstr_avx2_32(const byte * beg1, usize size, const byte * beg2);
+
+				return equal_cstr_avx2_32(beg1, size, beg2);
+			}
+		}
+
+		ful_generic() ful_inline
+		bool equal_range_generic(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+		{
+			const ful::usize size = end1 - beg1;
+			if (size != static_cast<ful::usize>(end2 - beg2))
+				return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			extern bool equal_range_generic_9(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_range_generic_9(beg1, size, beg2);
+		}
+
+		ful_target("sse") ful_inline
+		bool equal_range_sse(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+		{
+			const ful::usize size = end1 - beg1;
+			if (size != static_cast<ful::usize>(end2 - beg2))
+				return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			extern bool equal_range_sse_17(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_range_sse_17(beg1, size, beg2);
+		}
+
+		ful_target("sse2") ful_inline
+		bool equal_range_sse2(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+		{
+			const ful::usize size = end1 - beg1;
+			if (size != static_cast<ful::usize>(end2 - beg2))
+				return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			extern bool equal_range_sse2_17(const byte * beg1, usize size, const byte * beg2);
+
+			return equal_range_sse2_17(beg1, size, beg2);
+		}
+
+		ful_target("avx") ful_inline
+		bool equal_range_avx(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+		{
+			const ful::usize size = end1 - beg1;
+			if (size != static_cast<ful::usize>(end2 - beg2))
+				return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			if (size <= 32u)
+			{
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+				return true;
+			}
+			else
+			{
+				extern bool equal_range_avx_33(const byte * beg1, usize size, const byte * beg2);
+
+				return equal_range_avx_33(beg1, size, beg2);
+			}
+		}
+
+		ful_target("avx2") ful_inline
+		bool equal_range_avx2(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+		{
+			const ful::usize size = end1 - beg1;
+			if (size != static_cast<ful::usize>(end2 - beg2))
+				return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			if (!ful_expect(32u < size))
+#else
+			if (!ful_except(16u < size))
+#endif
+				return false;
+
+			if (size <= 32u)
+			{
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+				{
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+				}
+				return true;
+			}
+			else
+			{
+				extern bool equal_range_avx2_33(const byte * beg1, usize size, const byte * beg2);
+
+				return equal_range_avx2_33(beg1, size, beg2);
+			}
+		}
 	}
 
-	ful_inline bool less(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
+	ful_inline
+	bool equal(const byte * beg1, const byte * end1, const byte * beg2)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::less_cstr(beg1, end1, beg2);
-#elif defined(__AVX2__)
-		return detail::less_cstr_avx2(beg1, end1, beg2);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::less_cstr_sse2(beg1, end1, beg2);
+		const ful::usize size = end1 - beg1;
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		if (size <= 32u)
 #else
-		return detail::less_cstr_none(beg1, end1, beg2);
+		if (size <= 16u)
 #endif
+		{
+			ful::usize index = 0;
+
+			switch (size)
+			{
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			case 32:
+			case 31:
+			case 30:
+			case 29:
+			case 28:
+			case 27:
+			case 26:
+			case 25:
+			case 24:
+			case 23:
+			case 22:
+			case 21:
+			case 20:
+			case 19:
+			case 18:
+			case 17:
+			{
+				if (reinterpret_cast<puint>(beg2 + index) & 0x1) { if (*reinterpret_cast<const ful::char8 *>(beg1 + index) != *reinterpret_cast<const ful::char8 *>(beg2 + index)) return false; index += 1; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x2) { if (*reinterpret_cast<const ful::char16 *>(beg1 + index) != *reinterpret_cast<const ful::char16 *>(beg2 + index)) return false; index += 2; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x4) { if (*reinterpret_cast<const ful::char32 *>(beg1 + index) != *reinterpret_cast<const ful::char32 *>(beg2 + index)) return false; index += 4; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x8) { if (*reinterpret_cast<const ful::char64 *>(beg1 + index) != *reinterpret_cast<const ful::char64 *>(beg2 + index)) return false; index += 8; }
+
+				ful::usize end_line = size - 16;
+				if (index < end_line)
+				{
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
+					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+#else
+					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
+					const __m128 line2 = _mm_load_ps(reinterpret_cast<const float *>(beg2 + index));
+					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
+					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					if (mask != 0x0000000f)
+						return false;
+#endif
+				}
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
+				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				if (mask != 0x0000ffff)
+					return false;
+#else
+				const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + end_line));
+				const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + end_line));
+				const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
+				const unsigned int mask = _mm_movemask_ps(cmpeq);
+				if (mask != 0x0000000f)
+					return false;
+#endif
+
+				return beg2[end_line + 16] == ful::byte{};
+			}
+#endif
+			case 16:
+			case 15:
+			case 14:
+			case 13:
+			case 12:
+			case 11:
+			case 10:
+			case 9:
+			{
+				if (reinterpret_cast<puint>(beg2 + index) & 0x1) { if (*reinterpret_cast<const ful::char8 *>(beg1 + index) != *reinterpret_cast<const ful::char8 *>(beg2 + index)) return false; index += 1; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x2) { if (*reinterpret_cast<const ful::char16 *>(beg1 + index) != *reinterpret_cast<const ful::char16 *>(beg2 + index)) return false; index += 2; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x4) { if (*reinterpret_cast<const ful::char32 *>(beg1 + index) != *reinterpret_cast<const ful::char32 *>(beg2 + index)) return false; index += 4; }
+
+				ful::usize end_qword = size - 8;
+				if (index < end_qword)
+				{
+					if (*reinterpret_cast<const ful::char64 *>(beg1 + index) != *reinterpret_cast<const ful::char64 *>(beg2 + index))
+						return false;
+				}
+
+				if (*reinterpret_cast<const ful::char64 *>(beg1 + end_qword) != *reinterpret_cast<const ful::char64 *>(beg2 + end_qword))
+					return false;
+
+				return beg2[end_qword + 8] == ful::byte{};
+			}
+			case 8:
+			case 7:
+			case 6:
+			case 5:
+			{
+				if (reinterpret_cast<puint>(beg2 + index) & 0x1) { if (*reinterpret_cast<const ful::char8 *>(beg1 + index) != *reinterpret_cast<const ful::char8 *>(beg2 + index)) return false; index += 1; }
+				if (reinterpret_cast<puint>(beg2 + index) & 0x2) { if (*reinterpret_cast<const ful::char16 *>(beg1 + index) != *reinterpret_cast<const ful::char16 *>(beg2 + index)) return false; index += 2; }
+
+				ful::usize end_qword = size - 4;
+				if (index < end_qword)
+				{
+					if (*reinterpret_cast<const ful::char32 *>(beg1 + index) != *reinterpret_cast<const ful::char32 *>(beg2 + index))
+						return false;
+				}
+
+				if (*reinterpret_cast<const ful::char32 *>(beg1 + end_qword) != *reinterpret_cast<const ful::char32 *>(beg2 + end_qword))
+					return false;
+
+				return beg2[end_qword + 4] == ful::byte{};
+			}
+			case 4: if (beg1[index] != beg2[index]) return false; index++; ful_fallthrough;
+			case 3: if (beg1[index] != beg2[index]) return false; index++; ful_fallthrough;
+			case 2: if (beg1[index] != beg2[index]) return false; index++; ful_fallthrough;
+			case 1: if (beg1[index] != beg2[index]) return false; index++; ful_fallthrough;
+			case 0: return beg2[index] == ful::byte{};
+			default: ful_unreachable();
+			}
+		}
+		else
+		{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+			return detail::equal_cstr(beg1, end1, beg2);
+#elif defined(__AVX2__)
+			return detail::equal_cstr_avx2(beg1, end1, beg2);
+#elif defined(__AVX__)
+			return detail::equal_cstr_avx(beg1, end1, beg2);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			return detail::equal_cstr_sse2(beg1, end1, beg2);
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			return detail::equal_cstr_sse(beg1, end1, beg2);
+#else
+			return detail::equal_cstr_generic(beg1, end1, beg2);
+#endif
+		}
+	}
+
+	ful_inline
+	bool equal(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
+	{
+		const ful::usize size = end1 - beg1;
+		if (size != static_cast<ful::usize>(end2 - beg2))
+			return false;
+
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+		if (size <= 32u)
+#else
+		if (size <= 16u)
+#endif
+		{
+			switch (size)
+			{
+#if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			case 32:
+			case 31:
+			case 30:
+			case 29:
+			case 28:
+			case 27:
+			case 26:
+			case 25:
+			case 24:
+			case 23:
+			case 22:
+			case 21:
+			case 20:
+			case 19:
+			case 18:
+			case 17:
+			{
+				{
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+#else
+					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + 0));
+					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + 0));
+					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
+					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					if (mask != 0x0000000f)
+						return false;
+#endif
+				}
+				{
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
+					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
+					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
+					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					if (mask != 0x0000ffff)
+						return false;
+#else
+					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(end1 - 16));
+					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(end2 - 16));
+					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
+					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					if (mask != 0x0000000f)
+						return false;
+#endif
+				}
+				return true;
+			}
+#endif
+			case 16:
+			case 15:
+			case 14:
+			case 13:
+			case 12:
+			case 11:
+			case 10:
+			case 9:
+				if (*reinterpret_cast<const ful::char64 *>(beg1 + 0) != *reinterpret_cast<const ful::char64 *>(beg2 + 0))
+					return false;
+				if (*reinterpret_cast<const ful::char64 *>(end1 - 8) != *reinterpret_cast<const ful::char64 *>(end2 - 8))
+					return false;
+				return true;
+			case 8:
+			case 7:
+			case 6:
+			case 5:
+				if (*reinterpret_cast<const ful::char32 *>(beg1 + 0) != *reinterpret_cast<const ful::char32 *>(beg2 + 0))
+					return false;
+				if (*reinterpret_cast<const ful::char32 *>(end1 - 4) != *reinterpret_cast<const ful::char32 *>(end2 - 4))
+					return false;
+				return true;
+			case 4:
+			case 3:
+				if (*reinterpret_cast<const ful::char16 *>(beg1 + 0) != *reinterpret_cast<const ful::char16 *>(beg2 + 0))
+					return false;
+				if (*reinterpret_cast<const ful::char16 *>(end1 - 2) != *reinterpret_cast<const ful::char16 *>(end2 - 2))
+					return false;
+				return true;
+			case 2: if (end1[-2] != end2[-2]) return false; ful_fallthrough;
+			case 1: if (end1[-1] != end2[-1]) return false; ful_fallthrough;
+			case 0: return true;
+			default: ful_unreachable();
+			}
+		}
+		else
+		{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+			return detail::equal_range(beg1, end1, beg2, end2);
+#elif defined(__AVX2__)
+			return detail::equal_range_avx2(beg1, end1, beg2, end2);
+#elif defined(__AVX__)
+			return detail::equal_range_avx(beg1, end1, beg2, end2);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			return detail::equal_range_sse2(beg1, end1, beg2, end2);
+#elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+			return detail::equal_range_sse(beg1, end1, beg2, end2);
+#else
+			return detail::equal_range_generic(beg1, end1, beg2, end2);
+#endif
+		}
 	}
 
 }

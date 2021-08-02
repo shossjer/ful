@@ -32,3 +32,6 @@ set(FULLIB_HEADERS
 	src/ful/unicode_none.hpp
 	src/private/cpuid.hpp
 	)
+
+set(FULLIB_MSVC
+	)

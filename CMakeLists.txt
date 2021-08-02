@@ -13,6 +13,10 @@ include(dep/dep.cmake)
 
 project(ful CXX)
 
+if(MSVC)
+	enable_language(ASM_MASM)
+endif()
+
 # project setup
 
 if(DEFINED CMAKE_CONFIGURATION_TYPES)

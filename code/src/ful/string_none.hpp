@@ -248,27 +248,5 @@ namespace ful
 				return memswap_x86_32(beg1, size, beg2);
 			}
 		}
-
-		ful_generic() inline
-		bool equal_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
-		{
-			for (; beg1 != end1; ++beg1, ++beg2)
-			{
-				if (*beg1 != *beg2)
-					return false;
-			}
-			return *beg2 == unit_utf8{};
-		}
-
-		ful_generic() inline
-		bool less_cstr_none(const unit_utf8 * beg1, const unit_utf8 * end1, const unit_utf8 * beg2)
-		{
-			for (; beg1 != end1; ++beg1, ++beg2)
-			{
-				if (*beg1 != *beg2)
-					return *beg1 < *beg2;
-			}
-			return *beg2 != unit_utf8{};
-		}
 	}
 }

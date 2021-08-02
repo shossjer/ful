@@ -9,3 +9,7 @@ set(FULBNC_SOURCES
 set(FULBNC_HEADERS
 	bnc/catchhacks.hpp
 	)
+
+set(FULBNC_MSVC
+	bnc/ful/string_masm.asm
+	)
