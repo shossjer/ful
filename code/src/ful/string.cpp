@@ -16,7 +16,7 @@
 
 using namespace ful;
 
-ful_resolve(memcopy, char8 *, const char8 * first, const char8 * last, char8 * begin)
+ful_resolve(memcopy, byte *, const byte * first, const byte * last, byte * begin)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))
@@ -29,7 +29,7 @@ ful_resolve(memcopy, char8 *, const char8 * first, const char8 * last, char8 * b
 		return ful_cpucall(memcopy, none, first, last, begin);
 }
 
-ful_resolve(memmovef, char8 *, const char8 * first, const char8 * last, char8 * end)
+ful_resolve(memmovef, byte *, const byte * first, const byte * last, byte * end)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))
@@ -42,7 +42,7 @@ ful_resolve(memmovef, char8 *, const char8 * first, const char8 * last, char8 * 
 		return ful_cpucall(memmovef, none, first, last, end);
 }
 
-ful_resolve(memmover, char8 *, const char8 * first, const char8 * last, char8 * begin)
+ful_resolve(memmover, byte *, const byte * first, const byte * last, byte * begin)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))
@@ -55,7 +55,7 @@ ful_resolve(memmover, char8 *, const char8 * first, const char8 * last, char8 * 
 		return ful_cpucall(memmover, none, first, last, begin);
 }
 
-ful_resolve(memswap, char8 *, char8 * beg1, char8 * end1, char8 * beg2)
+ful_resolve(memswap, byte *, byte * beg1, byte * end1, byte * beg2)
 {
 	ful_cpuinit();
 	if (ful_cpucheck(AVX))

@@ -21,10 +21,10 @@ namespace
 			buffer2.data()[offset + i] = static_cast<ful::char8>(0);
 		}
 
-		ful::char8 * const copy_begin = reinterpret_cast<ful::char8 *>(buffer1.data() + offset);
-		ful::char8 * const copy_end = reinterpret_cast<ful::char8 *>(buffer1.data() + offset + size);
-		ful::char8 * const swap_begin = reinterpret_cast<ful::char8 *>(buffer2.data() + offset);
-		ful::char8 * const swap_end = reinterpret_cast<ful::char8 *>(buffer2.data() + offset + size);
+		ful::byte * const copy_begin = reinterpret_cast<ful::byte *>(buffer1.data() + offset);
+		ful::byte * const copy_end = reinterpret_cast<ful::byte *>(buffer1.data() + offset + size);
+		ful::byte * const swap_begin = reinterpret_cast<ful::byte *>(buffer2.data() + offset);
+		ful::byte * const swap_end = reinterpret_cast<ful::byte *>(buffer2.data() + offset + size);
 
 #if defined(__AVX__)
 		if (64u < size)
@@ -56,7 +56,7 @@ namespace
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				ful::detail::memset8_avx(swap_begin, swap_end, static_cast<ful::char8>(7));
+				ful::detail::memset8_avx(reinterpret_cast<ful::char8 *>(swap_begin), reinterpret_cast<ful::char8 *>(swap_end), static_cast<ful::char8>(7));
 				for (int i = 0; i < size; i++)
 				{
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(7));
@@ -93,7 +93,7 @@ namespace
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				ful::detail::memset8_sse(swap_begin, swap_end, static_cast<ful::char8>(7));
+				ful::detail::memset8_sse(reinterpret_cast<ful::char8 *>(swap_begin), reinterpret_cast<ful::char8 *>(swap_end), static_cast<ful::char8>(7));
 				for (int i = 0; i < size; i++)
 				{
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(7));
@@ -130,7 +130,7 @@ namespace
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				ful::detail::memset8_sse2(swap_begin, swap_end, static_cast<ful::char8>(7));
+				ful::detail::memset8_sse2(reinterpret_cast<ful::char8 *>(swap_begin), reinterpret_cast<ful::char8 *>(swap_end), static_cast<ful::char8>(7));
 				for (int i = 0; i < size; i++)
 				{
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(7));
@@ -166,7 +166,7 @@ namespace
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 				}
 
-				ful::detail::memset8_none(swap_begin, swap_end, static_cast<ful::char8>(7));
+				ful::detail::memset8_none(reinterpret_cast<ful::char8 *>(swap_begin), reinterpret_cast<ful::char8 *>(swap_end), static_cast<ful::char8>(7));
 				for (int i = 0; i < size; i++)
 				{
 					CHECK((swap_begin)[i] == static_cast<ful::char8>(7));
@@ -202,7 +202,7 @@ namespace
 				CHECK((swap_begin)[i] == static_cast<ful::char8>(i % (127 - 32) + 32));
 			}
 
-			ful::memset(swap_begin, swap_end, static_cast<ful::char8>(7));
+			ful::memset(reinterpret_cast<ful::char8 *>(swap_begin), reinterpret_cast<ful::char8 *>(swap_end), static_cast<ful::char8>(7));
 			for (int i = 0; i < size; i++)
 			{
 				CHECK((swap_begin)[i] == static_cast<ful::char8>(7));

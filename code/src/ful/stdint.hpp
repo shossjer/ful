@@ -102,10 +102,12 @@ namespace ful
 	using ssize = pdiff;
 	static_assert(sizeof(ssize) == sizeof(usize), "ssize must be the same size as usize!");
 
+	using byte = uint8;
+
 #if defined(__CHAR_BIT__)
 	constexpr const usize byte_size = __CHAR_BIT__;
 #elif defined(_MSC_VER)
-	constexpr const usize byte_size = 8;
+	constexpr const usize byte_size = 8; // todo byte_bits
 #else
 # error Missing implementation!
 #endif

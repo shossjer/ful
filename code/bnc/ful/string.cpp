@@ -192,9 +192,9 @@ namespace
 			buffer_utf8 to_buffer;
 			to_buffer.allocate(to + size);
 
-			char8 * const first = reinterpret_cast<char8 *>(from_buffer.data()) + from;
-			char8 * const last = first + size;
-			char8 * const begin = reinterpret_cast<char8 *>(to_buffer.data()) + to;
+			byte * const first = reinterpret_cast<byte *>(from_buffer.data()) + from;
+			byte * const last = first + size;
+			byte * const begin = reinterpret_cast<byte *>(to_buffer.data()) + to;
 
 			std::fill(first, last, 'Z');
 
@@ -217,9 +217,9 @@ namespace
 				buffer_utf8 to_buffer;
 				to_buffer.allocate(to + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(from_buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(to_buffer.data()) + to;
+				byte * const first = reinterpret_cast<byte *>(from_buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(to_buffer.data()) + to;
 
 				std::fill(first, last, 'Z');
 
@@ -235,9 +235,9 @@ namespace
 				buffer_utf8 to_buffer;
 				to_buffer.allocate(to + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(from_buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(to_buffer.data()) + to;
+				byte * const first = reinterpret_cast<byte *>(from_buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(to_buffer.data()) + to;
 
 				std::fill(first, last, 'Z');
 
@@ -254,9 +254,9 @@ namespace
 				buffer_utf8 to_buffer;
 				to_buffer.allocate(to + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(from_buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(to_buffer.data()) + to;
+				byte * const first = reinterpret_cast<byte *>(from_buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(to_buffer.data()) + to;
 
 				std::fill(first, last, 'Z');
 
@@ -273,9 +273,9 @@ namespace
 				buffer_utf8 to_buffer;
 				to_buffer.allocate(to + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(from_buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(to_buffer.data()) + to;
+				byte * const first = reinterpret_cast<byte *>(from_buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(to_buffer.data()) + to;
 
 				std::fill(first, last, 'Z');
 
@@ -393,10 +393,10 @@ namespace
 			buffer_utf8 buffer;
 			buffer.allocate((from < to ? to : from) + size);
 
-			char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
-			char8 * const last = first + size;
-			char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
-			char8 * const end = begin + size;
+			byte * const first = reinterpret_cast<byte *>(buffer.data()) + from;
+			byte * const last = first + size;
+			byte * const begin = reinterpret_cast<byte *>(buffer.data()) + to;
+			byte * const end = begin + size;
 
 			std::fill(first, last, 'Z');
 
@@ -416,10 +416,10 @@ namespace
 				buffer_utf8 buffer;
 				buffer.allocate((from < to ? to : from) + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
-				char8 * const end = begin + size;
+				byte * const first = reinterpret_cast<byte *>(buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(buffer.data()) + to;
+				byte * const end = begin + size;
 
 				std::fill(first, last, 'Z');
 
@@ -432,10 +432,10 @@ namespace
 				buffer_utf8 buffer;
 				buffer.allocate((from < to ? to : from) + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
-				char8 * const end = begin + size;
+				byte * const first = reinterpret_cast<byte *>(buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(buffer.data()) + to;
+				byte * const end = begin + size;
 
 				std::fill(first, last, 'Z');
 
@@ -449,10 +449,10 @@ namespace
 				buffer_utf8 buffer;
 				buffer.allocate((from < to ? to : from) + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
-				char8 * const end = begin + size;
+				byte * const first = reinterpret_cast<byte *>(buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(buffer.data()) + to;
+				byte * const end = begin + size;
 
 				std::fill(first, last, 'Z');
 
@@ -466,10 +466,10 @@ namespace
 				buffer_utf8 buffer;
 				buffer.allocate((from < to ? to : from) + size);
 
-				char8 * const first = reinterpret_cast<char8 *>(buffer.data()) + from;
-				char8 * const last = first + size;
-				char8 * const begin = reinterpret_cast<char8 *>(buffer.data()) + to;
-				char8 * const end = begin + size;
+				byte * const first = reinterpret_cast<byte *>(buffer.data()) + from;
+				byte * const last = first + size;
+				byte * const begin = reinterpret_cast<byte *>(buffer.data()) + to;
+				byte * const end = begin + size;
 
 				std::fill(first, last, 'Z');
 
@@ -780,7 +780,7 @@ TEST_CASE("dump memcopy", "[.][dump]")
 
 			std::fill(buffer_from.beg(), buffer_from.end(), static_cast<ful::unit_utf8>('a'));
 
-			meter.measure([&](int){ return ful::detail::memcopy_avx(reinterpret_cast<const ful::char8 *>(buffer_from.beg()), reinterpret_cast<const ful::char8 *>(buffer_from.end()), reinterpret_cast<ful::char8 *>(buffer_to.data())); });
+			meter.measure([&](int){ return ful::detail::memcopy_avx(reinterpret_cast<const ful::byte *>(buffer_from.beg()), reinterpret_cast<const ful::byte *>(buffer_from.end()), reinterpret_cast<ful::byte *>(buffer_to.data())); });
 		};
 #endif
 	}

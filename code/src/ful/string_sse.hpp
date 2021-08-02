@@ -5,7 +5,7 @@ namespace ful
 	namespace detail
 	{
 		ful_target("sse") ful_inline
-		void copy_sse_16_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_sse_16_32(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first));
 			const __m128 b = _mm_loadu_ps(reinterpret_cast<const float *>(last - 16));
@@ -14,7 +14,7 @@ namespace ful
 		}
 
 		ful_target("sse") ful_inline
-		void copy_sse_32_64(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_sse_32_64(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first));
 			const __m128 b = _mm_loadu_ps(reinterpret_cast<const float *>(first + 16));
@@ -27,7 +27,7 @@ namespace ful
 		}
 
 		ful_target("sse") ful_inline
-		char8 * memcopy_sse(const char8 * first, const char8 * last, char8 * begin)
+		byte * memcopy_sse(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -53,14 +53,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memcopy_sse_64(const char8 * first, usize size, char8 * begin);
+				extern byte * memcopy_sse_64(const byte * first, usize size, byte * begin);
 
 				return memcopy_sse_64(first, size, begin);
 			}
 		}
 
 		ful_target("sse") ful_inline
-		char8 * memmovef_sse(const char8 * first, const char8 * last, char8 * begin)
+		byte * memmovef_sse(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -86,14 +86,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmovef_sse_64(const char8 * first, usize size, char8 * begin);
+				extern byte * memmovef_sse_64(const byte * first, usize size, byte * begin);
 
 				return memmovef_sse_64(first, size, begin);
 			}
 		}
 
 		ful_target("sse") ful_inline
-		char8 * memmover_sse(const char8 * first, const char8 * last, char8 * end)
+		byte * memmover_sse(const byte * first, const byte * last, byte * end)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -119,7 +119,7 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmover_sse_64(usize size, const char8 * last, char8 * end);
+				extern byte * memmover_sse_64(usize size, const byte * last, byte * end);
 
 				return memmover_sse_64(size, last, end);
 			}
@@ -373,7 +373,7 @@ namespace ful
 		}
 
 		ful_target("sse") ful_inline
-		void swap_sse_16_32(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		void swap_sse_16_32(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			const __m128 a1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1));
 			const __m128 b1 = _mm_loadu_ps(reinterpret_cast<const float *>(end1 - 16));
@@ -386,7 +386,7 @@ namespace ful
 		}
 
 		ful_target("sse") ful_inline
-		void swap_sse_32_64(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		void swap_sse_32_64(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			const __m128 a1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1));
 			const __m128 b1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + 16));
@@ -407,7 +407,7 @@ namespace ful
 		}
 
 		ful_target("sse") ful_inline
-		char8 * memswap_sse(char8 * beg1, char8 * end1, char8 * beg2)
+		byte * memswap_sse(byte * beg1, byte * end1, byte * beg2)
 		{
 			const usize size = end1 - beg1;
 #if defined(__AVX__)
@@ -433,7 +433,7 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memswap_sse_64(char8 * beg1, usize size, char8 * beg2);
+				extern byte * memswap_sse_64(byte * beg1, usize size, byte * beg2);
 
 				return memswap_sse_64(beg1, size, beg2);
 			}

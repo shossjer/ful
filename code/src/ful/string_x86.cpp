@@ -5,7 +5,8 @@ namespace ful
 {
 	namespace detail
 	{
-		char8 * memcopy_x86_32(const char8 * first, usize size, char8 * begin)
+		ful_generic()
+		byte * memcopy_x86_32(const byte * first, usize size, byte * begin)
 		{
 			const usize end_index = size - 32;
 			usize index = 0;
@@ -36,7 +37,8 @@ namespace ful
 			return begin + size;
 		}
 
-		char8 * memmovef_x86_32(const char8 * first, usize size, char8 * begin)
+		ful_generic()
+		byte * memmovef_x86_32(const byte * first, usize size, byte * begin)
 		{
 			const usize end_index = size - 32;
 			usize index = 0;
@@ -63,7 +65,8 @@ namespace ful
 			return begin + size;
 		}
 
-		char8 * memmover_x86_32(usize size, const char8 * last, char8 * end)
+		ful_generic()
+		byte * memmover_x86_32(usize size, const byte * last, byte * end)
 		{
 			const usize begin_index = size - 32;
 			usize index = 0;
@@ -90,7 +93,8 @@ namespace ful
 			return end - size;
 		}
 
-		char8 * memswap_x86_32(char8 * beg1, usize size, char8 * beg2)
+		ful_generic()
+		byte * memswap_x86_32(byte * beg1, usize size, byte * beg2)
 		{
 			const usize end_index = size - 32;
 			usize index = 0;

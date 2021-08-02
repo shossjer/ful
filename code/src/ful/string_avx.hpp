@@ -5,7 +5,7 @@ namespace ful
 	namespace detail
 	{
 		ful_target("avx") ful_inline
-		void copy_avx_32_64(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_avx_32_64(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 			const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(last - 32));
@@ -14,7 +14,7 @@ namespace ful
 		}
 
 		ful_target("avx") ful_inline
-		void copy_avx_64_96(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_avx_64_96(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 			const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first + 32));
@@ -25,7 +25,7 @@ namespace ful
 		}
 
 		ful_target("avx") ful_inline
-		void copy_avx_96_128(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_avx_96_128(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 			const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first + 32));
@@ -38,7 +38,7 @@ namespace ful
 		}
 
 		ful_target("avx") ful_inline
-		char8 * memcopy_avx(const char8 * first, const char8 * last, char8 * begin)
+		byte * memcopy_avx(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -64,14 +64,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memcopy_avx_64(const char8 * first, usize size, char8 * begin);
+				extern byte * memcopy_avx_64(const byte * first, usize size, byte * begin);
 
 				return memcopy_avx_64(first, size, begin);
 			}
 		}
 
 		ful_target("avx") ful_inline
-		char8 * memmovef_avx(const char8 * first, const char8 * last, char8 * begin)
+		byte * memmovef_avx(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -109,14 +109,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmovef_avx_64(const char8 * first, usize size, char8 * begin);
+				extern byte * memmovef_avx_64(const byte * first, usize size, byte * begin);
 
 				return memmovef_avx_64(first, size, begin);
 			}
 		}
 
 		ful_target("avx") ful_inline
-		char8 * memmover_avx(const char8 * first, const char8 * last, char8 * end)
+		byte * memmover_avx(const byte * first, const byte * last, byte * end)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -142,7 +142,7 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmover_avx_64(usize size, const char8 * last, char8 * end);
+				extern byte * memmover_avx_64(usize size, const byte * last, byte * end);
 
 				return memmover_avx_64(size, last, end);
 			}
@@ -331,7 +331,7 @@ namespace ful
 		}
 
 		ful_target("avx") ful_inline
-		void swap_avx_32_64(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		void swap_avx_32_64(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			const __m256i a1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1));
 			const __m256i b1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(end1 - 32));
@@ -344,7 +344,7 @@ namespace ful
 		}
 
 		ful_target("avx") ful_inline
-		char8 * memswap_avx(char8 * beg1, char8 * end1, char8 * beg2)
+		byte * memswap_avx(byte * beg1, byte * end1, byte * beg2)
 		{
 			const usize size = end1 - beg1;
 #if defined(__AVX__)
@@ -370,7 +370,7 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memswap_avx_64(char8 * beg1, usize size, char8 * beg2);
+				extern byte * memswap_avx_64(byte * beg1, usize size, byte * beg2);
 
 				return memswap_avx_64(beg1, size, beg2);
 			}

@@ -4,8 +4,8 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_inline
-		void copy_none_16_32(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		ful_generic() ful_inline
+		void copy_none_16_32(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const uint64 a = *reinterpret_cast<const uint64 *>(first);
 			const uint64 b = *reinterpret_cast<const uint64 *>(first + 8);
@@ -17,8 +17,8 @@ namespace ful
 			*reinterpret_cast<uint64 *>(end - 8) = d;
 		}
 
-		ful_inline
-		char8 * memcopy_none(const char8 * first, const char8 * last, char8 * begin)
+		ful_generic() ful_inline
+		byte * memcopy_none(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -39,14 +39,14 @@ namespace ful
 			else
 			{
 				// todo 64 bytes a time is slightly faster
-				extern char8 * memcopy_x86_32(const char8 * first, usize size, char8 * begin);
+				extern byte * memcopy_x86_32(const byte * first, usize size, byte * begin);
 
 				return memcopy_x86_32(first, size, begin);
 			}
 		}
 
-		ful_inline
-		char8 * memmovef_none(const char8 * first, const char8 * last, char8 * begin)
+		ful_generic() ful_inline
+		byte * memmovef_none(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -66,14 +66,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmovef_x86_32(const char8 * first, usize size, char8 * begin);
+				extern byte * memmovef_x86_32(const byte * first, usize size, byte * begin);
 
 				return memmovef_x86_32(first, size, begin);
 			}
 		}
 
-		ful_inline
-		char8 * memmover_none(const char8 * first, const char8 * last, char8 * end)
+		ful_generic() ful_inline
+		byte * memmover_none(const byte * first, const byte * last, byte * end)
 		{
 			const usize size = last - first;
 #if defined(__AVX__)
@@ -93,14 +93,14 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memmover_x86_32(usize size, const char8 * last, char8 * end);
+				extern byte * memmover_x86_32(usize size, const byte * last, byte * end);
 
 				return memmover_x86_32(size, last, end);
 			}
 		}
 
-		ful_inline
-		void swap_none_16_32(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		ful_generic() ful_inline
+		void swap_none_16_32(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			const uint64 a1 = *reinterpret_cast<const uint64 *>(beg1);
 			const uint64 b1 = *reinterpret_cast<const uint64 *>(beg1 + 8);
@@ -222,8 +222,8 @@ namespace ful
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
 
-		ful_inline
-		char8 * memswap_none(char8 * beg1, char8 * end1, char8 * beg2)
+		ful_generic() ful_inline
+		byte * memswap_none(byte * beg1, byte * end1, byte * beg2)
 		{
 			const usize size = end1 - beg1;
 #if defined(__AVX__)
@@ -243,7 +243,7 @@ namespace ful
 			}
 			else
 			{
-				extern char8 * memswap_x86_32(char8 * beg1, usize size, char8 * beg2);
+				extern byte * memswap_x86_32(byte * beg1, usize size, byte * beg2);
 
 				return memswap_x86_32(beg1, size, beg2);
 			}

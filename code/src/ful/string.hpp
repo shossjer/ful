@@ -22,10 +22,10 @@ namespace ful
 	namespace detail
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		extern char8 * ful_dispatch(memcopy)(const char8 * first, const char8 * last, char8 * begin);
-		extern char8 * ful_dispatch(memmovef)(const char8 * first, const char8 * last, char8 * begin);
-		extern char8 * ful_dispatch(memmover)(const char8 * first, const char8 * last, char8 * end);
-		extern char8 * ful_dispatch(memswap)(char8 * beg1, char8 * end1, char8 * beg2);
+		extern byte * ful_dispatch(memcopy)(const byte * first, const byte * last, byte * begin);
+		extern byte * ful_dispatch(memmovef)(const byte * first, const byte * last, byte * begin);
+		extern byte * ful_dispatch(memmover)(const byte * first, const byte * last, byte * end);
+		extern byte * ful_dispatch(memswap)(byte * beg1, byte * end1, byte * beg2);
 		extern void ful_dispatch(memset8)(char8 * from, char8 * to, char8 u);
 		extern void ful_dispatch(memset16)(char16 * from, char16 * to, char16 u);
 		extern void ful_dispatch(memset24)(char24 * from, char24 * to, char_fast24 u);
@@ -38,7 +38,7 @@ namespace ful
 	namespace detail
 	{
 		ful_inline
-		void copy_small(const char8 * first, const char8 * last, char8 * begin, char8 * end)
+		void copy_small(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			switch (last - first)
 			{
@@ -415,7 +415,7 @@ namespace ful
 				const uint32 bytes = 0x01000001u * static_cast<uint32>(u);
 
 				*reinterpret_cast<uint32 *>(from) = bytes;
-				*reinterpret_cast<uint16 *>(reinterpret_cast<char8 *>(to) - 8) = static_cast<uint16>(static_cast<uint32>(u) >> 8);
+				*reinterpret_cast<uint16 *>(reinterpret_cast<char8 *>(to) - 2) = static_cast<uint16>(static_cast<uint32>(u) >> 8);
 
 				break;
 			}
@@ -478,7 +478,7 @@ namespace ful
 		}
 
 		ful_inline
-		void swap_small(char8 * beg1, char8 * end1, char8 * beg2, char8 * end2)
+		void swap_small(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			switch (end1 - beg1)
 			{
@@ -623,7 +623,7 @@ namespace ful
 	}
 
 	ful_inline
-	char8 * memcopy(const char8 * first, const char8 * last, char8 * begin)
+	byte * memcopy(const byte * first, const byte * last, byte * begin)
 	{
 		const usize size = last - first;
 		if (!ful_expect(begin + size <= first || last <= begin))
@@ -652,7 +652,7 @@ namespace ful
 
 			detail::repmovf(reinterpret_cast<const uint64 *>(first + alignment_offset), (size - alignment_offset) / 8, reinterpret_cast<uint64 *>(begin + alignment_offset));
 
-			char8 * const end = begin + size;
+			byte * const end = begin + size;
 			*reinterpret_cast<uint64 *>(end - 8) = *reinterpret_cast<const uint64 *>(last - 8);
 
 			return end;
@@ -674,7 +674,7 @@ namespace ful
 	}
 
 	ful_inline
-	char8 * memmove(const char8 * first, const char8 * last, char8 * begin)
+	byte * memmove(const byte * first, const byte * last, byte * begin)
 	{
 		const usize size = last - first;
 #if defined(__AVX__)
@@ -720,7 +720,7 @@ namespace ful
 	}
 
 	ful_inline
-	char8 * memmovef(const char8 * first, const char8 * last, char8 * begin)
+	byte * memmovef(const byte * first, const byte * last, byte * begin)
 	{
 		if (!ful_expect(begin <= first || last <= begin))
 			return begin;
@@ -755,7 +755,7 @@ namespace ful
 	}
 
 	ful_inline
-	char8 * memmover(const char8 * first, const char8 * last, char8 * end)
+	byte * memmover(const byte * first, const byte * last, byte * end)
 	{
 		if (!ful_expect(end <= first || last <= end))
 			return end;
@@ -923,7 +923,7 @@ namespace ful
 	}
 
 	ful_inline
-	char8 * memswap(char8 * beg1, char8 * end1, char8 * beg2)
+	byte * memswap(byte * beg1, byte * end1, byte * beg2)
 	{
 		const usize size = end1 - beg1;
 		if (!ful_expect(end1 <= beg2 || beg2 + size <= beg1))

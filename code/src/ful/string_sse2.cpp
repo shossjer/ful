@@ -6,13 +6,13 @@
 namespace
 {
 	ful_target("sse2")
-	void memset_sse2_64(ful::char8 * from, ful::char8 * to, __m128i u128)
+	void memset_sse2_64(ful::byte * from, ful::byte * to, __m128i u128)
 	{
 		_mm_storeu_si128(reinterpret_cast<__m128i *>(from), u128);
 
 		from = ful_align_next_16(from);
 
-		ful::char8 * const to_word = to - 64;
+		ful::byte * const to_word = to - 64;
 		if (from < to_word)
 		{
 			do
@@ -38,9 +38,9 @@ namespace
 	}
 
 	ful_target("sse2")
-	void memset_sse2_96(ful::char8 * from, ful::char8 * to, __m128i lo_u128, __m128i mi_u128, __m128i hi_u128)
+	void memset_sse2_96(ful::byte * from, ful::byte * to, __m128i lo_u128, __m128i mi_u128, __m128i hi_u128)
 	{
-		ful::char8 * const to_word = to - 96;
+		ful::byte * const to_word = to - 96;
 		if (from < to_word)
 		{
 			do
@@ -66,7 +66,7 @@ namespace ful
 	namespace detail
 	{
 		ful_target("sse2")
-		char8 * memcopy_sse2_64(const char8 * first, usize size, char8 * begin)
+		byte * memcopy_sse2_64(const byte * first, usize size, byte * begin)
 		{
 			const usize begin_offset = ful_align_next_16(begin) - begin;
 			{
@@ -109,7 +109,7 @@ namespace ful
 		}
 
 		ful_target("sse2")
-		char8 * memmovef_sse2_64(const char8 * first, usize size, char8 * begin)
+		byte * memmovef_sse2_64(const byte * first, usize size, byte * begin)
 		{
 			// todo benchmark stream vs unaligned
 			const usize end_index = size - 64;
@@ -138,7 +138,7 @@ namespace ful
 		}
 
 		ful_target("sse2")
-		char8 * memmover_sse2_64(usize size, const char8 * last, char8 * end)
+		byte * memmover_sse2_64(usize size, const byte * last, byte * end)
 		{
 			const usize begin_index = size - 64;
 			usize index = 0;
@@ -170,7 +170,7 @@ namespace ful
 		{
 			const __m128i u128 = _mm_set1_epi8(u);
 
-			memset_sse2_64(from, to, u128);
+			memset_sse2_64(reinterpret_cast<byte *>(from), reinterpret_cast<byte *>(to), u128);
 		}
 
 		ful_target("sse2")
@@ -178,7 +178,7 @@ namespace ful
 		{
 			const __m128i u128 = _mm_set1_epi16(u);
 
-			memset_sse2_64(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u128);
+			memset_sse2_64(reinterpret_cast<byte *>(from), reinterpret_cast<byte *>(to), u128);
 		}
 
 		ful_target("sse2")
@@ -199,24 +199,24 @@ namespace ful
 
 			char24 * const from_aligned = ful_align_next_16(from);
 
-			switch (reinterpret_cast<char8 *>(from_aligned) - reinterpret_cast<char8 *>(from))
+			switch (reinterpret_cast<byte *>(from_aligned) - reinterpret_cast<byte *>(from))
 			{
-			case 1: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
-			case 2: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u128, hi_u128, lo_u128); break;
-			case 3: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u128, mi_u128, hi_u128); break;
-			case 4: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
-			case 5: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u128, hi_u128, lo_u128); break;
-			case 6: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u128, mi_u128, hi_u128); break;
-			case 7: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
-			case 8: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u128, hi_u128, lo_u128); break;
-			case 9: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u128, mi_u128, hi_u128); break;
-			case 10: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
-			case 11: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u128, hi_u128, lo_u128); break;
-			case 12: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u128, mi_u128, hi_u128); break;
-			case 13: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
-			case 14: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), mi_u128, hi_u128, lo_u128); break;
-			case 15: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), lo_u128, mi_u128, hi_u128); break;
-			case 16: memset_sse2_96(reinterpret_cast<char8 *>(from_aligned), reinterpret_cast<char8 *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 1: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 2: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), mi_u128, hi_u128, lo_u128); break;
+			case 3: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), lo_u128, mi_u128, hi_u128); break;
+			case 4: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 5: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), mi_u128, hi_u128, lo_u128); break;
+			case 6: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), lo_u128, mi_u128, hi_u128); break;
+			case 7: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 8: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), mi_u128, hi_u128, lo_u128); break;
+			case 9: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), lo_u128, mi_u128, hi_u128); break;
+			case 10: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 11: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), mi_u128, hi_u128, lo_u128); break;
+			case 12: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), lo_u128, mi_u128, hi_u128); break;
+			case 13: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
+			case 14: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), mi_u128, hi_u128, lo_u128); break;
+			case 15: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), lo_u128, mi_u128, hi_u128); break;
+			case 16: memset_sse2_96(reinterpret_cast<byte *>(from_aligned), reinterpret_cast<byte *>(to), hi_u128, lo_u128, mi_u128); break;
 			default: ful_unreachable();
 			}
 
@@ -233,11 +233,11 @@ namespace ful
 		{
 			const __m128i u128 = _mm_set1_epi32(u);
 
-			memset_sse2_64(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u128);
+			memset_sse2_64(reinterpret_cast<byte *>(from), reinterpret_cast<byte *>(to), u128);
 		}
 
 		ful_target("sse2")
-		char8 * memswap_sse2_64(char8 * beg1, usize size, char8 * beg2)
+		byte * memswap_sse2_64(byte * beg1, usize size, byte * beg2)
 		{
 			const usize end_index = size - 64;
 			usize index = 0;
