@@ -245,22 +245,12 @@ namespace ful
 #endif
 	}
 
-	// reorder bytes for converting between little- and big-endian
-	template <typename T>
-	ful_inline
-	T byte_swap(T x)
-	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
-		return detail::bswap(x);
-#else
-# error Missing implementation!
-#endif
-	}
-
 	struct tag_bmi_type { explicit tag_bmi_type() = default; };
 	constexpr auto tag_bmi = tag_bmi_type{};
 	struct tag_lzcnt_type { explicit tag_lzcnt_type() = default; };
 	constexpr auto tag_lzcnt = tag_lzcnt_type{};
+	struct tag_movbe_type { explicit tag_movbe_type() = default; };
+	constexpr auto tag_movbe = tag_movbe_type{};
 	struct tag_popcnt_type { explicit tag_popcnt_type() = default; };
 	constexpr auto tag_popcnt = tag_popcnt_type{};
 	struct tag_generic_type { explicit tag_generic_type() = default; };
@@ -549,6 +539,62 @@ namespace ful
 		return ret;
 	}
 #endif
+
+	// reverse the byte order
+	template <typename T>
+	ful_inline
+	T byte_swap(T x)
+	{
+#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
+		return detail::bswap(x);
+#else
+# error Missing implementation!
+#endif
+	}
+
+	// load and reverse the byte order
+	template <typename T>
+	ful_target("movbe") ful_inline
+	auto load_swap(const T * x, tag_movbe_type) -> decltype(detail::loadbe(x)) { return detail::loadbe(x); }
+
+	// load and reverse the byte order
+	template <typename T>
+	ful_generic() ful_inline
+	auto load_swap(const T * x, tag_generic_type) -> decltype(detail::bswap(*x)) { return detail::bswap(*x); }
+
+	// load and reverse the byte order
+	template <typename T>
+	ful_inline
+	T load_swap(const T * x)
+	{
+#if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))
+		return load_swap(x, tag_movbe);
+#else
+		return load_swap(x, tag_generic);
+#endif
+	}
+
+	// load and reverse the byte order
+	template <typename T>
+	ful_target("movbe") ful_inline
+	void store_swap(T * x, T y, tag_movbe_type) { return detail::storebe(x, y); }
+
+	// load and reverse the byte order
+	template <typename T>
+	ful_generic() ful_inline
+	void store_swap(T * x, T y, tag_generic_type) { *x = detail::bswap(y); }
+
+	// reverse the byte order and store
+	template <typename T>
+	ful_inline
+	void store_swap(T * x, T y)
+	{
+#if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))
+		return store_swap(x, y, tag_movbe);
+#else
+		return store_swap(x, y, tag_generic);
+#endif
+	}
 }
 
 #if defined(_MSC_VER)

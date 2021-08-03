@@ -36,6 +36,12 @@ namespace ful
 		ful_generic() ful_inline unsigned int bsr(unsigned int x) { return bsr(static_cast<int>(x)); }
 
 		// byte swap
+		ful_generic() ful_inline unsigned short bswap(unsigned short x) { return __rolw(x, 8); }
+
+		// byte swap
+		ful_generic() ful_inline short bswap(short x) { return bswap(static_cast<unsigned short>(x)); }
+
+		// byte swap
 		ful_generic() ful_inline int bswap(int x) { return __bswapd(x); }
 
 		// byte swap
@@ -246,6 +252,12 @@ namespace ful
 		ful_generic() ful_inline unsigned int bsr(int x) { return bsr(static_cast<unsigned int>(x)); }
 
 		// byte swap
+		ful_generic() ful_inline unsigned short bswap(unsigned short x) { return _rotl16(x, 8); }
+
+		// byte swap
+		ful_generic() ful_inline short bswap(short x) { return bswap(static_cast<unsigned short>(x)); }
+
+		// byte swap
 		ful_generic() ful_inline unsigned long bswap(unsigned long x) { return _byteswap_ulong(x); }
 
 		// byte swap
@@ -352,6 +364,152 @@ namespace ful
 		// rotate right
 		ful_generic() ful_inline long long rotr(long long x, int shift) { return rotr(static_cast<unsigned long long>(x), shift); }
 # endif
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline short loadbe(const short * x)
+		{
+			short y;
+
+			__asm__("movbe %w0, %1" : "=r" (y) : "mr" (x));
+
+			return y;
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned short loadbe(const unsigned short * x) { return loadbe(reinterpret_cast<const short *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline int loadbe(const int * x)
+		{
+			int y;
+
+			__asm__("movbe %k0, %1" : "=r" (y) : "mr" (x));
+
+			return y;
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned int loadbe(const unsigned int * x) { return loadbe(reinterpret_cast<const int *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(short * x, short y)
+		{
+			__asm__ volatile("movbe %0, %w1" : "+mr" (x) : "r" (y) : "memory");
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned short * x, unsigned short y) { storebe(reinterpret_cast<short *>(x), static_cast<short>(y)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(int * x, int y)
+		{
+			__asm__ volatile("movbe %0, %k1" : "+mr" (x) : "r" (y) : "memory");
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned int * x, unsigned int y) { storebe(reinterpret_cast<int *>(x), static_cast<int>(y)); }
+
+# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline long long loadbe(const long long * x)
+		{
+			long long y;
+
+			__asm__("movbe %q0, %1" : "=r" (y) : "mr" (x));
+
+			return y;
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned long long loadbe(const unsigned long long * x) { return loadbe(reinterpret_cast<const long long *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(long long * x, long long y)
+		{
+			__asm__ volatile("movbe %0, %q1" : "+mr" (x) : "r" (y) : "memory");
+		}
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned long long * x, unsigned long long y) { storebe(reinterpret_cast<long long *>(x), static_cast<long long>(y)); }
+
+# endif
+
+#else
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline short loadbe(const short * x) { return _loadbe_i16(x); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned short loadbe(const unsigned short * x) { return loadbe(reinterpret_cast<const short *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline int loadbe(const int * x) { return _loadbe_i32(x); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned int loadbe(const unsigned int * x) { return loadbe(reinterpret_cast<const int *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(short * x, short y) { _storebe_i16(x, y); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned short * x, unsigned short y) { storebe(reinterpret_cast<short *>(x), static_cast<short>(y)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(int * x, int y) { _storebe_i32(x, y); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned int * x, unsigned int y) { storebe(reinterpret_cast<int *>(x), static_cast<int>(y)); }
+
+# if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline long long loadbe(const long long * x) { return _loadbe_i64(x); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned long long loadbe(const unsigned long long * x) { return loadbe(reinterpret_cast<const long long *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(long long * x, long long y) { _storebe_i64(x, y); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned long long * x, unsigned long long y) { storebe(reinterpret_cast<long long *>(x), static_cast<long long>(y)); }
+
+# endif
+
+#endif
+
+#if defined(__LP64__)
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline long loadbe(const long * x) { return loadbe(reinterpret_cast<const long long *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned long loadbe(const unsigned long * x) { return loadbe(reinterpret_cast<const long *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(long * x, long y) { storebe(reinterpret_cast<long long *>(x), static_cast<long long>(y)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned long * x, unsigned long y) { storebe(reinterpret_cast<long *>(x), static_cast<long>(y)); }
+
+#else
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline long loadbe(const long * x) { return loadbe(reinterpret_cast<const int *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline unsigned long loadbe(const unsigned long * x) { return loadbe(reinterpret_cast<const long *>(x)); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(long * x, long y) { storebe(reinterpret_cast<int *>(x), y); }
+
+		// move data after swapping bytes
+		ful_target("movbe") ful_inline void storebe(unsigned long * x, unsigned long y) { storebe(reinterpret_cast<long *>(x), static_cast<long>(y)); }
+
 #endif
 
 		// zero high bits starting with specified bit position

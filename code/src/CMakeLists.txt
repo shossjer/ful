@@ -21,6 +21,7 @@ set(FULLIB_HEADERS
 	src/ful/intrinsics_x86.hpp
 	src/ful/memory.hpp
 	src/ful/memoryfwd.hpp
+	src/ful/point.hpp
 	src/ful/static.hpp
 	src/ful/staticfwd.hpp
 	src/ful/stdhacks.hpp

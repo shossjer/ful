@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ful/point.hpp"
+
 #include <cstring>
 
 template <typename S, typename T>
@@ -127,16 +129,16 @@ struct data_jap_utf8 : data_cache<set_jap, ful::unit_utf8>
 	static const ful::unit_utf8 * cunits() { return "#cite_ref-1"; }
 	static ful::usize iunits() { return 1966904; }
 
-	static ful::unit_utf32 cpoint1() { return 39; }
+	static ful::point_utf cpoint1() { return ful::point_utf{39}; }
 	static ful::usize ipoint1() { return 2650756; }
 
-	static ful::unit_utf32 cpoint2() { return 946; }
+	static ful::point_utf cpoint2() { return ful::point_utf{946}; }
 	static ful::usize ipoint2() { return 1845383; }
 
-	static ful::unit_utf32 cpoint3() { return 35498; }
+	static ful::point_utf cpoint3() { return ful::point_utf{35498}; }
 	static ful::usize ipoint3() { return 2718908; }
 
-	static ful::unit_utf32 cpoint4() { return 134047; }
+	static ful::point_utf cpoint4() { return ful::point_utf{134047}; }
 	static ful::usize ipoint4() { return 739630; }
 };
 
