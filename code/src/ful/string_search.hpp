@@ -476,12 +476,11 @@ namespace ful
 
 			if (begin_chunk == end_chunk)
 			{
-				const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin_chunk));
-				const __m256i line2 = _mm256_srli_si256(line1, 1);
+				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
-				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
-				const __m256i andcmp = _mm256_and_si256(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
+				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
+				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1;
+				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -544,13 +543,11 @@ namespace ful
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
-				const __m256i line2 = _mm256_srli_si256(line1, 1);
-				const __m256i line3 = _mm256_srli_si256(line1, 2);
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
-				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
-				const __m256i cmp3 = _mm256_cmpeq_epi8(line3, c2563);
-				const __m256i andcmp = _mm256_and_si256(_mm256_and_si256(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
+				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
+				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
+				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2;
+				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -562,12 +559,12 @@ namespace ful
 			{
 				const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
 				const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin + 1));
-				const __m256i line3 = _mm256_srli_si256(line2, 1);
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
-				const __m256i cmp3 = _mm256_cmpeq_epi8(line3, c2563);
-				const __m256i andcmp = _mm256_and_si256(_mm256_and_si256(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp), static_cast<unsigned int>(size - 3));
+				const __m256i cmp12 = _mm256_and_si256(cmp1, cmp2);
+				const __m256i cmp3_ = _mm256_cmpeq_epi8(line2, c2563);
+				const unsigned int andcmp = _mm256_movemask_epi8(cmp12) & _mm256_movemask_epi8(cmp3_) >> 1;
+				const unsigned int mask = zero_higher_bits(andcmp, static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -616,15 +613,12 @@ namespace ful
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
-				const __m256i line2 = _mm256_srli_si256(line1, 1);
-				const __m256i line3 = _mm256_srli_si256(line1, 2);
-				const __m256i line4 = _mm256_srli_si256(line1, 3);
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
-				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
-				const __m256i cmp3 = _mm256_cmpeq_epi8(line3, c2563);
-				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
-				const __m256i andcmp = _mm256_and_si256(_mm256_and_si256(cmp1, cmp2), _mm256_and_si256(cmp3, cmp4));
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
+				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
+				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
+				const __m256i cmp4_ = _mm256_cmpeq_epi8(line1, c2564);
+				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2 & _mm256_movemask_epi8(cmp4_) >> 3;
+				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -644,7 +638,7 @@ namespace ful
 				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 				const __m256i andcmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i andcmp34 = _mm256_and_si256(cmp3, cmp4);
-				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & (_mm256_movemask_epi8(andcmp34) >> (35 - size));
+				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & _mm256_movemask_epi8(andcmp34) >> (35 - size);
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
