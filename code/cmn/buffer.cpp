@@ -18,10 +18,12 @@
 
 namespace
 {
+#if HAVE_ICU4C || HAVE_LIBICONV
 	const char * converter_name(ful::unit_utf16le) { return "UTF-16LE"; }
 	const char * converter_name(ful::unit_utf16be) { return "UTF-16BE"; }
 	const char * converter_name(ful::unit_utf32le) { return "UTF-32LE"; }
 	const char * converter_name(ful::unit_utf32be) { return "UTF-32BE"; }
+#endif
 
 #if defined(_MSC_VER)
 

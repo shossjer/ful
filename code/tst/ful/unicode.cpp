@@ -16,209 +16,209 @@
 # include <unicode/ustring.h>
 #endif
 
-TEST_CASE("data", "")
+TEST_CASE("utf8 test data can be read", "")
 {
-	SECTION("eng")
+	SECTION("in eng")
 	{
-		SECTION("utf8")
-		{
-			data_eng_utf8 data;
-			REQUIRE(data.init());
+		data_eng_utf8 data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits8() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf16le")
-		{
-			data_eng_utf16le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-#if HAVE_ICU4C
-			CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
-#endif
-		}
-
-		SECTION("utf16be")
-		{
-			data_eng_utf16be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32le")
-		{
-			data_eng_utf32le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32be")
-		{
-			data_eng_utf32be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits8() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
 	}
 
-	SECTION("got")
+	SECTION("in got")
 	{
-		SECTION("utf8")
-		{
-			data_got_utf8 data;
-			REQUIRE(data.init());
+		data_got_utf8 data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits8() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf16le")
-		{
-			data_got_utf16le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-#if HAVE_ICU4C
-			CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
-#endif
-		}
-
-		SECTION("utf16be")
-		{
-			data_got_utf16be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32le")
-		{
-			data_got_utf32le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32be")
-		{
-			data_got_utf32be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits8() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
 	}
 
-	SECTION("jap")
+	SECTION("in jap")
 	{
-		SECTION("utf8")
-		{
-			data_jap_utf8 data;
-			REQUIRE(data.init());
+		data_jap_utf8 data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits8() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf16le")
-		{
-			data_jap_utf16le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-#if HAVE_ICU4C
-			CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
-#endif
-		}
-
-		SECTION("utf16be")
-		{
-			data_jap_utf16be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32le")
-		{
-			data_jap_utf32le data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
-
-		SECTION("utf32be")
-		{
-			data_jap_utf32be data;
-			REQUIRE(data.init());
-
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits8() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
 	}
 
-	SECTION("rus")
+	SECTION("in rus")
 	{
-		SECTION("utf8")
-		{
-			data_rus_utf8 data;
-			REQUIRE(data.init());
+		data_rus_utf8 data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits8() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits8() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+}
 
-		SECTION("utf16le")
-		{
-			data_rus_utf16le data;
-			REQUIRE(data.init());
+TEST_CASE("utf16le test data can be read", "[common buffer conversion]")
+{
+	SECTION("in eng")
+	{
+		data_eng_utf16le data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
 #if HAVE_ICU4C
-			CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
+		CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
 #endif
-		}
+	}
 
-		SECTION("utf16be")
-		{
-			data_rus_utf16be data;
-			REQUIRE(data.init());
+	SECTION("in got")
+	{
+		data_got_utf16le data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits16() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+#if HAVE_ICU4C
+		CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
+#endif
+	}
 
-		SECTION("utf32le")
-		{
-			data_rus_utf32le data;
-			REQUIRE(data.init());
+	SECTION("in jap")
+	{
+		data_jap_utf16le data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+#if HAVE_ICU4C
+		CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
+#endif
+	}
 
-		SECTION("utf32be")
-		{
-			data_rus_utf32be data;
-			REQUIRE(data.init());
+	SECTION("in rus")
+	{
+		data_rus_utf16le data;
+		REQUIRE(data.init());
 
-			CHECK(data.nunits32() == data.size());
-			CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
-		}
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+#if HAVE_ICU4C
+		CHECK(data.npoints() == ::u_countChar32(reinterpret_cast<UChar *>(data.data()), static_cast<int32_t>(data.size())));
+#endif
+	}
+}
+
+TEST_CASE("utf16be test data can be read", "[common buffer conversion]")
+{
+	SECTION("in eng")
+	{
+		data_eng_utf16be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in got")
+	{
+		data_got_utf16be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in jap")
+	{
+		data_jap_utf16be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in rus")
+	{
+		data_rus_utf16be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits16() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+}
+
+TEST_CASE("utf32le test data can be read", "[common buffer conversion]")
+{
+	SECTION("in eng")
+	{
+		data_eng_utf32le data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in got")
+	{
+		data_got_utf32le data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in jap")
+	{
+		data_jap_utf32le data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in rus")
+	{
+		data_rus_utf32le data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+}
+
+TEST_CASE("utf32be test data can be read", "[common buffer conversion]")
+{
+	SECTION("in eng")
+	{
+		data_eng_utf32be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in got")
+	{
+		data_got_utf32be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in jap")
+	{
+		data_jap_utf32be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
+	}
+
+	SECTION("in rus")
+	{
+		data_rus_utf32be data;
+		REQUIRE(data.init());
+
+		CHECK(data.nunits32() == data.size());
+		CHECK(data.npoints() == ful::point_count(data.beg(), data.end()));
 	}
 }

@@ -445,6 +445,8 @@ elseif(TARGET ful_icu4c)
 		target_link_libraries(lib_common INTERFACE dl pthread)
 	endif()
 	target_compile_definitions(lib_common INTERFACE HAVE_ICU4C)
+else()
+	set(_test_arguments "\"~[common buffer conversion]\"")
 endif()
 
 option(FUL_CPUID_SSE "Assume SSE intrinsics are available" OFF)

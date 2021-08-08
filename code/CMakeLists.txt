@@ -1,11 +1,12 @@
 function(run_tests name executable)
+	set(_arguments ${ARGN})
 	# inspired by the works of stack overflow user 1178599
 	#
 	# https://stackoverflow.com/a/53673873
 	set(_test_state "${PROJECT_BINARY_DIR}/run_tests/${executable}.passed")
 	add_custom_command(
 		OUTPUT ${_test_state}
-		COMMAND $<TARGET_FILE:${executable}>
+		COMMAND $<TARGET_FILE:${executable}> ${_arguments}
 		COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/run_tests"
 		COMMAND ${CMAKE_COMMAND} -E touch ${_test_state}
 		DEPENDS ${executable}
@@ -68,7 +69,7 @@ if(FUL_BUILD_TESTS)
 endif()
 
 if(FUL_TESTS_BUILDTIME)
-	run_tests(runfultst fultst)
+	run_tests(runfultst fultst ${_test_arguments})
 endif()
 
 if(FUL_BUILD_BENCHMARKS)
