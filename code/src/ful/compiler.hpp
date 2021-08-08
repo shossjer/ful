@@ -5,7 +5,7 @@
 # define ful_assume(x) __builtin_assume(x)
 #elif defined(__GNUC__)
 // optimize knowing that the expression is true
-# define ful_assume(x) [](bool c){ if (!c) ful_unreachable(); }(x)
+# define ful_assume(x) static_cast<void>((x) || (ful_unreachable(), false))
 #elif defined(_MSC_VER)
 // optimize knowing that the expression is true
 # define ful_assume(x) __assume(x)
