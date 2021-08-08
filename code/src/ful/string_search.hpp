@@ -18,7 +18,7 @@ namespace ful
 		extern const char32 * ful_dispatch(find_unit_32_32)(const char32 * begin, const char32 * end, char32 c);
 #endif
 
-		ful_generic() ful_inline
+		ful_inline
 		const char8 * find_unit_8_8_generic(const char8 * begin, const char8 * end, char8 c)
 		{
 			const usize size = end - begin;
@@ -36,7 +36,7 @@ namespace ful
 			return find_unit_8_8_generic_8(begin, end, c);
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char8 * find_unit_8_16_generic(const char8 * begin, const char8 * end, char16 c)
 		{
 			const usize size = end - begin;
@@ -54,7 +54,7 @@ namespace ful
 			return find_unit_8_16_generic_10(begin, end, c, size);
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char8 * find_unit_8_24_generic(const char8 * begin, const char8 * end, char_fast24 c)
 		{
 			const usize size = end - begin;
@@ -72,7 +72,7 @@ namespace ful
 			return find_unit_8_24_generic_10(begin, end, c, size);
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char8 * find_unit_8_32_generic_0_26(const char8 * begin, const char8 * end, char32 c, usize size)
 		{
 			switch (size)
@@ -164,7 +164,7 @@ namespace ful
 			}
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char8 * find_unit_8_32_generic(const char8 * begin, const char8 * end, char32 c)
 		{
 			const usize size = end - begin;
@@ -180,7 +180,7 @@ namespace ful
 			return find_unit_8_32_generic_19(begin, end, c);
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char16 * find_unit_16_16_generic(const char16 * begin, const char16 * end, char16 c)
 		{
 			for (; begin != end; ++begin)
@@ -191,7 +191,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char16 * find_unit_16_32_generic(const char16 * begin, const char16 * end, char32 c)
 		{
 			const char16 * const end_c = end - 2;
@@ -209,7 +209,7 @@ namespace ful
 			return end;
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		const char32 * find_unit_32_32_generic(const char32 * begin, const char32 * end, char32 c)
 		{
 			for (; begin != end; ++begin)

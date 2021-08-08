@@ -88,7 +88,6 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic()
 		const char8 * find_unit_8_8_generic_8(const char8 * begin, const char8 * end, char8 c)
 		{
 			const uint64 bytes = 0x0101010101010101u * (uint8)c;
@@ -114,7 +113,6 @@ namespace ful
 			}
 		}
 
-		ful_generic()
 		const char8 * find_unit_8_16_generic_10(const char8 * begin, const char8 * end, char16 c, usize size)
 		{
 			if (size <= 37u) // somewhat arbitrary, see plot of "dump find_8_16 small"
@@ -194,7 +192,6 @@ namespace ful
 			}
 		}
 
-		ful_generic()
 		const char8 * find_unit_8_24_generic_10(const char8 * begin, const char8 * end, char_fast24 c, usize size)
 		{
 			if (size <= 35u) // somewhat arbitrary, see plot of "dump find_8_24 small"

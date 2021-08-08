@@ -181,7 +181,7 @@ namespace ful
 
 	namespace detail
 	{
-		ful_generic() inline
+		inline
 		usize point_count_8_none(const unit_utf8 * beg, const unit_utf8 * end)
 		{
 			// todo word
@@ -196,7 +196,7 @@ namespace ful
 			return count;
 		}
 
-		ful_generic() inline
+		inline
 		usize point_count_16_none(const unit_utf16 * beg, const unit_utf16 * end)
 		{
 			// todo word
@@ -211,7 +211,7 @@ namespace ful
 			return count;
 		}
 
-		ful_generic() inline
+		inline
 		usize point_count_61_none(const unit_utf61 * beg, const unit_utf61 * end)
 		{
 			// todo word
@@ -226,7 +226,7 @@ namespace ful
 			return count;
 		}
 
-		ful_generic() inline
+		inline
 		const unit_utf8 * point_next_8_none(const unit_utf8 * s, usize n)
 		{
 			// todo word
@@ -239,7 +239,7 @@ namespace ful
 			return s;
 		}
 
-		ful_generic() inline
+		inline
 		const unit_utf8 * point_prev_8_none(const unit_utf8 * s, usize n)
 		{
 			// todo word

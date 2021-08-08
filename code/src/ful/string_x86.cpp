@@ -5,7 +5,6 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic()
 		byte * memcopy_x86_32(const byte * first, usize size, byte * begin)
 		{
 			const usize end_index = size - 32;
@@ -37,7 +36,6 @@ namespace ful
 			return begin + size;
 		}
 
-		ful_generic()
 		byte * memmovef_x86_32(const byte * first, usize size, byte * begin)
 		{
 			const usize end_index = size - 32;
@@ -65,7 +63,6 @@ namespace ful
 			return begin + size;
 		}
 
-		ful_generic()
 		byte * memmover_x86_32(usize size, const byte * last, byte * end)
 		{
 			const usize begin_index = size - 32;
@@ -93,7 +90,6 @@ namespace ful
 			return end - size;
 		}
 
-		ful_generic()
 		byte * memswap_x86_32(byte * beg1, usize size, byte * beg2)
 		{
 			const usize end_index = size - 32;

@@ -1039,7 +1039,7 @@ namespace ful
 
 	namespace detail
 	{
-		ful_generic() ful_inline
+		ful_inline
 		bool equal_cstr_generic(const byte * beg1, const byte * end1, const byte * beg2)
 		{
 			const ful::usize size = end1 - beg1;
@@ -1183,7 +1183,7 @@ namespace ful
 			}
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		bool equal_range_generic(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
 			const ful::usize size = end1 - beg1;

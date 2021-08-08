@@ -29,7 +29,7 @@ namespace ful
 		extern unit_utf32le * ful_dispatch(convert_32be_32le)(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end);
 #endif
 
-		ful_generic() inline
+		inline
 		unit_utf16le * convert_8_16le_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
 		{
 			ful_unused(end);
@@ -75,7 +75,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16be * convert_8_16be_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end)
 		{
 			ful_unused(first);
@@ -85,7 +85,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32le * convert_8_32le_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
 		{
 			ful_unused(end);
@@ -125,7 +125,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32be * convert_8_32be_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end)
 		{
 			ful_unused(first);
@@ -135,7 +135,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf8 * convert_16le_8_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end)
 		{
 			ful_unused(first);
@@ -145,7 +145,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16be * convert_16le_16be_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end)
 		{
 			ful_unused(first);
@@ -155,7 +155,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32le * convert_16le_32le_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end)
 		{
 			ful_unused(first);
@@ -165,7 +165,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32be * convert_16le_32be_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end)
 		{
 			ful_unused(first);
@@ -175,7 +175,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf8 * convert_16be_8_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end)
 		{
 			ful_unused(first);
@@ -185,7 +185,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16le * convert_16be_16le_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end)
 		{
 			ful_unused(first);
@@ -195,7 +195,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32le * convert_16be_32le_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end)
 		{
 			ful_unused(first);
@@ -205,7 +205,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32be * convert_16be_32be_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end)
 		{
 			ful_unused(first);
@@ -215,7 +215,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf8 * convert_32le_8_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end)
 		{
 			ful_unused(first);
@@ -225,7 +225,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16le * convert_32le_16le_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end)
 		{
 			ful_unused(first);
@@ -235,7 +235,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16be * convert_32le_16be_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end)
 		{
 			ful_unused(first);
@@ -245,7 +245,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32be * convert_32le_32be_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end)
 		{
 			ful_unused(first);
@@ -255,7 +255,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf8 * convert_32be_8_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end)
 		{
 			ful_unused(first);
@@ -265,7 +265,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16le * convert_32be_16le_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end)
 		{
 			ful_unused(first);
@@ -275,7 +275,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf16be * convert_32be_16be_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end)
 		{
 			ful_unused(first);
@@ -285,7 +285,7 @@ namespace ful
 			return begin;
 		}
 
-		ful_generic() inline
+		inline
 		unit_utf32le * convert_32be_32le_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end)
 		{
 			ful_unused(first);

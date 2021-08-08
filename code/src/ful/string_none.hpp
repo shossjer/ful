@@ -4,7 +4,7 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic() ful_inline
+		ful_inline
 		void copy_none_16_32(const byte * first, const byte * last, byte * begin, byte * end)
 		{
 			const uint64 a = *reinterpret_cast<const uint64 *>(first);
@@ -17,7 +17,7 @@ namespace ful
 			*reinterpret_cast<uint64 *>(end - 8) = d;
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		byte * memcopy_none(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
@@ -45,7 +45,7 @@ namespace ful
 			}
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		byte * memmovef_none(const byte * first, const byte * last, byte * begin)
 		{
 			const usize size = last - first;
@@ -72,7 +72,7 @@ namespace ful
 			}
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		byte * memmover_none(const byte * first, const byte * last, byte * end)
 		{
 			const usize size = last - first;
@@ -99,7 +99,7 @@ namespace ful
 			}
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		void swap_none_16_32(byte * beg1, byte * end1, byte * beg2, byte * end2)
 		{
 			const uint64 a1 = *reinterpret_cast<const uint64 *>(beg1);
@@ -120,7 +120,7 @@ namespace ful
 			*reinterpret_cast<uint64 *>(end1 - 8) = d2;
 		}
 
-		ful_generic() inline
+		inline
 		void memset8_none(char8 * from, char8 * to, char8 u)
 		{
 			const usize size = to - from;
@@ -148,7 +148,7 @@ namespace ful
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
 
-		ful_generic() inline
+		inline
 		void memset16_none(char16 * from, char16 * to, char16 u)
 		{
 			const usize size = (to - from) * sizeof(char16);
@@ -176,7 +176,7 @@ namespace ful
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
 
-		ful_generic() inline
+		inline
 		void memset24_none(char24 * from, char24 * to, char_fast24 u)
 		{
 			const usize size = (to - from) * sizeof(char24);
@@ -194,7 +194,7 @@ namespace ful
 			ful_break();
 		}
 
-		ful_generic() inline
+		inline
 		void memset32_none(char32 * from, char32 * to, char32 u)
 		{
 			const usize size = (to - from) * sizeof(char32);
@@ -222,7 +222,7 @@ namespace ful
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
 
-		ful_generic() ful_inline
+		ful_inline
 		byte * memswap_none(byte * beg1, byte * end1, byte * beg2)
 		{
 			const usize size = end1 - beg1;

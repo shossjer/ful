@@ -271,7 +271,7 @@ namespace ful
 
 	// get the number of trailing zero bits
 	template <typename T>
-	ful_generic() ful_inline
+	ful_inline
 	auto count_trailing_zero_bits(T x)
 #if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
 		-> decltype(count_trailing_zero_bits(x, tag_bmi))
@@ -292,7 +292,7 @@ namespace ful
 
 	// get the index of the least significant set bit
 	template <typename T>
-	ful_generic() ful_inline
+	ful_inline
 	unsigned int least_significant_set_bit(T x)
 	{
 		return detail::bsf(x);
@@ -317,7 +317,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	unsigned int least_significant_zero_byte(unsigned int x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -339,7 +339,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_byte(unsigned int x, unsigned int & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -361,7 +361,7 @@ namespace ful
 	unsigned long least_significant_zero_byte(unsigned long x, tag_popcnt_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x), tag_popcnt)); }
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	unsigned long least_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x))); }
 
 	// get the index of the least significant zero byte
@@ -375,7 +375,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_byte(unsigned long x, unsigned long & out)
 	{
 		unsigned int outout;
@@ -405,7 +405,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	unsigned long long least_significant_zero_byte(unsigned long long x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -427,7 +427,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_byte(unsigned long long x, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -450,7 +450,7 @@ namespace ful
 	unsigned long least_significant_zero_byte(unsigned long x, tag_popcnt_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x), tag_popcnt)); }
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	unsigned long least_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x))); }
 
 	// get the index of the least significant zero byte
@@ -464,7 +464,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_byte(unsigned long x, unsigned long & out)
 	{
 		unsigned long long outout;
@@ -476,7 +476,7 @@ namespace ful
 
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -490,7 +490,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -504,7 +504,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long x24, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
@@ -520,7 +520,7 @@ namespace ful
 
 #if defined(__LP64__)
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long & out)
 	{
 		unsigned long long outout;
@@ -530,7 +530,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long & out)
 	{
 		unsigned long long outout;
@@ -540,7 +540,7 @@ namespace ful
 	}
 
 	// get the index of the least significant zero byte
-	ful_generic() ful_inline
+	ful_inline
 	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long x24, unsigned long & out)
 	{
 		unsigned long long outout;
@@ -552,7 +552,7 @@ namespace ful
 
 	// reverse the byte order
 	template <typename T>
-	ful_generic() ful_inline
+	ful_inline
 	T byte_swap(T x)
 	{
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
@@ -569,7 +569,7 @@ namespace ful
 
 	// load and reverse the byte order
 	template <typename T>
-	ful_generic() ful_inline
+	ful_inline
 	T load_swap(const T * x)
 	{
 #if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))
@@ -586,7 +586,7 @@ namespace ful
 
 	// load and reverse the byte order
 	template <typename T>
-	ful_generic() ful_inline
+	ful_inline
 	void store_swap(T * x, T y)
 	{
 #if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))

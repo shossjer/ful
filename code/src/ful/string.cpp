@@ -159,7 +159,6 @@ namespace ful
 {
 	namespace detail
 	{
-		ful_generic()
 		bool equal_cstr_generic_8(const byte * beg1, usize size, const byte * beg2)
 		{
 			ful::usize index = 0;
@@ -350,7 +349,6 @@ namespace ful
 			return beg2[end_line + 32] == ful::byte{};
 		}
 
-		ful_generic()
 		bool equal_range_generic_9(const byte * beg1, usize size, const byte * beg2)
 		{
 			const ful::usize end_size = size - 8;
