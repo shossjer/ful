@@ -313,7 +313,7 @@ TEST_CASE("memcopy plain", "[plain]")
 	memcopy_test(plainval, 7, 1);
 }
 
-TEST_CASE("memcopy large", "[large]")
+TEST_CASE("memcopy large", "[.][large]")
 {
 	memcopy_test(largeval, 7, 1);
 }
@@ -507,7 +507,7 @@ TEST_CASE("memypoc plain", "[plain]")
 	memmover_test(plainval, 1, 7);
 }
 
-TEST_CASE("memypoc large", "[large]")
+TEST_CASE("memypoc large", "[.][large]")
 {
 	memmover_test(largeval, 1, 7);
 }
@@ -611,7 +611,7 @@ TEST_CASE("memset plain", "[plain]")
 	memset_test(plainval, 1);
 }
 
-TEST_CASE("memset large", "[large]")
+TEST_CASE("memset large", "[.][large]")
 {
 	memset_test(largeval, 1);
 }
