@@ -313,7 +313,7 @@ namespace ful
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 
 					const unsigned int mask = _mm256_movemask_epi8(word);
-					const unsigned int count = count_trailing_zero_bits(mask, tag_generic); // todo
+					const unsigned int count = count_trailing_zero_bits(mask);
 
 					if (ful_expect(begin <= end - 32))
 					{
@@ -367,7 +367,7 @@ namespace ful
 
 					const __m256i add = _mm256_adds_epi8(word, p32);
 					const unsigned int mask = _mm256_movemask_epi8(add);
-					const unsigned int count = count_trailing_zero_bits(~mask, tag_generic) / 2;
+					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
 					if (ful_expect(begin <= end - 16))
 					{
@@ -416,7 +416,7 @@ namespace ful
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 
 					const unsigned int mask = _mm256_movemask_epi8(word);
-					const unsigned int count = count_trailing_zero_bits(mask, tag_generic);
+					const unsigned int count = count_trailing_zero_bits(mask);
 
 					if (ful_expect(begin <= end - 32))
 					{
@@ -481,7 +481,7 @@ namespace ful
 
 					const __m256i cmp = _mm256_cmpeq_epi16(s, cmp_mask3);
 					const unsigned int mask = _mm256_movemask_epi8(cmp);
-					const unsigned int count = count_trailing_zero_bits(mask ^ 0xcccccccc, tag_generic) / 4;
+					const unsigned int count = count_trailing_zero_bits(mask ^ 0xcccccccc) / 4;
 
 					if (ful_expect(begin <= end - 8))
 					{
@@ -506,7 +506,7 @@ namespace ful
 
 					const __m256i add = _mm256_adds_epi8(word, p32);
 					const unsigned int mask = _mm256_movemask_epi8(add);
-					const unsigned int count = count_trailing_zero_bits(~mask, tag_generic) / 2;
+					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
 					if (ful_expect(begin <= end - 16))
 					{

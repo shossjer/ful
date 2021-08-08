@@ -253,8 +253,6 @@ namespace ful
 	constexpr auto tag_movbe = tag_movbe_type{};
 	struct tag_popcnt_type { explicit tag_popcnt_type() = default; };
 	constexpr auto tag_popcnt = tag_popcnt_type{};
-	struct tag_generic_type { explicit tag_generic_type() = default; };
-	constexpr auto tag_generic = tag_generic_type{};
 
 	// get the number of trailing zero bits
 	template <typename T>
@@ -274,19 +272,31 @@ namespace ful
 	// get the number of trailing zero bits
 	template <typename T>
 	ful_generic() ful_inline
-	auto count_trailing_zero_bits(T x, tag_generic_type) -> decltype(detail::bsf(x))
+	auto count_trailing_zero_bits(T x)
+#if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
+		-> decltype(count_trailing_zero_bits(x, tag_bmi))
+#elif defined(__POPCNT__) || (defined(_MSC_VER) && defined(__AVX__))
+		-> decltype(count_trailing_zero_bits(x, tag_popcnt))
+#else
+		-> decltype(detail::bsf(x))
+#endif
 	{
+#if defined(__BMI__) || (defined(_MSC_VER) && defined(__AVX2__))
+		return count_trailing_zero_bits(x, tag_bmi);
+#elif defined(__POPCNT__) || (defined(_MSC_VER) && defined(__AVX__))
+		return count_trailing_zero_bits(x, tag_popcnt);
+#else
 		return x ? detail::bsf(x) : static_cast<decltype(detail::bsf(x))>(sizeof(T) * byte_size);
+#endif
 	}
 
 	// get the index of the least significant set bit
 	template <typename T>
 	ful_generic() ful_inline
-	unsigned int least_significant_set_bit(T x, tag_generic_type)
+	unsigned int least_significant_set_bit(T x)
 	{
 		return detail::bsf(x);
 	}
-
 
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
@@ -308,11 +318,11 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	unsigned int least_significant_zero_byte(unsigned int x, tag_generic_type)
+	unsigned int least_significant_zero_byte(unsigned int x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
-		return count_trailing_zero_bits(y, tag_generic) >> 3;
+		return count_trailing_zero_bits(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -324,20 +334,20 @@ namespace ful
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_byte(unsigned int x, unsigned int & out, tag_generic_type)
+	bool least_significant_zero_byte(unsigned int x, unsigned int & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 
@@ -352,7 +362,7 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	unsigned long least_significant_zero_byte(unsigned long x, tag_generic_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x), tag_generic)); }
+	unsigned long least_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x))); }
 
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
@@ -366,10 +376,10 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_byte(unsigned long x, unsigned long & out, tag_generic_type)
+	bool least_significant_zero_byte(unsigned long x, unsigned long & out)
 	{
 		unsigned int outout;
-		const auto ret = least_significant_zero_byte(static_cast<unsigned int>(x), outout, tag_generic);
+		const auto ret = least_significant_zero_byte(static_cast<unsigned int>(x), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
@@ -396,11 +406,11 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	unsigned long long least_significant_zero_byte(unsigned long long x, tag_generic_type)
+	unsigned long long least_significant_zero_byte(unsigned long long x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
-		return count_trailing_zero_bits(y, tag_generic) >> 3;
+		return count_trailing_zero_bits(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -412,20 +422,20 @@ namespace ful
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_byte(unsigned long long x, unsigned long long & out, tag_generic_type)
+	bool least_significant_zero_byte(unsigned long long x, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 #endif
@@ -441,7 +451,7 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	unsigned long least_significant_zero_byte(unsigned long x, tag_generic_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x), tag_generic)); }
+	unsigned long least_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x))); }
 
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
@@ -455,10 +465,10 @@ namespace ful
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_byte(unsigned long x, unsigned long & out, tag_generic_type)
+	bool least_significant_zero_byte(unsigned long x, unsigned long & out)
 	{
 		unsigned long long outout;
-		const auto ret = least_significant_zero_byte(static_cast<unsigned long long>(x), outout, tag_generic);
+		const auto ret = least_significant_zero_byte(static_cast<unsigned long long>(x), outout);
 		out = static_cast<unsigned long long>(outout);
 		return ret;
 	}
@@ -467,7 +477,7 @@ namespace ful
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 2 overlapping 8 bits
@@ -475,13 +485,13 @@ namespace ful
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 3 overlapping 8 bits
@@ -489,13 +499,13 @@ namespace ful
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long x24, unsigned long long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long x24, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 4 overlapping 8 bits
@@ -503,7 +513,7 @@ namespace ful
 		if (y == 0)
 			return false;
 
-		out = least_significant_set_bit(y, tag_generic) >> 3;
+		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
 #endif
@@ -511,30 +521,30 @@ namespace ful
 #if defined(__LP64__)
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long & out)
 	{
 		unsigned long long outout;
-		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), outout, tag_generic);
+		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long & out)
 	{
 		unsigned long long outout;
-		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), outout, tag_generic);
+		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
 
 	// get the index of the least significant zero byte
 	ful_generic() ful_inline
-	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long x24, unsigned long & out, tag_generic_type)
+	bool least_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long x24, unsigned long & out)
 	{
 		unsigned long long outout;
-		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), static_cast<unsigned long long>(x24), outout, tag_generic);
+		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), static_cast<unsigned long long>(x24), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
@@ -542,7 +552,7 @@ namespace ful
 
 	// reverse the byte order
 	template <typename T>
-	ful_inline
+	ful_generic() ful_inline
 	T byte_swap(T x)
 	{
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
@@ -560,17 +570,12 @@ namespace ful
 	// load and reverse the byte order
 	template <typename T>
 	ful_generic() ful_inline
-	auto load_swap(const T * x, tag_generic_type) -> decltype(detail::bswap(*x)) { return detail::bswap(*x); }
-
-	// load and reverse the byte order
-	template <typename T>
-	ful_inline
 	T load_swap(const T * x)
 	{
 #if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return load_swap(x, tag_movbe);
 #else
-		return load_swap(x, tag_generic);
+		return detail::bswap(*x);
 #endif
 	}
 
@@ -582,17 +587,12 @@ namespace ful
 	// load and reverse the byte order
 	template <typename T>
 	ful_generic() ful_inline
-	void store_swap(T * x, T y, tag_generic_type) { *x = detail::bswap(y); }
-
-	// reverse the byte order and store
-	template <typename T>
-	ful_inline
 	void store_swap(T * x, T y)
 	{
 #if defined(__MOVBE__) || (defined(_MSC_VER) && defined(__AVX2__))
 		return store_swap(x, y, tag_movbe);
 #else
-		return store_swap(x, y, tag_generic);
+		*x = detail::bswap(y);
 #endif
 	}
 }

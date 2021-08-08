@@ -99,7 +99,7 @@ namespace ful
 				const uint64 qword = *reinterpret_cast<const uint64 *>(begin);
 
 				uint64 index;
-				if (least_significant_zero_byte(qword ^ bytes, index, tag_generic))
+				if (least_significant_zero_byte(qword ^ bytes, index))
 					return begin + index;
 
 				begin += 8;
@@ -109,7 +109,7 @@ namespace ful
 			{
 				const uint64 qword = *reinterpret_cast<const uint64 *>(end_line);
 
-				const uint64 index = least_significant_zero_byte(qword ^ bytes, tag_generic);
+				const uint64 index = least_significant_zero_byte(qword ^ bytes);
 				return end_line + index;
 			}
 		}
@@ -165,7 +165,7 @@ namespace ful
 			else
 			{
 				const uint64 bytes1 = 0x0101010101010101u * (uint8)c;
-				const uint64 bytes2 = 0x0101010101010101u * (uint8)(c >> 8);
+				const uint64 bytes2 = 0x0101010101010101u * (uint8)(static_cast<uint16>(c) >> 8);
 
 				const char8 * const end_line = end - 8 - 1;
 				do
@@ -174,7 +174,7 @@ namespace ful
 					const uint64 qword2 = *reinterpret_cast<const uint64 *>(begin + 1);
 
 					uint64 index;
-					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, index, tag_generic))
+					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, index))
 						return begin + index;
 
 					begin += 8;
@@ -186,7 +186,7 @@ namespace ful
 					const uint64 qword2 = *reinterpret_cast<const uint64 *>(end_line + 1);
 
 					uint64 index;
-					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, index, tag_generic))
+					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, index))
 						return end_line + index;
 
 					return end_line + 8 + 1;
@@ -254,7 +254,7 @@ namespace ful
 					const uint64 qword3 = *reinterpret_cast<const uint64 *>(begin + 2);
 
 					uint64 index;
-					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, qword3 ^ bytes3, index, tag_generic))
+					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, qword3 ^ bytes3, index))
 						return begin + index;
 
 					begin += 8;
@@ -267,7 +267,7 @@ namespace ful
 					const uint64 qword3 = *reinterpret_cast<const uint64 *>(end_line + 2);
 
 					uint64 index;
-					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, qword3 ^ bytes3, index, tag_generic))
+					if (least_significant_zero_word(qword1 ^ bytes1, qword2 ^ bytes2, qword3 ^ bytes3, index))
 						return end_line + index;
 
 					return end_line + 8 + 2;
@@ -335,7 +335,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(cmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 
@@ -347,7 +347,7 @@ namespace ful
 				const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end_line));
 				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
 				const unsigned int mask = _mm_movemask_epi8(cmp);
-				const unsigned int index = count_trailing_zero_bits(mask, tag_generic); // todo tag_popcnt
+				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
 				return end_line + index;
 			}
 		}
@@ -356,7 +356,7 @@ namespace ful
 		const char8 * find_unit_8_16_sse2_17(const char8 * begin, const char8 * end, char16 c)
 		{
 			const __m128i c1281 = _mm_set1_epi8((uint8)c);
-			const __m128i c1282 = _mm_set1_epi8((uint8)(c >> 8));
+			const __m128i c1282 = _mm_set1_epi8((uint8)(static_cast<uint16>(c) >> 8));
 
 			const char8 * const end_line = end - 17;
 			do
@@ -369,7 +369,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 
@@ -384,7 +384,7 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
 				const unsigned int mask = _mm_movemask_epi8(andcmp);
-				const unsigned int index = count_trailing_zero_bits(mask, tag_generic); // todo tag_popcnt
+				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
 				return end_line + index;
 			}
 		}
@@ -411,7 +411,7 @@ namespace ful
 					const unsigned int mask = _mm_movemask_epi8(andcmp);
 					if (mask != 0)
 					{
-						const unsigned int index = least_significant_set_bit(mask, tag_generic);
+						const unsigned int index = least_significant_set_bit(mask);
 						return begin + index;
 					}
 
@@ -431,7 +431,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return end_line + index;
 				}
 				return end;
@@ -463,7 +463,7 @@ namespace ful
 					const unsigned int mask = _mm_movemask_epi8(andcmp);
 					if (mask != 0)
 					{
-						const unsigned int index = least_significant_set_bit(mask, tag_generic);
+						const unsigned int index = least_significant_set_bit(mask);
 						return begin + index;
 					}
 
@@ -485,7 +485,7 @@ namespace ful
 				const unsigned int mask = _mm_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return end_line + index;
 				}
 				return end;
@@ -505,7 +505,7 @@ namespace ful
 				const unsigned int mask = _mm256_movemask_epi8(cmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 
@@ -526,7 +526,7 @@ namespace ful
 		const char8 * find_unit_8_16_avx2_33(const char8 * begin, const char8 * end, char16 c)
 		{
 			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-			const __m256i c2562 = _mm256_set1_epi8((uint8)(c >> 8));
+			const __m256i c2562 = _mm256_set1_epi8((uint8)(static_cast<uint16>(c) >> 8));
 
 			const char8 * const end_line = end - 33;
 			do
@@ -539,7 +539,7 @@ namespace ful
 				const unsigned int mask = _mm256_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 
@@ -554,7 +554,7 @@ namespace ful
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i andcmp = _mm256_and_si256(cmp1, cmp2);
 				const unsigned int mask = _mm256_movemask_epi8(andcmp);
-				const unsigned int index = count_trailing_zero_bits(mask, tag_generic); // todo tag_popcnt
+				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
 				return end_line + index;
 			}
 		}
@@ -581,7 +581,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(andcmp);
 					if (mask != 0)
 					{
-						const unsigned int index = least_significant_set_bit(mask, tag_generic);
+						const unsigned int index = least_significant_set_bit(mask);
 						return begin + index;
 					}
 
@@ -601,7 +601,7 @@ namespace ful
 				const unsigned int mask = _mm256_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return end_line + index;
 				}
 				return end;
@@ -633,7 +633,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(andcmp);
 					if (mask != 0)
 					{
-						const unsigned int index = least_significant_set_bit(mask, tag_generic);
+						const unsigned int index = least_significant_set_bit(mask);
 						return begin + index;
 					}
 
@@ -655,7 +655,7 @@ namespace ful
 				const unsigned int mask = _mm256_movemask_epi8(andcmp);
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return end_line + index;
 				}
 				return end;

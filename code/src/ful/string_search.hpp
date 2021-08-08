@@ -256,7 +256,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -271,7 +271,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -325,7 +325,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -342,7 +342,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -429,7 +429,7 @@ namespace ful
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
 				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
-				const unsigned int index = count_trailing_zero_bits(mask, tag_generic);
+				const unsigned int index = count_trailing_zero_bits(mask);
 				return begin + index;
 			}
 			else
@@ -437,7 +437,7 @@ namespace ful
 				const __m256i line = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
 				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp), static_cast<unsigned int>(size - 1));
-				const unsigned int index = count_trailing_zero_bits(mask, tag_generic);
+				const unsigned int index = count_trailing_zero_bits(mask);
 				return begin + index;
 			}
 		}
@@ -484,7 +484,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -499,7 +499,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -553,7 +553,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -570,7 +570,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -627,7 +627,7 @@ namespace ful
 				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -647,7 +647,7 @@ namespace ful
 				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & (_mm256_movemask_epi8(andcmp34) >> (35 - size));
 				if (mask != 0)
 				{
-					const unsigned int index = least_significant_set_bit(mask, tag_generic);
+					const unsigned int index = least_significant_set_bit(mask);
 					return begin + index;
 				}
 				return end;
@@ -752,10 +752,10 @@ namespace ful
 				const uint64 qword2 = *reinterpret_cast<const uint64 *>(end - 8);
 
 				uint64 index;
-				if (least_significant_zero_byte(qword1 ^ bytes, index, tag_generic))
+				if (least_significant_zero_byte(qword1 ^ bytes, index))
 					return begin + index;
 
-				index = least_significant_zero_byte(qword2 ^ bytes, tag_generic);
+				index = least_significant_zero_byte(qword2 ^ bytes);
 				return end - 8 + index;
 			}
 			case 8:
@@ -767,7 +767,7 @@ namespace ful
 
 				const uint64 qword = (static_cast<uint64>(*reinterpret_cast<const uint32 *>(end - 4)) << (size - 4)) | *reinterpret_cast<const uint32 *>(begin);
 
-				const uint64 index = least_significant_zero_byte(qword ^ bytes, tag_generic);
+				const uint64 index = least_significant_zero_byte(qword ^ bytes);
 				return begin + index;
 			}
 			case 4: if (*begin == c) return begin; begin++; ful_fallthrough;
