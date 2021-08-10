@@ -14,6 +14,7 @@ set(FULLIB_HEADERS
 	src/ful/dispatch.hpp
 	src/ful/intrinsics.hpp
 	src/ful/intrinsics_x86.hpp
+	src/ful/stdhacks.hpp
 	src/ful/stdint.hpp
 	src/ful/string.hpp
 	src/ful/string_avx.hpp
