@@ -672,6 +672,15 @@ namespace ful
 		}
 	}
 
+	template <typename T1, typename T2>
+	ful_inline T2 * memcopy(const T1 * first, const T1 * last, T2 * begin)
+	{
+		if (!ful_expect((last - first) % sizeof(T2) == 0))
+			return begin;
+
+		return reinterpret_cast<T2 *>(memcopy(reinterpret_cast<const byte *>(first), reinterpret_cast<const byte *>(last), reinterpret_cast<byte *>(begin)));
+	}
+
 	ful_inline
 	byte * memmove(const byte * first, const byte * last, byte * begin)
 	{
@@ -718,6 +727,15 @@ namespace ful
 		}
 	}
 
+	template <typename T1, typename T2>
+	ful_inline T2 * memmove(const T1 * first, const T1 * last, T2 * begin)
+	{
+		if (!ful_expect((last - first) % sizeof(T2) == 0))
+			return begin;
+
+		return reinterpret_cast<T2 *>(memmove(reinterpret_cast<const byte *>(first), reinterpret_cast<const byte *>(last), reinterpret_cast<byte *>(begin)));
+	}
+
 	ful_inline
 	byte * memmovef(const byte * first, const byte * last, byte * begin)
 	{
@@ -753,6 +771,15 @@ namespace ful
 		}
 	}
 
+	template <typename T1, typename T2>
+	ful_inline T2 * memmovef(const T1 * first, const T1 * last, T2 * begin)
+	{
+		if (!ful_expect((last - first) % sizeof(T2) == 0))
+			return begin;
+
+		return reinterpret_cast<T2 *>(memmovef(reinterpret_cast<const byte *>(first), reinterpret_cast<const byte *>(last), reinterpret_cast<byte *>(begin)));
+	}
+
 	ful_inline
 	byte * memmover(const byte * first, const byte * last, byte * end)
 	{
@@ -786,6 +813,15 @@ namespace ful
 			return detail::memmover_none(first, last, end);
 #endif
 		}
+	}
+
+	template <typename T1, typename T2>
+	ful_inline T2 * memmover(const T1 * first, const T1 * last, T2 * begin)
+	{
+		if (!ful_expect((last - first) % sizeof(T2) == 0))
+			return begin;
+
+		return reinterpret_cast<T2 *>(memmover(reinterpret_cast<const byte *>(first), reinterpret_cast<const byte *>(last), reinterpret_cast<byte *>(begin)));
 	}
 
 	// prevents implicit casts from inbuilt characters with single quotes
@@ -825,6 +861,15 @@ namespace ful
 		}
 	}
 
+	template <typename T>
+	ful_inline void memset(T * from, T * to, char8 u)
+	{
+		if (!ful_expect((to - from) % sizeof(char8) == 0))
+			return;
+
+		memset(reinterpret_cast<char8 *>(from), reinterpret_cast<char8 *>(to), u);
+	}
+
 	ful_inline
 	void memset(char16 * from, char16 * to, char16 u)
 	{
@@ -855,6 +900,15 @@ namespace ful
 			return detail::memset16_none(from, to, u);
 #endif
 		}
+	}
+
+	template <typename T>
+	ful_inline void memset(T * from, T * to, char16 u)
+	{
+		if (!ful_expect((to - from) % sizeof(char16) == 0))
+			return;
+
+		memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), u);
 	}
 
 	ful_inline
@@ -889,6 +943,15 @@ namespace ful
 		}
 	}
 
+	template <typename T>
+	ful_inline void memset(T * from, T * to, char_fast24 u)
+	{
+		if (!ful_expect((to - from) % sizeof(char24) == 0))
+			return;
+
+		memset(reinterpret_cast<char24 *>(from), reinterpret_cast<char24 *>(to), u);
+	}
+
 	ful_inline
 	void memset(char32 * from, char32 * to, char32 u)
 	{
@@ -919,6 +982,15 @@ namespace ful
 			return detail::memset32_none(from, to, u);
 #endif
 		}
+	}
+
+	template <typename T>
+	ful_inline void memset(T * from, T * to, char32 u)
+	{
+		if (!ful_expect((to - from) % sizeof(char32) == 0))
+			return;
+
+		memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), u);
 	}
 
 	ful_inline
@@ -954,6 +1026,15 @@ namespace ful
 			return detail::memswap_none(beg1, end1, beg2);
 #endif
 		}
+	}
+
+	template <typename T1, typename T2>
+	ful_inline T2 * memswap(T1 * beg1, T1 * end1, T2 * beg2)
+	{
+		if (!ful_expect((end1 - beg1) % sizeof(T2) == 0))
+			return beg2;
+
+		return reinterpret_cast<T2 *>(memswap(reinterpret_cast<byte *>(beg1), reinterpret_cast<byte *>(end1), reinterpret_cast<byte *>(beg2)));
 	}
 
 	namespace detail
