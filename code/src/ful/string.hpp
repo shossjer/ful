@@ -1019,9 +1019,9 @@ namespace ful
 #elif defined(__AVX__)
 			return detail::memswap_avx(beg1, end1, beg2);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::memswap_sse2(first, last, end);
+			return detail::memswap_sse2(beg1, end1, beg2);
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
-			return detail::memswap_sse(first, last, end);
+			return detail::memswap_sse(beg1, end1, beg2);
 #else
 			return detail::memswap_none(beg1, end1, beg2);
 #endif
