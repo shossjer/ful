@@ -247,46 +247,46 @@ namespace ful
 			}
 		}
 
-		ful_inline friend bool operator == (const string_container & x, const string_container & y) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(y.beg_), reinterpret_cast<const byte *>(y.end_)); }
-		ful_inline friend bool operator == (const string_container & x, const_pointer s) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
-		ful_inline friend bool operator == (const_pointer s, const string_container & x) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
-		ful_inline friend bool operator != (const string_container & x, const string_container & y) { return !(x == y); }
-		ful_inline friend bool operator != (const string_container & x, const_pointer s) { return !(x == s); }
-		ful_inline friend bool operator != (const_pointer s, const string_container & x) { return !(x == s); }
+		ful_inline ful_pure friend bool operator == (const string_container & x, const string_container & y) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(y.beg_), reinterpret_cast<const byte *>(y.end_)); }
+		ful_inline ful_pure friend bool operator == (const string_container & x, const_pointer s) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
+		ful_inline ful_pure friend bool operator == (const_pointer s, const string_container & x) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
+		ful_inline ful_pure friend bool operator != (const string_container & x, const string_container & y) { return !(x == y); }
+		ful_inline ful_pure friend bool operator != (const string_container & x, const_pointer s) { return !(x == s); }
+		ful_inline ful_pure friend bool operator != (const_pointer s, const string_container & x) { return !(x == s); }
 	};
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::const_iterator begin(const string_container<Base> & x) { return x.begin(); }
+	ful_inline ful_pure typename string_container<Base>::const_iterator begin(const string_container<Base> & x) { return x.begin(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::iterator begin(string_container<Base> & x) { return x.begin(); }
+	ful_inline ful_pure typename string_container<Base>::iterator begin(string_container<Base> & x) { return x.begin(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::const_iterator end(const string_container<Base> & x) { return x.end(); }
+	ful_inline ful_pure typename string_container<Base>::const_iterator end(const string_container<Base> & x) { return x.end(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::iterator end(string_container<Base> & x) { return x.end(); }
+	ful_inline ful_pure typename string_container<Base>::iterator end(string_container<Base> & x) { return x.end(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::const_pointer data(const string_container<Base> & x) { return x.data(); }
+	ful_inline ful_pure typename string_container<Base>::const_pointer data(const string_container<Base> & x) { return x.data(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::pointer data(string_container<Base> & x) { return x.data(); }
+	ful_inline ful_pure typename string_container<Base>::pointer data(string_container<Base> & x) { return x.data(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::size_type size(const string_container<Base> & x) { return x.size(); }
+	ful_inline ful_pure typename string_container<Base>::size_type size(const string_container<Base> & x) { return x.size(); }
 
 	template <typename Base>
-	constexpr typename string_container<Base>::size_type max_size(const string_container<Base> & x) { return x.max_size(); }
+	ful_inline ful_pure constexpr typename string_container<Base>::size_type max_size(const string_container<Base> & x) { return x.max_size(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::size_type capacity(const string_container<Base> & x) { return x.capacity(); }
+	ful_inline ful_pure typename string_container<Base>::size_type capacity(const string_container<Base> & x) { return x.capacity(); }
 
 	template <typename Base>
-	ful_inline typename string_container<Base>::const_pointer c_str(const string_container<Base> & x) { return x.c_str(); }
+	ful_inline ful_pure typename string_container<Base>::const_pointer c_str(const string_container<Base> & x) { return x.c_str(); }
 
 	template <typename Base>
-	ful_inline bool empty(const string_container<Base> & x) { return x.begin() == x.end(); }
+	ful_inline ful_pure bool empty(const string_container<Base> & x) { return x.begin() == x.end(); }
 
 	template <typename Base>
 	ful_inline void swap(string_container<Base> & x, string_container<Base> & y)
@@ -416,37 +416,6 @@ namespace ful
 	{
 		const auto it = x.assign(first, last);
 		return it != x.end() ? x.end() : x.begin();
-	}
-
-	// return end of copy (or begin if the destination is not big enough in debug builds)
-	template <typename Base>
-	ful_inline auto copy(const string_container<Base> & x, typename string_container<Base>::pointer begin, typename string_container<Base>::pointer end)
-		-> decltype(copy(x.begin(), x.end(), begin, end))
-	{
-		const auto first = x.begin();
-		const auto last = x.end();
-		ful_assume(reinterpret_cast<puint>(first) % string_container<Base>::alignment == 0);
-
-		return copy(first, last, begin, end);
-	}
-
-	// return end of copy, or begin on failure (as determined by the destination)
-	template <typename Base, typename R>
-	ful_inline auto copy(const string_container<Base> & x, R && y)
-		-> decltype(copy(x.begin(), x.end(), hck::forward<R &&>(y)))
-	{
-		const auto first = x.begin();
-		const auto last = x.end();
-		ful_assume(reinterpret_cast<puint>(first) % string_container<Base>::alignment == 0);
-
-		return copy(first, last, hck::forward<R &&>(y));
-	}
-
-	template <typename Base, typename Char>
-	ful_inline auto fill(string_container<Base> & x, Char u)
-		-> decltype(memset(x.begin(), x.end(), u))
-	{
-		return memset(x.begin(), x.end(), u);
 	}
 
 	//template <typename Base>

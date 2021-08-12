@@ -615,12 +615,16 @@ void test_empty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can copy out of")
 	{
-		CHECK(copy(a, nullptr, nullptr) == nullptr);
+		ful::unit_utf8 * const begin_ = nullptr;
+		ful::unit_utf8 * const end_ = nullptr;
+		CHECK(copy(a, begin_, end_) == nullptr);
 	}
 
 	SECTION("can copy empty range into")
 	{
-		const auto it = copy(nullptr, nullptr, a);
+		const ful::unit_utf8 * const first = nullptr;
+		const ful::unit_utf8 * const last = nullptr;
+		const auto it = copy(first, last, a);
 		CHECK(it == a.end());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});

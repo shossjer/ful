@@ -1144,10 +1144,10 @@ namespace ful
 		return const_cast<T *>(find(const_cast<const T *>(begin), const_cast<const T *>(end), c));
 	}
 
-	template <typename T, unsigned long long N, typename C>
-	ful_inline auto find(T (& x)[N], C c)
-		-> decltype(find(x + 0, x + N, c))
+	template <typename R, typename Char>
+	ful_inline auto find(R && x, Char c)
+		-> decltype(find(begin(x), end(x), c))
 	{
-		return find(x + 0, x + N, c);
+		return find(begin(x), end(x), c);
 	}
 }

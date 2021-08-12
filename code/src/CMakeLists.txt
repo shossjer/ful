@@ -22,6 +22,7 @@ set(FULLIB_HEADERS
 	src/ful/memory.hpp
 	src/ful/memoryfwd.hpp
 	src/ful/point.hpp
+	src/ful/ranges.hpp
 	src/ful/static.hpp
 	src/ful/staticfwd.hpp
 	src/ful/stdhacks.hpp

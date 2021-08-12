@@ -28,29 +28,42 @@ namespace ful
 		return memcopy(first, last, y + 0);
 	}
 
-	// return end of copy (or begin if the destination is not big enough in debug builds)
-	template <typename T, unsigned long long N, typename Begin, typename End>
-	ful_inline auto copy(T (& x)[N], Begin begin, End end)
-		-> decltype(memcopy(x + 0, x + N, begin))
+	namespace detail
 	{
-		if (!ful_expect(N <= static_cast<usize>(end - begin)))
-			return begin;
+		template <typename R>
+		constexpr ful_pure auto get_alignment(const R & x, int) -> decltype(R::alignment) { return ful_unused(x), R::alignment; }
+		template <typename R>
+		constexpr ful_pure auto get_alignment(const R & x, ...) -> usize { return ful_unused(x), 1; }
+	}
 
-		return memcopy(x + 0, x + N, begin);
+	// return end of copy (or begin if the destination is not big enough in debug builds)
+	template <typename R, typename Begin, typename End>
+	ful_inline auto copy(const R & x, Begin begin_, End end_)
+		-> decltype(copy(begin(x), end(x), begin_, end_))
+	{
+		const auto first = begin(x);
+		const auto last = end(x);
+		ful_assume(reinterpret_cast<puint>(first) % detail::get_alignment(x, 0) == 0);
+
+		return copy(first, last, begin_, end_);
 	}
 
 	// return end of copy, or begin on failure (as determined by the destination)
-	template <typename T, unsigned long long N, typename R>
-	ful_inline auto copy(T (& x)[N], R && y)
-		-> decltype(copy(x + 0, x + N, hck::forward<R &&>(y)))
+	template <typename R1, typename R2>
+	ful_inline auto copy(const R1 & x, R2 & y)
+		-> decltype(copy(begin(x), end(x), y))
 	{
-		return copy(x + 0, x + N, hck::forward<R &&>(y));
+		const auto first = begin(x);
+		const auto last = end(x);
+		ful_assume(reinterpret_cast<puint>(first) % detail::get_alignment(x, 0) == 0);
+
+		return copy(first, last, y);
 	}
 
-	template <typename T, unsigned long long N, typename Char>
-	ful_inline auto fill(T (& x)[N], Char c)
-		-> decltype(memset(x + 0, x + N, c))
+	template <typename R, typename Char>
+	ful_inline auto fill(R & x, Char c)
+		-> decltype(memset(begin(x), end(x), c))
 	{
-		return memset(x + 0, x + N, c);
+		return memset(begin(x), end(x), c);
 	}
 }

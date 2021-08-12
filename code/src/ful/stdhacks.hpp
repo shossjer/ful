@@ -7,12 +7,6 @@ namespace std
 
 namespace ful
 {
-	template <typename T, unsigned long long N>
-	T * begin(T (& x)[N]) { return x + 0; }
-
-	template <typename T, unsigned long long N>
-	T * end(T (& x)[N]) { return x + N; }
-
 	namespace hck
 	{
 		template <bool Value>
@@ -38,20 +32,6 @@ namespace ful
 
 		template <typename T>
 		static T && declval();
-
-		template <typename R>
-		using iterator_t = decltype(begin(hck::declval<R &>()));
-
-		namespace detail
-		{
-			template <typename T, unsigned long long N>
-			static auto range_value_impl(const T (&)[N]) -> T;
-			template <typename R>
-			static auto range_value_impl(const R &) -> typename R::value_type;
-		}
-		template <typename R>
-		using range_value_t = decltype(detail::range_value_impl(hck::declval<R &>()));
-		// note this is a simplification of the standard range_value_t
 
 		namespace detail
 		{
