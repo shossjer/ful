@@ -14,6 +14,8 @@ set(FULLIB_SOURCES
 set(FULLIB_HEADERS
 	src/ful/compiler.hpp
 	src/ful/container.hpp
+	src/ful/cstr.hpp
+	src/ful/cstrfwd.hpp
 	src/ful/dispatch.hpp
 	src/ful/heap.hpp
 	src/ful/heapfwd.hpp
@@ -41,6 +43,8 @@ set(FULLIB_HEADERS
 	src/ful/unicode_avx2.hpp
 	src/ful/unicode_convert.hpp
 	src/ful/unicode_none.hpp
+	src/ful/view.hpp
+	src/ful/viewfwd.hpp
 	src/private/cpuid.hpp
 	)
 
