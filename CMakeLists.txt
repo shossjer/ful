@@ -38,13 +38,18 @@ endif()
 if(NOT CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 11)
 	message(STATUS "C++ standard ${CMAKE_CXX_STANDARD} (default)")
+elseif(CMAKE_CXX_STANDARD LESS 11)
+	message(FATAL_ERROR "Require C++ standard >= 11")
 else()
 	message(STATUS "C++ standard ${CMAKE_CXX_STANDARD}")
 endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set_property(DIRECTORY PROPERTY DEP_DIRECTORY "${CMAKE_SOURCE_DIR}/dep/${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
+get_property(_dep_directory_set DIRECTORY PROPERTY "DEP_DIRECTORY" SET)
+if(NOT _dep_directory_set)
+	set_property(DIRECTORY PROPERTY "DEP_DIRECTORY" "${CMAKE_SOURCE_DIR}/dep/${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
+endif()
 
 # project information
 
@@ -83,13 +88,13 @@ _package_catch()
 
 # build settings
 
-add_library(lib_common INTERFACE)
+add_library(ful_common INTERFACE)
 
 cmake_dependent_option(FUL_BUILD_TESTS "Build tests" ON "TARGET ful_catch" OFF)
-add_library(lib_test INTERFACE)
+add_library(ful_test INTERFACE)
 if(FUL_BUILD_TESTS)
-	target_link_libraries(lib_test INTERFACE ful_catch)
-	target_compile_options(lib_test INTERFACE
+	target_link_libraries(ful_test INTERFACE ful_catch)
+	target_compile_options(ful_test INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-Wno-sign-compare -Wno-sign-conversion>
 		$<$<CXX_COMPILER_ID:Clang>:
@@ -102,10 +107,10 @@ endif()
 cmake_dependent_option(FUL_TESTS_BUILDTIME "Run tests as part of the build process." ON "FUL_BUILD_TESTS" OFF)
 
 cmake_dependent_option(FUL_BUILD_BENCHMARKS "Build benchmarks" OFF "TARGET ful_catch" OFF)
-add_library(lib_benchmark INTERFACE)
+add_library(ful_benchmark INTERFACE)
 if(FUL_BUILD_BENCHMARKS)
-	target_link_libraries(lib_benchmark INTERFACE ful_catch)
-	target_compile_definitions(lib_benchmark INTERFACE CATCH_CONFIG_ENABLE_BENCHMARKING)
+	target_link_libraries(ful_benchmark INTERFACE ful_catch)
+	target_compile_definitions(ful_benchmark INTERFACE CATCH_CONFIG_ENABLE_BENCHMARKING)
 endif()
 
 # build features
@@ -144,8 +149,8 @@ endif()
 
 _package_asmlib()
 if(TARGET ful_asmlib)
-	target_link_libraries(lib_benchmark INTERFACE ful_asmlib)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_ASMLIB)
+	target_link_libraries(ful_benchmark INTERFACE ful_asmlib)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_ASMLIB)
 endif()
 
 # https://github.com/electronicarts/EASTL
@@ -200,8 +205,8 @@ endif()
 
 _package_eastl()
 if(TARGET ful_eastl)
-	target_link_libraries(lib_benchmark INTERFACE ful_eastl)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_EASTL)
+	target_link_libraries(ful_benchmark INTERFACE ful_eastl)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_EASTL)
 endif()
 
 # http://site.icu-project.org/
@@ -246,13 +251,13 @@ endif()
 
 _package_icu4c()
 if(TARGET ful_icu4c)
-	target_link_libraries(lib_benchmark INTERFACE ful_icu4c)
+	target_link_libraries(ful_benchmark INTERFACE ful_icu4c)
 	if(UNIX)
 		# todo dl is needed
 		# todo pthread is needed for some reason - https://bugzilla.redhat.com/show_bug.cgi?id=1954178
-		target_link_libraries(lib_benchmark INTERFACE dl pthread)
+		target_link_libraries(ful_benchmark INTERFACE dl pthread)
 	endif()
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_ICU4C)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_ICU4C)
 endif()
 
 # https://www.gnu.org/software/libiconv/
@@ -287,8 +292,8 @@ endif()
 
 _package_libiconv()
 if(TARGET ful_libiconv)
-	target_link_libraries(lib_benchmark INTERFACE ful_libiconv)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBICONV)
+	target_link_libraries(ful_benchmark INTERFACE ful_libiconv)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_LIBICONV)
 endif()
 
 # https://www.gnu.org/software/libunistring/
@@ -323,8 +328,8 @@ endif()
 
 _package_libunistring()
 if(TARGET ful_libunistring)
-	target_link_libraries(lib_benchmark INTERFACE ful_libunistring)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_LIBUNISTRING)
+	target_link_libraries(ful_benchmark INTERFACE ful_libunistring)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_LIBUNISTRING)
 endif()
 
 # https://github.com/DuffsDevice/tiny-utf8
@@ -354,8 +359,8 @@ endif()
 
 _package_tinyutf8()
 if(TARGET ful_tinyutf8)
-	target_link_libraries(lib_benchmark INTERFACE ful_tinyutf8)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_TINYUTF8)
+	target_link_libraries(ful_benchmark INTERFACE ful_tinyutf8)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_TINYUTF8)
 endif()
 
 # https://github.com/JuliaStrings/utf8proc
@@ -391,9 +396,9 @@ endif()
 
 _package_utf8proc()
 if(TARGET ful_utf8proc)
-	target_link_libraries(lib_benchmark INTERFACE ful_utf8proc)
+	target_link_libraries(ful_benchmark INTERFACE ful_utf8proc)
 	# todo only define UTF8PROC_STATIC when static lib is found
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTF8PROC UTF8PROC_STATIC)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_UTF8PROC UTF8PROC_STATIC)
 endif()
 
 
@@ -425,8 +430,8 @@ endif()
 
 _package_utfcpp()
 if(TARGET ful_utfcpp)
-	target_link_libraries(lib_benchmark INTERFACE ful_utfcpp)
-	target_compile_definitions(lib_benchmark INTERFACE HAVE_UTFCPP)
+	target_link_libraries(ful_benchmark INTERFACE ful_utfcpp)
+	target_compile_definitions(ful_benchmark INTERFACE HAVE_UTFCPP)
 endif()
 
 # project options
@@ -434,17 +439,17 @@ endif()
 # todo this is a copy-paste from above, can this be solved better?
 if(TARGET ful_libiconv)
 	message(STATUS "Common buffer conversion using libiconv")
-	target_link_libraries(lib_common INTERFACE ful_libiconv)
-	target_compile_definitions(lib_common INTERFACE HAVE_LIBICONV)
+	target_link_libraries(ful_common INTERFACE ful_libiconv)
+	target_compile_definitions(ful_common INTERFACE HAVE_LIBICONV)
 elseif(TARGET ful_icu4c)
 	message(STATUS "Common buffer conversion using icu4c")
-	target_link_libraries(lib_common INTERFACE ful_icu4c)
+	target_link_libraries(ful_common INTERFACE ful_icu4c)
 	if(UNIX)
 		# todo dl is needed
 		# todo pthread is needed for some reason - https://bugzilla.redhat.com/show_bug.cgi?id=1954178
-		target_link_libraries(lib_common INTERFACE dl pthread)
+		target_link_libraries(ful_common INTERFACE dl pthread)
 	endif()
-	target_compile_definitions(lib_common INTERFACE HAVE_ICU4C)
+	target_compile_definitions(ful_common INTERFACE HAVE_ICU4C)
 else()
 	set(_test_arguments "\"~[common buffer conversion]\"")
 endif()
@@ -524,7 +529,7 @@ if(FUL_PROBE_CONFTIME AND NOT FUL_PROBE_CONFTIME_RUN_RESULT EQUAL 0)
 endif()
 
 if(FUL_CPUID_SSE)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -532,7 +537,7 @@ if(FUL_CPUID_SSE)
 		)
 endif()
 if(FUL_CPUID_SSE2)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -543,7 +548,7 @@ if(FUL_CPUID_SSE2)
 	endif()
 endif()
 if(FUL_CPUID_SSE3)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse3>
 		)
@@ -552,7 +557,7 @@ if(FUL_CPUID_SSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSSE3)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mssse3>
 		)
@@ -561,7 +566,7 @@ if(FUL_CPUID_SSSE3)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_1)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.1>
 		)
@@ -570,7 +575,7 @@ if(FUL_CPUID_SSE4_1)
 	endif()
 endif()
 if(FUL_CPUID_SSE4_2)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-msse4.2>
 		)
@@ -579,7 +584,7 @@ if(FUL_CPUID_SSE4_2)
 	endif()
 endif()
 if(FUL_CPUID_POPCNT)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mpopcnt>
 		)
@@ -588,7 +593,7 @@ if(FUL_CPUID_POPCNT)
 	endif()
 endif()
 if(FUL_CPUID_AVX)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -617,7 +622,7 @@ if(FUL_CPUID_AVX)
 	endif()
 endif()
 if(FUL_CPUID_AVX2)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mavx2>
 		$<$<CXX_COMPILER_ID:MSVC>:
@@ -658,7 +663,7 @@ if(FUL_CPUID_AVX2)
 	endif()
 endif()
 if(FUL_CPUID_BMI)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi>
 		)
@@ -667,7 +672,7 @@ if(FUL_CPUID_BMI)
 	endif()
 endif()
 if(FUL_CPUID_BMI2)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mbmi2>
 		)
@@ -676,7 +681,7 @@ if(FUL_CPUID_BMI2)
 	endif()
 endif()
 if(FUL_CPUID_LZCNT)
-	target_compile_options(lib_common INTERFACE
+	target_compile_options(ful_common INTERFACE
 		$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
 			-mlzcnt>
 		)
@@ -685,7 +690,7 @@ if(FUL_CPUID_LZCNT)
 	endif()
 endif()
 
-add_library(lib_cpuid INTERFACE)
+add_library(ful_cpuid INTERFACE)
 if(FUL_PROBE_RUNTIME)
 	try_compile(
 		FUL_PROBE_RUNTIME_COMPILE_RESULT
@@ -699,10 +704,10 @@ if(FUL_PROBE_RUNTIME)
 
 	if(FUL_PROBE_RUNTIME_COMPILE_RESULT)
 		message(STATUS "Runtime dispatch using the gcc extension ifunc")
-		target_compile_definitions(lib_cpuid INTERFACE FUL_IFUNC)
+		target_compile_definitions(ful_cpuid INTERFACE FUL_IFUNC)
 	else()
 		message(STATUS "Runtime dispatch using function pointers")
-		target_compile_definitions(lib_cpuid INTERFACE FUL_FPTR)
+		target_compile_definitions(ful_cpuid INTERFACE FUL_FPTR)
 	endif()
 endif()
 
