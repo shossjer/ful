@@ -36,12 +36,12 @@ set(_compile_definitions
 
 include (bnc/CMakeLists.txt)
 include (cmn/CMakeLists.txt)
-include (src/CMakeLists.txt)
+include (lib/CMakeLists.txt)
 include (tst/CMakeLists.txt)
 
 add_library(fullib "")
 target_sources(fullib PRIVATE ${FULLIB_SOURCES} ${FULLIB_HEADERS} ${FULLIB_${CMAKE_CXX_COMPILER_ID}})
-target_include_directories(fullib PUBLIC "src")
+target_include_directories(fullib PUBLIC "lib")
 target_link_libraries(fullib PUBLIC ful_cpuid)
 target_compile_options(fullib PRIVATE ${_compile_options})
 target_compile_definitions(fullib PRIVATE ${_compile_definitions})

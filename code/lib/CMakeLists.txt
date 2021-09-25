@@ -1,0 +1,52 @@
+set(FULLIB_SOURCES
+	lib/ful/heap.cpp
+	lib/ful/string.cpp
+	lib/ful/string_avx.cpp
+	lib/ful/string_search.cpp
+	lib/ful/string_sse.cpp
+	lib/ful/string_sse2.cpp
+	lib/ful/string_x86.cpp
+	lib/ful/unicode.cpp
+	lib/ful/unicode_convert.cpp
+	lib/private/cpuid.cpp
+	)
+
+set(FULLIB_HEADERS
+	lib/ful/compiler.hpp
+	lib/ful/container.hpp
+	lib/ful/cstr.hpp
+	lib/ful/cstrfwd.hpp
+	lib/ful/dispatch.hpp
+	lib/ful/heap.hpp
+	lib/ful/heapfwd.hpp
+	lib/ful/intrinsics.hpp
+	lib/ful/intrinsics_x86.hpp
+	lib/ful/memory.hpp
+	lib/ful/memoryfwd.hpp
+	lib/ful/point.hpp
+	lib/ful/ranges.hpp
+	lib/ful/static.hpp
+	lib/ful/staticfwd.hpp
+	lib/ful/stdhacks.hpp
+	lib/ful/stdint.hpp
+	lib/ful/string.hpp
+	lib/ful/string_avx.hpp
+	lib/ful/string_avx2.hpp
+	lib/ful/string_modify.hpp
+	lib/ful/string_none.hpp
+	lib/ful/string_search.hpp
+	lib/ful/string_sse.hpp
+	lib/ful/string_sse2.hpp
+	lib/ful/string_sse4_2.hpp
+	lib/ful/types.hpp
+	lib/ful/unicode.hpp
+	lib/ful/unicode_avx2.hpp
+	lib/ful/unicode_convert.hpp
+	lib/ful/unicode_none.hpp
+	lib/ful/view.hpp
+	lib/ful/viewfwd.hpp
+	lib/private/cpuid.hpp
+	)
+
+set(FULLIB_MSVC
+	)
