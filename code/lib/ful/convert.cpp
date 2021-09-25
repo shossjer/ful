@@ -2,7 +2,7 @@
 
 #include "ful/cpuid.hpp"
 
-#include "ful/unicode_convert.hpp"
+#include "ful/convert.hpp"
 
 ful_resolve(convert_8_16le, ful::unit_utf16le *, const ful::unit_utf8 * first, const ful::unit_utf8 * last, ful::unit_utf16le * begin, ful::unit_utf16le * end)
 {

@@ -2,8 +2,8 @@
 #include "ful/stdhacks.hpp"
 #include "ful/types.hpp"
 
+#include "ful/convert.hpp"
 #include "ful/unicode.hpp"
-#include "ful/unicode_convert.hpp"
 
 #include "buffer.hpp"
 #include "data.hpp"

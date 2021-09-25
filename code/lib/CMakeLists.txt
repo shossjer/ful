@@ -1,4 +1,5 @@
 set(FULLIB_SOURCES
+	lib/ful/convert.cpp
 	lib/ful/cpuid.cpp
 	lib/ful/cpuid.hpp
 	lib/ful/heap.cpp
@@ -9,12 +10,12 @@ set(FULLIB_SOURCES
 	lib/ful/string_sse2.cpp
 	lib/ful/string_x86.cpp
 	lib/ful/unicode.cpp
-	lib/ful/unicode_convert.cpp
 	)
 
 set(FULLIB_HEADERS
 	lib/ful/compiler.hpp
 	lib/ful/container.hpp
+	lib/ful/convert.hpp
 	lib/ful/cstr.hpp
 	lib/ful/cstrfwd.hpp
 	lib/ful/dispatch.hpp
@@ -42,7 +43,6 @@ set(FULLIB_HEADERS
 	lib/ful/types.hpp
 	lib/ful/unicode.hpp
 	lib/ful/unicode_avx2.hpp
-	lib/ful/unicode_convert.hpp
 	lib/ful/unicode_none.hpp
 	lib/ful/view.hpp
 	lib/ful/viewfwd.hpp
