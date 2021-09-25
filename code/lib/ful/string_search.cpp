@@ -4,7 +4,7 @@
 
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 
-#include "private/cpuid.hpp"
+#include "ful/cpuid.hpp"
 
 ful_resolve(find_unit_8_8, const ful::char8 *, const ful::char8 * begin, const ful::char8 * end, ful::char8 c)
 {

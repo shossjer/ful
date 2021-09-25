@@ -1,6 +1,6 @@
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
 
-#include "private/cpuid.hpp"
+#include "ful/cpuid.hpp"
 
 #include "ful/unicode_convert.hpp"
 

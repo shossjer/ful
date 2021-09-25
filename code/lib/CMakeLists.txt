@@ -1,4 +1,6 @@
 set(FULLIB_SOURCES
+	lib/ful/cpuid.cpp
+	lib/ful/cpuid.hpp
 	lib/ful/heap.cpp
 	lib/ful/string.cpp
 	lib/ful/string_avx.cpp
@@ -8,7 +10,6 @@ set(FULLIB_SOURCES
 	lib/ful/string_x86.cpp
 	lib/ful/unicode.cpp
 	lib/ful/unicode_convert.cpp
-	lib/private/cpuid.cpp
 	)
 
 set(FULLIB_HEADERS
@@ -45,7 +46,6 @@ set(FULLIB_HEADERS
 	lib/ful/unicode_none.hpp
 	lib/ful/view.hpp
 	lib/ful/viewfwd.hpp
-	lib/private/cpuid.hpp
 	)
 
 set(FULLIB_MSVC
