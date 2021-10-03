@@ -4,299 +4,828 @@
 
 namespace ful
 {
+	template <typename From, typename To>
+	struct convert_traits;
+
+	template <>
+	struct convert_traits<unit_utf8, unit_utf16le>
+	{
+		static usize max_size(const unit_utf8 * first, const unit_utf8 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf8, unit_utf16be> : convert_traits<unit_utf8, unit_utf16le> {};
+
+	template <>
+	struct convert_traits<unit_utf8, unit_utf32le>
+	{
+		static usize max_size(const unit_utf8 * first, const unit_utf8 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf8, unit_utf32be> : convert_traits<unit_utf8, unit_utf32le> {};
+
+	template <>
+	struct convert_traits<unit_utf16, unit_utf8>
+	{
+		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
+		{
+			return (last - first) * 3;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf16, unit_utf61>
+	{
+		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf16, unit_utf32>
+	{
+		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf16, unit_utf23> : convert_traits<unit_utf16, unit_utf32> {};
+
+	template <>
+	struct convert_traits<unit_utf61, unit_utf8>
+	{
+		static usize max_size(const unit_utf61 * first, const unit_utf61 * last)
+		{
+			return (last - first) * 3;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf61, unit_utf16> : convert_traits<unit_utf16, unit_utf61> {};
+
+	template <>
+	struct convert_traits<unit_utf61, unit_utf32>
+	{
+		static usize max_size(const unit_utf61 * first, const unit_utf61 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf61, unit_utf23> : convert_traits<unit_utf61, unit_utf32> {};
+
+	template <>
+	struct convert_traits<unit_utf32, unit_utf8>
+	{
+		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
+		{
+			return (last - first) * 4;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf32, unit_utf16le>
+	{
+		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
+		{
+			return (last - first) * 2;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf32, unit_utf16be> : convert_traits<unit_utf32, unit_utf16le> {};
+
+	template <>
+	struct convert_traits<unit_utf32, unit_utf23>
+	{
+		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
+		{
+			return last - first;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf23, unit_utf8>
+	{
+		static usize max_size(const unit_utf23 * first, const unit_utf23 * last)
+		{
+			return (last - first) * 4;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf23, unit_utf16le>
+	{
+		static usize max_size(const unit_utf23 * first, const unit_utf23 * last)
+		{
+			return (last - first) * 2;
+		}
+	};
+
+	template <>
+	struct convert_traits<unit_utf23, unit_utf16be> : convert_traits<unit_utf23, unit_utf16le> {};
+
+	template <>
+	struct convert_traits<unit_utf23, unit_utf32> : convert_traits<unit_utf32, unit_utf23> {};
 	namespace detail
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		extern unit_utf16le * ful_dispatch(convert_8_16le)(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end);
-		extern unit_utf16be * ful_dispatch(convert_8_16be)(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end);
-		extern unit_utf32le * ful_dispatch(convert_8_32le)(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end);
-		extern unit_utf32be * ful_dispatch(convert_8_32be)(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end);
-		extern unit_utf8 * ful_dispatch(convert_16le_8)(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end);
-		extern unit_utf16be * ful_dispatch(convert_16le_16be)(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end);
-		extern unit_utf32le * ful_dispatch(convert_16le_32le)(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end);
-		extern unit_utf32be * ful_dispatch(convert_16le_32be)(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end);
-		extern unit_utf8 * ful_dispatch(convert_16be_8)(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end);
-		extern unit_utf16le * ful_dispatch(convert_16be_16le)(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end);
-		extern unit_utf32le * ful_dispatch(convert_16be_32le)(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end);
-		extern unit_utf32be * ful_dispatch(convert_16be_32be)(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end);
-		extern unit_utf8 * ful_dispatch(convert_32le_8)(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end);
-		extern unit_utf16le * ful_dispatch(convert_32le_16le)(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end);
-		extern unit_utf16be * ful_dispatch(convert_32le_16be)(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end);
-		extern unit_utf32be * ful_dispatch(convert_32le_32be)(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end);
-		extern unit_utf8 * ful_dispatch(convert_32be_8)(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end);
-		extern unit_utf16le * ful_dispatch(convert_32be_16le)(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end);
-		extern unit_utf16be * ful_dispatch(convert_32be_16be)(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end);
-		extern unit_utf32le * ful_dispatch(convert_32be_32le)(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end);
+		extern unit_utf16 * ful_dispatch(convert_8_16)(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin);
+		extern unit_utf61 * ful_dispatch(convert_8_61)(const unit_utf8 * first, const unit_utf8 * last, unit_utf61 * begin);
+		extern unit_utf32 * ful_dispatch(convert_8_32)(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin);
+		extern unit_utf23 * ful_dispatch(convert_8_23)(const unit_utf8 * first, const unit_utf8 * last, unit_utf23 * begin);
+		extern unit_utf8 * ful_dispatch(convert_16_8)(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin);
+		extern unit_utf61 * ful_dispatch(convert_16_61)(const unit_utf16 * first, const unit_utf16 * last, unit_utf61 * begin);
+		extern unit_utf32 * ful_dispatch(convert_16_32)(const unit_utf16 * first, const unit_utf16 * last, unit_utf32 * begin);
+		extern unit_utf23 * ful_dispatch(convert_16_23)(const unit_utf16 * first, const unit_utf16 * last, unit_utf23 * begin);
+		extern unit_utf8 * ful_dispatch(convert_61_8)(const unit_utf61 * first, const unit_utf61 * last, unit_utf8 * begin);
+		extern unit_utf16 * ful_dispatch(convert_61_16)(const unit_utf61 * first, const unit_utf61 * last, unit_utf16 * begin);
+		extern unit_utf32 * ful_dispatch(convert_61_32)(const unit_utf61 * first, const unit_utf61 * last, unit_utf32 * begin);
+		extern unit_utf23 * ful_dispatch(convert_61_23)(const unit_utf61 * first, const unit_utf61 * last, unit_utf23 * begin);
+		extern unit_utf8 * ful_dispatch(convert_32_8)(const unit_utf32 * first, const unit_utf32 * last, unit_utf8 * begin);
+		extern unit_utf16 * ful_dispatch(convert_32_16)(const unit_utf32 * first, const unit_utf32 * last, unit_utf16 * begin);
+		extern unit_utf61 * ful_dispatch(convert_32_61)(const unit_utf32 * first, const unit_utf32 * last, unit_utf61 * begin);
+		extern unit_utf23 * ful_dispatch(convert_32_23)(const unit_utf32 * first, const unit_utf32 * last, unit_utf23 * begin);
+		extern unit_utf8 * ful_dispatch(convert_23_8)(const unit_utf23 * first, const unit_utf23 * last, unit_utf8 * begin);
+		extern unit_utf16 * ful_dispatch(convert_23_16)(const unit_utf23 * first, const unit_utf23 * last, unit_utf16 * begin);
+		extern unit_utf61 * ful_dispatch(convert_23_61)(const unit_utf23 * first, const unit_utf23 * last, unit_utf61 * begin);
+		extern unit_utf32 * ful_dispatch(convert_23_32)(const unit_utf23 * first, const unit_utf23 * last, unit_utf32 * begin);
 #endif
 
-		inline
-		unit_utf16le * convert_8_16le_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
+		inline unit_utf16 * convert_8_16_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 		{
-			ful_unused(end);
+			if (first == last)
+				return begin;
 
-			while (first != last)
+			while (true)
 			{
-				const unsigned int size = point_size(first);
-				switch (size)
+				switch (point_size(first))
 				{
 				case 1:
-					*begin = static_cast<unit_utf16le>(static_cast<unsigned int>(first[0]));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					*begin = static_cast<unit_utf16>(b0);
 					first += 1;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 2:
-					*begin = static_cast<unit_utf16le>((static_cast<unsigned int>(first[0] & 0x1f) << 6) | static_cast<unsigned int>(first[1] & 0x3f));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					*begin = static_cast<unit_utf16>((b0 << 6) ^ b1 ^ 0x3080);
 					first += 2;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 3:
-					*begin = static_cast<unit_utf16le>((static_cast<unsigned int>(first[0] & 0x0f) << 12) | (static_cast<unsigned int>(first[1] & 0x3f) << 6) | static_cast<unsigned int>(first[2] & 0x3f));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					const uint32 b2 = static_cast<uint8>(first[2]);
+					*begin = static_cast<unit_utf16>((b0 << 12) ^ (b1 << 6) ^ b2 ^ 0xe2080);
 					first += 3;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 4:
 				{
-					const uint32 value = (static_cast<uint32>(first[0] & 0x07) << 18) | (static_cast<uint32>(first[1] & 0x3f) << 12) | (static_cast<uint32>(first[2] & 0x3f) << 6) | static_cast<uint32>(first[3] & 0x3f);
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					const uint32 b2 = static_cast<uint8>(first[2]);
+					const uint32 b3 = static_cast<uint8>(first[3]);
+					const uint32 value = static_cast<unit_utf32>((b0 << 18) ^ (b1 << 12) ^ (b2 << 6) ^ b3 ^ 0x3c82080);
 					const uint32 valuf = value - 0x10000;
 
 					// 0x03ff = 0000 0011 1111 1111
 					// 0xd800 = 1101 1000 0000 0000
 					// 0xdc00 = 1101 1100 0000 0000
-					begin[0] = static_cast<unit_utf16le>((value >> 10) | 0xd800);
-					begin[1] = static_cast<unit_utf16le>((valuf & 0x03ff) | 0xdc00);
+					begin[0] = static_cast<unit_utf16>((valuf >> 10) | 0xd800);
+					begin[1] = static_cast<unit_utf16>((valuf & 0x03ff) | 0xdc00);
 					first += 4;
 					begin += 2;
+					if (first == last)
+						return begin;
 					break;
 				}
 				default:
 					ful_unreachable();
 				}
 			}
-			return begin;
 		}
 
-		inline
-		unit_utf16be * convert_8_16be_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end)
+		inline unit_utf61 * convert_8_61_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf61 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32le * convert_8_32le_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
+		inline unit_utf32 * convert_8_32_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin)
 		{
-			ful_unused(end);
+			if (first == last)
+				return begin;
 
-			while (first != last)
+			while (true)
 			{
-				if (!ful_expect(begin != end))
-					break;
-
-				const unsigned int size = point_size(first);
-				switch (size)
+				switch (point_type(first))
 				{
 				case 1:
-					*begin = static_cast<unit_utf32le>(static_cast<unsigned int>(first[0]));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					*begin = static_cast<unit_utf32>(b0);
 					first += 1;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 2:
-					*begin = static_cast<unit_utf32le>((static_cast<unsigned int>(first[0] & 0x1f) << 6) | static_cast<unsigned int>(first[1] & 0x3f));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					*begin = static_cast<unit_utf32>((b0 << 6) ^ b1 ^ 0x3080);
 					first += 2;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 3:
-					*begin = static_cast<unit_utf32le>((static_cast<unsigned int>(first[0] & 0x0f) << 12) | (static_cast<unsigned int>(first[1] & 0x3f) << 6) | static_cast<unsigned int>(first[2] & 0x3f));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					const uint32 b2 = static_cast<uint8>(first[2]);
+					*begin = static_cast<unit_utf32>((b0 << 12) ^ (b1 << 6) ^ b2 ^ 0xe2080);
 					first += 3;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				case 4:
-					*begin = static_cast<unit_utf32le>((static_cast<uint32>(first[0] & 0x07) << 18) | (static_cast<uint32>(first[1] & 0x3f) << 12) | (static_cast<uint32>(first[2] & 0x3f) << 6) | static_cast<uint32>(first[3] & 0x3f));
+				{
+					const uint32 b0 = static_cast<uint8>(first[0]);
+					const uint32 b1 = static_cast<uint8>(first[1]);
+					const uint32 b2 = static_cast<uint8>(first[2]);
+					const uint32 b3 = static_cast<uint8>(first[3]);
+					*begin = static_cast<unit_utf32>((b0 << 18) ^ (b1 << 12) ^ (b2 << 6) ^ b3 ^ 0x3c82080);
 					first += 4;
 					++begin;
+					if (first == last)
+						return begin;
 					break;
+				}
 				default:
 					ful_unreachable();
 				}
 			}
-			return begin;
 		}
 
-		inline
-		unit_utf32be * convert_8_32be_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end)
+		inline unit_utf23 * convert_8_23_none(const unit_utf8 * first, const unit_utf8 * last, unit_utf23 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf8 * convert_16le_8_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end)
+		inline unit_utf8 * convert_16_8_none(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin)
+		{
+			if (first == last)
+				return begin;
+
+			while (true)
+			{
+				switch (point_type(first))
+				{
+				case 1:
+				{
+					const uint32 b0 = static_cast<uint16>(first[0]);
+					begin[0] = static_cast<unit_utf8>(b0);
+					first += 1;
+					begin += 1;
+					if (first == last)
+						return begin;
+					break;
+				}
+				case 2:
+				{
+					const uint32 b0 = static_cast<uint16>(first[0]);
+					begin[0] = static_cast<unit_utf8>(b0 >> 6 | 0xc0);
+					begin[1] = static_cast<unit_utf8>((b0 & 0x3f) | 0x80);
+					first += 1;
+					begin += 2;
+					if (first == last)
+						return begin;
+					break;
+				}
+				case 3:
+				{
+					const uint32 b0 = static_cast<uint16>(first[0]);
+					begin[0] = static_cast<unit_utf8>(b0 >> 12 | 0xe0);
+					begin[1] = static_cast<unit_utf8>((b0 & 0xfff) >> 6 | 0x80);
+					begin[2] = static_cast<unit_utf8>((b0 & 0x3f) | 0x80);
+					first += 1;
+					begin += 3;
+					if (first == last)
+						return begin;
+					break;
+				}
+				case 4:
+				{
+					const uint32 b0 = static_cast<uint16>(first[0]);
+					const uint32 b1 = static_cast<uint16>(first[1]);
+					const uint32 valuf = (b0 << 10) ^ b1 ^ 0x360dc00;
+					const uint32 value = valuf + 0x10000;
+
+					begin[0] = static_cast<unit_utf8>(value >> 18 | 0xf0);
+					begin[1] = static_cast<unit_utf8>(value >> 12 & 0x3f | 0x80);
+					begin[2] = static_cast<unit_utf8>(value >> 6 & 0x3f | 0x80);
+					begin[3] = static_cast<unit_utf8>(value & 0x3f | 0x80);
+					first += 2;
+					begin += 4;
+					if (first == last)
+						return begin;
+					break;
+				}
+				default:
+					ful_unreachable();
+				}
+			}
+		}
+
+		inline unit_utf16be * convert_16_61_none(const unit_utf16 * first, const unit_utf16 * last, unit_utf61 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16be * convert_16le_16be_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end)
+		inline unit_utf32 * convert_16_32_none(const unit_utf16 * first, const unit_utf16 * last, unit_utf32 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32le * convert_16le_32le_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end)
+		inline unit_utf23 * convert_16_23_none(const unit_utf16 * first, const unit_utf16 * last, unit_utf23 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32be * convert_16le_32be_none(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end)
+		inline unit_utf8 * convert_61_8_none(const unit_utf61 * first, const unit_utf61 * last, unit_utf8 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf8 * convert_16be_8_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end)
+		inline unit_utf16 * convert_61_16_none(const unit_utf61 * first, const unit_utf61 * last, unit_utf16 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16le * convert_16be_16le_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end)
+		inline unit_utf32 * convert_61_32_none(const unit_utf61 * first, const unit_utf61 * last, unit_utf32 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32le * convert_16be_32le_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end)
+		inline unit_utf23 * convert_61_23_none(const unit_utf61 * first, const unit_utf61 * last, unit_utf23 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32be * convert_16be_32be_none(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end)
+		inline unit_utf8 * convert_32_8_none(const unit_utf32 * first, const unit_utf32 * last, unit_utf8 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf8 * convert_32le_8_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end)
+		inline unit_utf16 * convert_32_16_none(const unit_utf32 * first, const unit_utf32 * last, unit_utf16 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16le * convert_32le_16le_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end)
+		inline unit_utf61 * convert_32_61_none(const unit_utf32 * first, const unit_utf32 * last, unit_utf61 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16be * convert_32le_16be_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end)
+		inline unit_utf23 * convert_32_23_none(const unit_utf32 * first, const unit_utf32 * last, unit_utf23 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32be * convert_32le_32be_none(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end)
+		inline unit_utf8 * convert_23_8_none(const unit_utf23 * first, const unit_utf23 * last, unit_utf8 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf8 * convert_32be_8_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end)
+		inline unit_utf16 * convert_23_16_none(const unit_utf23 * first, const unit_utf23 * last, unit_utf16 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16le * convert_32be_16le_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end)
+		inline unit_utf61 * convert_23_61_none(const unit_utf23 * first, const unit_utf23 * last, unit_utf61 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf16be * convert_32be_16be_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end)
+		inline unit_utf32 * convert_23_32_none(const unit_utf23 * first, const unit_utf23 * last, unit_utf32 * begin)
 		{
 			ful_unused(first);
 			ful_unused(last);
-			ful_unused(end);
 			ful_break();
 			return begin;
 		}
 
-		inline
-		unit_utf32le * convert_32be_32le_none(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end)
+		ful_target("sse2") inline unit_utf16 * convert_8_16_sse2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 		{
-			ful_unused(first);
-			ful_unused(last);
-			ful_unused(end);
-			ful_break();
-			return begin;
+			const usize size = last - first;
+			if (size >= 28)
+			{
+				const unit_utf8 * const last_chunk = last - 28;
+				while (true)
+				{
+					switch (point_size(first))
+					{
+					case 1:
+					{
+						const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+
+						const unsigned int mask = _mm_movemask_epi8(line);
+						const unsigned int count = least_significant_set_bit(mask | 0x10000);
+
+						const __m128i zero = _mm_setzero_si128();
+
+						// _mm_unpacklo_epi8 zero
+						//       arg a  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
+						// (8 16-bits)     h|    g|    f|    e|    d|    c|    b|    a
+						const __m128i val16lo = _mm_unpacklo_epi8(line, zero);
+
+						// note with at least 20 characters of input remaining, it is safe to
+						// write 1-8 characters
+						// 1300 3003 0030 0300 3001   1  8
+						// 1130 0300 3003 0030 0300   2  8
+						// 1113 0030 0300 3003 0020   3  9
+						// 1111 3003 0030 0300 3001   4 10
+						// 1111 1300 3003 0030 0300   5 10
+						// 1111 1130 0300 3003 0020   6 11
+						// 1111 1113 0030 0300 3001   7 12
+						// 1111 1111 3003 0030 0300   8 11
+						_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 0), val16lo);
+
+						if (count >= 9)
+						{
+							// _mm_unpackhi_epi16 zero
+							//       arg a  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
+							// (8 16-bits)     p|    o|    n|    m|    l|    k|    j|    i
+							const __m128i val16hi = _mm_unpackhi_epi8(line, zero);
+
+							// note with at least 28 characters of input remaining, it is safe to
+							// write 9-16 characters
+							// 1111 1111 1300 3003 0030 0300 3001   9 16
+							// 1111 1111 1130 0300 3003 0030 0300  10 16
+							// 1111 1111 1113 0030 0300 3003 0020  11 17
+							// 1111 1111 1111 3003 0030 0300 3001  12 18
+							// 1111 1111 1111 1300 3003 0030 0300  13 18
+							// 1111 1111 1111 1130 0300 3003 0020  14 19
+							// 1111 1111 1111 1113 0030 0300 3001  15 20
+							// 1111 1111 1111 1111 3003 0030 0300  16 20
+							_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 8), val16hi);
+						}
+
+						first += count;
+						begin += count;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 2:
+					{
+						const uint16 b0 = static_cast<uint8>(first[0]);
+						const uint16 b1 = static_cast<uint8>(first[1]);
+						*begin = static_cast<unit_utf16>((b0 << 6) ^ b1 ^ 0x3080);
+						first += 2;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 3:
+					{
+						const uint16 b0 = static_cast<uint8>(first[0]);
+						const uint16 b1 = static_cast<uint8>(first[1]);
+						const uint16 b2 = static_cast<uint8>(first[2]);
+						*begin = static_cast<unit_utf16>((b0 << 12) ^ (b1 << 6) ^ b2 ^ 0xe2080);
+						first += 3;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 4:
+					{
+						const uint16 b0 = static_cast<uint8>(first[0]);
+						const uint16 b1 = static_cast<uint8>(first[1]);
+						const uint16 b2 = static_cast<uint8>(first[2]);
+						const uint16 b3 = static_cast<uint8>(first[3]);
+						*begin = static_cast<unit_utf16>((b0 << 18) ^ (b1 << 12) ^ (b2 << 6) ^ b3 ^ 0x3c82080);
+						first += 4;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					default:
+						ful_unreachable();
+					}
+				}
+			}
+
+		done:
+			return convert_8_16_none(first, last, begin);
 		}
 
-		ful_target("avx2") inline
-		unit_utf16le * convert_8_16le_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
+		ful_target("sse2") inline unit_utf32 * convert_8_32_sse2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin)
+		{
+			const usize size = last - first;
+			if (size >= 22)
+			{
+				const unit_utf8 * const last_chunk = last - 22;
+				while (true)
+				{
+					switch (point_size(first))
+					{
+					case 1:
+					{
+						const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
+
+						const unsigned int mask = _mm_movemask_epi8(line);
+						const unsigned int count = least_significant_set_bit(mask | 0x10000);
+
+						const __m128i zero = _mm_setzero_si128();
+
+						// _mm_unpacklo_epi8 zero
+						//       arg a  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
+						// (8 16-bits)     h|    g|    f|    e|    d|    c|    b|    a
+						const __m128i val16lo = _mm_unpacklo_epi8(line, zero);
+
+						// _mm_unpacklo_epi16 zero
+						//       arg a     h|    g|    f|    e|    d|    c|    b|    a
+						// (4 32-bits)           d|          c|          b|          a
+						const __m128i val32lolo = _mm_unpacklo_epi16(val16lo, zero);
+
+						// note with at least 10 characters of input remaining, it is safe to
+						// write 1-4 characters
+						// 1400 0400 01   1  4
+						// 1140 0040 00   2  4
+						// 1114 0003 00   3  5
+						// 1111 4000 20   4  6
+						_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 0), val32lolo);
+
+						if (count >= 5)
+						{
+							// _mm_unpackhi_epi16 zero
+							//       arg a     h|    g|    f|    e|    d|    c|    b|    a
+							// (4 32-bits)           h|          g|          f|          e
+							const __m128i val32lohi = _mm_unpackhi_epi16(val16lo, zero);
+
+							// note with at least 14 characters of input remaining, it is safe to
+							// write 5-8 characters
+							// 1111 1400 0400 01   5  8
+							// 1111 1140 0040 00   6  8
+							// 1111 1114 0003 00   7  9
+							// 1111 1111 4000 20   8 10
+							_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 4), val32lohi);
+
+							if (count >= 9)
+							{
+								// _mm_unpackhi_epi8 zero
+								//       arg a  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
+								// (8 16-bits)     p|    o|    n|    m|    l|    k|    j|    i
+								const __m128i val16hi = _mm_unpackhi_epi8(line, zero);
+
+								// _mm_unpacklo_epi16 zero
+								//       arg a     p|    o|    n|    m|    l|    k|    j|    i
+								// (4 32-bits)           l|          k|          j|          i
+								const __m128i val32hilo = _mm_unpacklo_epi16(val16hi, zero);
+
+								// note with at least 18 characters of input remaining, it is safe to
+								// write 9-12 characters
+								// 1111 1111 1400 0400 01   9 12
+								// 1111 1111 1140 0040 00  10 12
+								// 1111 1111 1114 0003 00  11 13
+								// 1111 1111 1111 4000 20  12 14
+								_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 8), val32hilo);
+
+								if (count >= 13)
+								{
+									// _mm_unpackhi_epi16 zero
+									//       arg a     p|    o|    n|    m|    l|    k|    j|    i
+									// (4 32-bits)           p|          o|          n|          m
+									const __m128i val32hihi = _mm_unpackhi_epi16(val16hi, zero);
+
+									// note with at least 22 characters of input remaining, it is safe to
+									// write 13-16 characters
+									// 1111 1111 1111 1400 0400 01  13 16
+									// 1111 1111 1111 1140 0040 00  14 16
+									// 1111 1111 1111 1114 0003 00  15 17
+									// 1111 1111 1111 1111 4000 20  16 18
+									_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 12), val32hihi);
+								}
+							}
+						}
+
+						first += count;
+						begin += count;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 2:
+					{
+						const uint32 b0 = static_cast<uint8>(first[0]);
+						const uint32 b1 = static_cast<uint8>(first[1]);
+						*begin = static_cast<unit_utf32>((b0 << 6) ^ b1 ^ 0x3080);
+						first += 2;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 3:
+					{
+						const uint32 b0 = static_cast<uint8>(first[0]);
+						const uint32 b1 = static_cast<uint8>(first[1]);
+						const uint32 b2 = static_cast<uint8>(first[2]);
+						*begin = static_cast<unit_utf32>((b0 << 12) ^ (b1 << 6) ^ b2 ^ 0xe2080);
+						first += 3;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 4:
+					{
+						const uint32 b0 = static_cast<uint8>(first[0]);
+						const uint32 b1 = static_cast<uint8>(first[1]);
+						const uint32 b2 = static_cast<uint8>(first[2]);
+						const uint32 b3 = static_cast<uint8>(first[3]);
+						*begin = static_cast<unit_utf32>((b0 << 18) ^ (b1 << 12) ^ (b2 << 6) ^ b3 ^ 0x3c82080);
+						first += 4;
+						++begin;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					default:
+						ful_unreachable();
+					}
+				}
+			}
+
+		done:
+			return convert_8_32_none(first, last, begin);
+		}
+
+		ful_target("sse2") inline unit_utf8 * convert_16_8_sse2(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin)
+		{
+			const usize size = last - first;
+			if (size >= 16)
+			{
+				const unit_utf16 * const last_chunk = last - 16;
+				while (true)
+				{
+					switch (point_type(first))
+					{
+					case 1:
+					{
+						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 0));
+						const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first + 8));
+
+						// _mm_packus_epi16
+						//       arg a     h|    g|    f|    e|    d|    c|    b|    a
+						//       arg b     p|    o|    n|    m|    l|    k|    j|    i
+						// (16 8-bits)  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
+						const __m128i val8 = _mm_packus_epi16(line1, line2);
+
+						const unsigned int mask = _mm_movemask_epi8(val8);
+						const unsigned int count = least_significant_set_bit(mask | 0x10000);
+
+						_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 0), val8);
+
+						first += count;
+						begin += count;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 2:
+					{
+						const uint32 b0 = static_cast<uint16>(first[0]);
+						begin[0] = static_cast<unit_utf8>(b0 >> 6 | 0xc0);
+						begin[1] = static_cast<unit_utf8>((b0 & 0x3f) | 0x80);
+						first += 1;
+						begin += 2;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 3:
+					{
+						const uint32 b0 = static_cast<uint16>(first[0]);
+						begin[0] = static_cast<unit_utf8>(b0 >> 12 | 0xe0);
+						begin[1] = static_cast<unit_utf8>((b0 & 0xfff) >> 6 | 0x80);
+						begin[2] = static_cast<unit_utf8>((b0 & 0x3f) | 0x80);
+						first += 1;
+						begin += 3;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					case 4:
+					{
+						const uint32 b0 = static_cast<uint16>(first[0]);
+						const uint32 b1 = static_cast<uint16>(first[1]);
+						const uint32 valuf = (b0 << 10) ^ b1 ^ 0x360dc00;
+						const uint32 value = valuf + 0x10000;
+
+						begin[0] = static_cast<unit_utf8>(value >> 18 | 0xf0);
+						begin[1] = static_cast<unit_utf8>(value >> 12 & 0x3f | 0x80);
+						begin[2] = static_cast<unit_utf8>(value >> 6 & 0x3f | 0x80);
+						begin[3] = static_cast<unit_utf8>(value & 0x3f | 0x80);
+						first += 2;
+						begin += 4;
+						if (!(first <= last_chunk))
+							goto done;
+						break;
+					}
+					default:
+						ful_unreachable();
+					}
+				}
+			}
+
+		done:
+			return convert_16_8_none(first, last, begin);
+		}
+
+		ful_target("avx2") inline unit_utf16 * convert_8_16_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 		{
 			const __m256i x_mask2 = _mm256_set1_epi16(0x07c0);
 			const __m256i y_mask2 = _mm256_set1_epi16(0x003f);
@@ -315,7 +844,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(word);
 					const unsigned int count = count_trailing_zero_bits(mask);
 
-					if (ful_expect(begin <= end - 32))
+					//if (ful_expect(begin <= end - 32)) // todo
 					{
 						const __m256i zero = _mm256_setzero_si256();
 						const __m256i valuelo = _mm256_unpacklo_epi8(word, zero);
@@ -369,7 +898,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(add);
 					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
-					if (ful_expect(begin <= end - 16))
+					//if (ful_expect(begin <= end - 16)) // todo
 					{
 						_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), value);
 					}
@@ -382,11 +911,10 @@ namespace ful
 					first += 1;
 				}
 			}
-			return convert_8_16le_none(first, last, begin, end);
+			return convert_8_16_none(first, last, begin);
 		}
 
-		ful_target("avx2") inline
-		unit_utf32le * convert_8_32le_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
+		ful_target("avx2") inline unit_utf32 * convert_8_32_avx2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin)
 		{
 			//const __m256i order3 = _mm256_set_epi64x(
 			//	0x80090a0b80060708, 0x8003040580000102,
@@ -418,7 +946,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(word);
 					const unsigned int count = count_trailing_zero_bits(mask);
 
-					if (ful_expect(begin <= end - 32))
+					//if (ful_expect(begin <= end - 32)) // todo
 					{
 						const __m256i zero = _mm256_setzero_si256();
 						const __m256i valuelo = _mm256_unpacklo_epi8(word, zero);
@@ -483,7 +1011,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(cmp);
 					const unsigned int count = count_trailing_zero_bits(mask ^ 0xcccccccc) / 4;
 
-					if (ful_expect(begin <= end - 8))
+					//if (ful_expect(begin <= end - 8)) // todo
 					{
 						_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), value);
 					}
@@ -508,7 +1036,7 @@ namespace ful
 					const unsigned int mask = _mm256_movemask_epi8(add);
 					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
-					if (ful_expect(begin <= end - 16))
+					//if (ful_expect(begin <= end - 16)) // todo
 					{
 						const __m256i zero = _mm256_setzero_si256();
 						const __m256i valuelo = _mm256_unpacklo_epi16(value, zero);
@@ -529,267 +1057,283 @@ namespace ful
 					first += 1;
 				}
 			}
-			return convert_8_32le_none(first, last, begin, end);
+			return convert_8_32_none(first, last, begin);
 		}
 	}
 
-	ful_inline unit_utf16le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf16 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_16le(first, last, begin, end);
-#elif defined(__AVX2__)
-		return detail::convert_8_16le_avx2(first, last, begin, end);
-//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_8_16le_sse2(first, last, begin, end);
-#else
-		return detail::convert_8_16le_none(first, last, begin, end);
-#endif
-	}
-
-	ful_inline unit_utf16be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16be * begin, unit_utf16be * end)
-	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_16be(first, last, begin, end);
+		return detail::convert_8_16(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_8_16be_avx2(first, last, begin, end);
-//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_8_16be_sse2(first, last, begin, end);
+//		return detail::convert_8_16_avx2(first, last, begin);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::convert_8_16_sse2(first, last, begin);
 #else
-		return detail::convert_8_16be_none(first, last, begin, end);
+		return detail::convert_8_16_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32le * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf61 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_32le(first, last, begin, end);
-#elif defined(__AVX2__)
-		return detail::convert_8_32le_avx2(first, last, begin, end);
-//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_8_32le_sse2(first, last, begin, end);
-#else
-		return detail::convert_8_32le_none(first, last, begin, end);
-#endif
-	}
-
-	ful_inline unit_utf32be * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32be * begin, unit_utf32be * end)
-	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_32be(first, last, begin, end);
+		return detail::convert_8_61(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_8_32be_avx2(first, last, begin, end);
+//		return detail::convert_8_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_8_32be_sse2(first, last, begin, end);
+//		return detail::convert_8_61_sse2(first, last, begin);
 #else
-		return detail::convert_8_32be_none(first, last, begin, end);
+		return detail::convert_8_61_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf8 * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf32 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16le_8(first, last, begin, end);
+		return detail::convert_8_32(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16le_8_avx2(first, last, begin, end);
-//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16le_8_sse2(first, last, begin, end);
+//		return detail::convert_8_32_avx2(first, last, begin);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::convert_8_32_sse2(first, last, begin);
 #else
-		return detail::convert_16le_8_none(first, last, begin, end);
+		return detail::convert_8_32_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf23 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16le_16be(first, last, begin, end);
+		return detail::convert_8_23(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16le_16be_avx2(first, last, begin, end);
+//		return detail::convert_8_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16le_16be_sse2(first, last, begin, end);
+//		return detail::convert_8_23_sse2(first, last, begin);
 #else
-		return detail::convert_16le_16be_none(first, last, begin, end);
+		return detail::convert_8_23_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32le * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf8 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16le_32le(first, last, begin, end);
+		return detail::convert_16_8(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16le_32le_avx2(first, last, begin, end);
-//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16le_32le_sse2(first, last, begin, end);
+//		return detail::convert_16_8_avx2(first, last, begin);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::convert_16_8_sse2(first, last, begin);
 #else
-		return detail::convert_16le_32le_none(first, last, begin, end);
+		return detail::convert_16_8_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32be * convert(const unit_utf16le * first, const unit_utf16le * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf61 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16le_32be(first, last, begin, end);
+		return detail::convert_16_61(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16le_32be_avx2(first, last, begin, end);
+//		return detail::convert_16_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16le_32be_sse2(first, last, begin, end);
+//		return detail::convert_16_61_sse2(first, last, begin);
 #else
-		return detail::convert_16le_32be_none(first, last, begin, end);
+		return detail::convert_16_61_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf8 * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf32 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16be_8(first, last, begin, end);
+		return detail::convert_16_32(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16be_8_avx2(first, last, begin, end);
+//		return detail::convert_16_32_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16be_8_sse2(first, last, begin, end);
+//		return detail::convert_16_32_sse2(first, last, begin);
 #else
-		return detail::convert_16be_8_none(first, last, begin, end);
+		return detail::convert_16_32_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf23 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16be_16le(first, last, begin, end);
+		return detail::convert_16_23(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16be_16le_avx2(first, last, begin, end);
+//		return detail::convert_16_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16be_16le_sse2(first, last, begin, end);
+//		return detail::convert_16_23_sse2(first, last, begin);
 #else
-		return detail::convert_16be_16le_none(first, last, begin, end);
+		return detail::convert_16_23_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32le * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf8 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16be_32le(first, last, begin, end);
+		return detail::convert_61_8(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16be_32le_avx2(first, last, begin, end);
+//		return detail::convert_61_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16be_32le_sse2(first, last, begin, end);
+//		return detail::convert_61_8_sse2(first, last, begin);
 #else
-		return detail::convert_16be_32le_none(first, last, begin, end);
+		return detail::convert_61_8_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32be * convert(const unit_utf16be * first, const unit_utf16be * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf16 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16be_32be(first, last, begin, end);
+		return detail::convert_61_16(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_16be_32be_avx2(first, last, begin, end);
+//		return detail::convert_61_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_16be_32be_sse2(first, last, begin, end);
+//		return detail::convert_61_16_sse2(first, last, begin);
 #else
-		return detail::convert_16be_32be_none(first, last, begin, end);
+		return detail::convert_61_16_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf8 * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf32 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32le_8(first, last, begin, end);
+		return detail::convert_61_32(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32le_8_avx2(first, last, begin, end);
+//		return detail::convert_61_32_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32le_8_sse2(first, last, begin, end);
+//		return detail::convert_61_32_sse2(first, last, begin);
 #else
-		return detail::convert_32le_8_none(first, last, begin, end);
+		return detail::convert_61_32_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16le * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf23 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32le_16le(first, last, begin, end);
+		return detail::convert_61_23(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32le_16le_avx2(first, last, begin, end);
+//		return detail::convert_61_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32le_16le_sse2(first, last, begin, end);
+//		return detail::convert_61_23_sse2(first, last, begin);
 #else
-		return detail::convert_32le_16le_none(first, last, begin, end);
+		return detail::convert_61_23_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf8 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32le_16be(first, last, begin, end);
+		return detail::convert_32_8(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32le_16be_avx2(first, last, begin, end);
+//		return detail::convert_32_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32le_16be_sse2(first, last, begin, end);
+//		return detail::convert_32_8_sse2(first, last, begin);
 #else
-		return detail::convert_32le_16be_none(first, last, begin, end);
+		return detail::convert_32_8_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32be * convert(const unit_utf32le * first, const unit_utf32le * last, unit_utf32be * begin, unit_utf32be * end)
+	ful_inline unit_utf16 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32le_32be(first, last, begin, end);
+		return detail::convert_32_16(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32le_32be_avx2(first, last, begin, end);
+//		return detail::convert_32_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32le_32be_sse2(first, last, begin, end);
+//		return detail::convert_32_16_sse2(first, last, begin);
 #else
-		return detail::convert_32le_32be_none(first, last, begin, end);
+		return detail::convert_32_16_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf8 * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf8 * begin, unit_utf8 * end)
+	ful_inline unit_utf61 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32be_8(first, last, begin, end);
+		return detail::convert_32_61(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32be_8_avx2(first, last, begin, end);
+//		return detail::convert_32_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32be_8_sse2(first, last, begin, end);
+//		return detail::convert_32_61_sse2(first, last, begin);
 #else
-		return detail::convert_32be_8_none(first, last, begin, end);
+		return detail::convert_32_61_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16le * begin, unit_utf16le * end)
+	ful_inline unit_utf23 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32be_16le(first, last, begin, end);
+		return detail::convert_32_23(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32be_16le_avx2(first, last, begin, end);
+//		return detail::convert_32_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32be_16le_sse2(first, last, begin, end);
+//		return detail::convert_32_23_sse2(first, last, begin);
 #else
-		return detail::convert_32be_16le_none(first, last, begin, end);
+		return detail::convert_32_23_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf16be * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf16be * begin, unit_utf16be * end)
+	ful_inline unit_utf8 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32be_16be(first, last, begin, end);
+		return detail::convert_23_8(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32be_16be_avx2(first, last, begin, end);
+//		return detail::convert_23_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32be_16be_sse2(first, last, begin, end);
+//		return detail::convert_23_8_sse2(first, last, begin);
 #else
-		return detail::convert_32be_16be_none(first, last, begin, end);
+		return detail::convert_23_8_none(first, last, begin);
 #endif
 	}
 
-	ful_inline unit_utf32le * convert(const unit_utf32be * first, const unit_utf32be * last, unit_utf32le * begin, unit_utf32le * end)
+	ful_inline unit_utf16 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32be_32le(first, last, begin, end);
+		return detail::convert_23_16(first, last, begin);
 //#elif defined(__AVX2__)
-//		return detail::convert_32be_32le_avx2(first, last, begin, end);
+//		return detail::convert_23_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-//		return detail::convert_32be_32le_sse2(first, last, begin, end);
+//		return detail::convert_23_16_sse2(first, last, begin);
 #else
-		return detail::convert_32be_32le_none(first, last, begin, end);
+		return detail::convert_23_16_none(first, last, begin);
 #endif
+	}
+
+	ful_inline unit_utf61 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf61 * begin)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::convert_23_61(first, last, begin);
+//#elif defined(__AVX2__)
+//		return detail::convert_23_61_avx2(first, last, begin);
+//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+//		return detail::convert_23_61_sse2(first, last, begin);
+#else
+		return detail::convert_23_61_none(first, last, begin);
+#endif
+	}
+
+	ful_inline unit_utf32 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf32 * begin)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::convert_23_32(first, last, begin);
+//#elif defined(__AVX2__)
+//		return detail::convert_23_32_avx2(first, last, begin);
+//#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+//		return detail::convert_23_32_sse2(first, last, begin);
+#else
+		return detail::convert_23_32_none(first, last, begin);
+#endif
+	}
+
+	template <typename Base>
+	class string_container;
+
+	template <typename First, typename Last, typename Base>
+	ful_inline auto convert(First first, Last last, string_container<Base> & x)
+		-> decltype(convert(first, last, x.data()))
+	{
+		if (!x.reserve(x.size() + convert_traits<hck::iter_value_t<First>, typename string_container<Base>::value_type>::max_size()))
+			return x.data() + x.size();
+
+		const auto it = convert(first, last, x.data() + x.size());
+		x.reduce(it);
+
+		return it;
 	}
 }

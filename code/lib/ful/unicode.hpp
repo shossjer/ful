@@ -179,6 +179,25 @@ namespace ful
 		return 1;
 	}
 
+	ful_inline unsigned int point_type(const unit_utf8 * s)
+	{
+		return point_size(s);
+	}
+
+	ful_inline unsigned int point_type(const unit_utf16 * s)
+	{
+		if (static_cast<uint16>(*s) < 0x80)
+			return 1;
+
+		if (static_cast<uint16>(*s) < 0x800)
+			return 2;
+
+		if ((static_cast<uint16>(*s) & 0xfc00) != 0xd800)
+			return 3;
+
+		return 4;
+	}
+
 	namespace detail
 	{
 		inline
