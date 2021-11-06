@@ -9,6 +9,8 @@ function plot_dump(filename)
   endif
 
   style = fscanf(fid, "style %s\n");
+  fscanf(fid, "xlabel ");
+  xname = fgetl(fid);
   nresults = fscanf(fid, "results %u\n");
   results = struct("name", {}, "points", {}, "samples", {}, "xs", {}, "ys", {});
 
@@ -36,22 +38,17 @@ function plot_dump(filename)
     ys(r, :) = mean(results(r).ys);
   endfor
 
-  minx = min(xs);
-  maxx = max(xs);
-  miny = min(min(ys));
-  maxy = max(nth_element(ys, length(xs) - 10, 2));
-
   if strcmp(style, 'plot')
-    h = plot(xs, ys, '-o');
-
-    axis([(floor(minx / 10) * 10) (ceil(maxx / 10) * 10) (floor(miny / 5000) * 5000) (ceil(maxy / 5000) * 5000)])
+    h = plot(xs, ys', '-o');
   elseif strcmp(style, 'loglog')
-    h = loglog(xs, ys, '-o');
+    h = loglog(xs, ys', '-o');
   else
     error("unknown style");
   endif
 
   legend(results(:).name, "location", "northwest");
+  xlabel(xname);
+  ylabel("nanoseconds");
   hold on;
   set(gca,'ColorOrderIndex',1);
 
@@ -60,9 +57,9 @@ function plot_dump(filename)
   endfor
 
   if strcmp(style, 'plot')
-    h = plot(xs, ys, ':');
+    h = plot(xs, ys', ':');
   elseif strcmp(style, 'loglog')
-    h = loglog(xs, ys, ':');
+    h = loglog(xs, ys', ':');
   else
     error("unknown style");
   endif

@@ -643,7 +643,7 @@ namespace
 
 TEST_CASE("compare equal", "[compare]")
 {
-	BENCHMARK_DUMP("plot/compare_equal.dump", log_style, 1000, 1, 17)
+	BENCHMARK_DUMP("plot/compare_equal.dump", log_style, 1, 17)
 	{
 		const auto setup_and_run = setup_compare_equal{};
 
@@ -730,7 +730,7 @@ TEST_CASE("dump memcopy", "[.][dump]")
 	constexpr int size_first = 5;
 #endif
 
-	BENCHMARK_DUMP("plot/memcopy.dump", log_style, 1, size_first, 29)
+	BENCHMARK_DUMP("plot/memcopy.dump", log_style, size_first, 29)
 	{
 		BENCHMARK_GROUP("repmovf")(Catch::Benchmark::Groupometer meter)
 		{
@@ -816,7 +816,7 @@ namespace ful
 
 TEST_CASE("dump equal_cstr", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/equal_cstr.dump", log_style, 1000, 1, 17)
+	BENCHMARK_DUMP("plot/equal_cstr.dump", log_style, 1, 17)
 	{
 		const auto setup_and_run = setup_equal_cstr{};
 
@@ -1651,7 +1651,7 @@ namespace
 
 TEST_CASE("dump equal_range", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/equal_range.dump", log_style, 1000, 1, 17)
+	BENCHMARK_DUMP("plot/equal_range.dump", log_style, 1, 17)
 	{
 		const auto setup_and_run = setup_equal_range{};
 

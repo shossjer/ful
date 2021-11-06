@@ -12,16 +12,19 @@ namespace Catch
 	{
 		struct Groupometer : Chronometer
 		{
-			Groupometer(Detail::ChronometerConcept & meter, int k, int s)
+			Groupometer(Detail::ChronometerConcept & meter, int k, int g, size_t s)
 				: Chronometer(meter, k)
+				, g(g)
 				, s(s)
 			{}
 
-			int size() const { return s; }
+			int group() const { return g; }
+			size_t size() const { return s; }
 
 		private:
 
-			int s;
+			int g;
+			size_t s;
 		};
 
 		namespace Detail
@@ -42,9 +45,10 @@ namespace Catch
 				};
 
 				const char * filename;
+				const char * xlabel;
 
 				int type; // linear(0) or logarithmic(1)
-				int reps;
+				//int reps;
 
 				std::vector<unsigned int> xs;
 				std::vector<group> groups;
@@ -55,13 +59,14 @@ namespace Catch
 
 #if defined(_MSC_VER)
 					FILE * file;
-					if (ful_check(fopen_s(&file, filename, "wb") == 0))
+					if (fopen_s(&file, filename, "wb") == 0)
 #else
 					FILE * const file = std::fopen(filename, "wb");
-					if (ful_check(file))
+					if (file)
 #endif
 					{
 						std::fprintf(file, type == 0 ? "style plot\n" : "style loglog\n");
+						std::fprintf(file, "xlabel %s\n", xlabel);
 						std::fprintf(file, "results %u\n", static_cast<unsigned int>(groups.size()));
 
 						for (unsigned int i = 0; i < groups.size(); i++)
@@ -86,10 +91,11 @@ namespace Catch
 					}
 				}
 
-				explicit Dump(const char * filename, lin_type, int reps, unsigned int from, unsigned int to, unsigned int step)
+				explicit Dump(const char * filename, lin_type/*, int reps*/, unsigned int from, unsigned int to, unsigned int step, const char * xlabel = "")
 					: filename(filename)
+					, xlabel(xlabel)
 					, type(0)
-					, reps(reps)
+					//, reps(reps)
 				{
 					xs.resize(((to - from) - 1) / step + 1);
 
@@ -103,10 +109,11 @@ namespace Catch
 					}
 				}
 
-				explicit Dump(const char * filename, log_type, int reps, unsigned char from, unsigned char to)
+				explicit Dump(const char * filename, log_type/*, int reps*/, unsigned char from, unsigned char to, const char * xlabel = "")
 					: filename(filename)
+					, xlabel(xlabel)
 					, type(1)
-					, reps(reps)
+					//, reps(reps)
 				{
 					xs.resize((to - from) * 2);
 
@@ -127,18 +134,45 @@ namespace Catch
 				template <typename F>
 				Dump & operator = (F && f)
 				{
+					using Clock = Catch::Benchmark::default_clock;
+
 					Catch::IConfigPtr cfg = Catch::getCurrentContext().getConfig();
 
-					Catch::Benchmark::Detail::ChronometerModel<Catch::Benchmark::default_clock> meter;
+					auto env = Detail::measure_environment<Clock>();
+
+					auto min_time = env.clock_resolution.mean * Detail::minimum_ticks;
+					auto run_time = std::max(min_time, std::chrono::duration_cast<decltype(min_time)>(cfg->benchmarkWarmupTime()));
+
+					Catch::Benchmark::Detail::ChronometerModel<Clock> meter;
 
 					auto * y_ptr = groups.back().ys.data();
-					for (auto size : xs)
+					for (unsigned int sizei = 0; sizei < xs.size(); sizei++)
 					{
+						const unsigned int size = xs[sizei];
+
+						auto how_long = std::chrono::duration_cast<ClockDuration<Clock>>(run_time);
+						ClockDuration<Clock> test_elapsed(0);
+						auto test_iterations = 1;
+						while (test_iterations < (1 << 30)) {
+							//Catch::Benchmark::Detail::ChronometerModel<Clock> meter;
+							f(Catch::Benchmark::Groupometer(meter, test_iterations, static_cast<int>(sizei), size));
+
+							if (meter.elapsed() >= how_long) {
+								test_elapsed = meter.elapsed();
+								break;
+							}
+							test_iterations *= 2;
+						}
+						if (test_elapsed.count() == 0)
+							throw optimized_away_error{};
+
+						unsigned int new_iters = static_cast<unsigned int>(std::ceil(min_time * test_iterations / test_elapsed));
+
 						for (int s = 0; s < cfg->benchmarkSamples(); s++)
 						{
-							f(Catch::Benchmark::Groupometer(meter, reps, size));
+							f(Catch::Benchmark::Groupometer(meter, static_cast<int>(new_iters), static_cast<int>(sizei), size));
 
-							*y_ptr = std::chrono::duration_cast<std::chrono::nanoseconds>(meter.elapsed()).count();
+							*y_ptr = static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::nanoseconds>(meter.elapsed()).count()) / new_iters; // todo division results in loss of precision
 							y_ptr++;
 						}
 					}
@@ -152,7 +186,7 @@ namespace Catch
 				{
 					Catch::IConfigPtr cfg = Catch::getCurrentContext().getConfig();
 
-					groups.emplace_back(name, xs.size() * cfg->benchmarkSamples());
+					groups.emplace_back(name, xs.size() * static_cast<size_t>(cfg->benchmarkSamples()));
 
 					return *this;
 				}

@@ -466,7 +466,7 @@ namespace
 
 TEST_CASE("dump find_8_8 small", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/find_8_8_small.dump", lin_style, 1000, 1, 80, 1)
+	BENCHMARK_DUMP("plot/find_8_8_small.dump", lin_style, 1, 80, 1)
 	{
 		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
@@ -755,7 +755,7 @@ namespace
 
 TEST_CASE("dump find_8_16 small", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/find_8_16_small.dump", lin_style, 1000, 1, 80, 1)
+	BENCHMARK_DUMP("plot/find_8_16_small.dump", lin_style, 1, 80, 1)
 	{
 		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
@@ -1065,7 +1065,7 @@ namespace
 
 TEST_CASE("dump find_8_24 small", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/find_8_24_small.dump", lin_style, 1000, 1, 80, 1)
+	BENCHMARK_DUMP("plot/find_8_24_small.dump", lin_style, 1, 80, 1)
 	{
 		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
@@ -1493,7 +1493,7 @@ namespace
 
 TEST_CASE("dump find_8_32 small", "[.][dump]")
 {
-	BENCHMARK_DUMP("plot/find_8_32_small.dump", lin_style, 1000, 1, 80, 1)
+	BENCHMARK_DUMP("plot/find_8_32_small.dump", lin_style, 1, 80, 1)
 	{
 		BENCHMARK_GROUP("for")(Catch::Benchmark::Groupometer meter)
 		{
