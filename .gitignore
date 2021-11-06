@@ -9,3 +9,10 @@
 *.dll
 plot/*.dump
 plot/*.png
+
+!plot/strlen_char8_msvc_19.27.29112.0.png
+!plot/strlen_char8_wsl_gcc_8.4.0.png
+!plot/strlen_char16_msvc_19.27.29112.0.png
+!plot/strlen_char16_wsl_gcc_8.4.0.png
+!plot/strlen_char32_msvc_19.27.29112.0.png
+!plot/strlen_char32_wsl_gcc_8.4.0.png

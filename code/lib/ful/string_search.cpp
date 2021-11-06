@@ -83,6 +83,39 @@ ful_resolve(find_unit_32_32, const ful::char32 *, const ful::char32 * begin, con
 		return ful_cpucall(find_unit_32_32, generic, begin, end, c);
 }
 
+ful_resolve(strend_8, const ful::char8 *, const ful::char8 * cstr)
+{
+	ful_cpuinit();
+	if (ful_cpucheck(AVX2))
+		return ful_cpucall(strend_8, avx2, cstr);
+	else if (ful_cpucheck(SSE2))
+		return ful_cpucall(strend_8, sse2, cstr);
+	else
+		return ful_cpucall(strend_8, generic, cstr);
+}
+
+ful_resolve(strend_16, const ful::char16 *, const ful::char16 * cstr)
+{
+	ful_cpuinit();
+	if (ful_cpucheck(AVX2))
+		return ful_cpucall(strend_16, avx2, cstr);
+	else if (ful_cpucheck(SSE2))
+		return ful_cpucall(strend_16, sse2, cstr);
+	else
+		return ful_cpucall(strend_16, generic, cstr);
+}
+
+ful_resolve(strend_32, const ful::char32 *, const ful::char32 * cstr)
+{
+	ful_cpuinit();
+	if (ful_cpucheck(AVX2))
+		return ful_cpucall(strend_32, avx2, cstr);
+	else if (ful_cpucheck(SSE2))
+		return ful_cpucall(strend_32, sse2, cstr);
+	else
+		return ful_cpucall(strend_32, generic, cstr);
+}
+
 #endif
 
 namespace ful

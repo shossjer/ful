@@ -351,6 +351,34 @@ namespace ful
 		return true;
 	}
 
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a16(unsigned int x, unsigned int & out, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 16 zero bits aligned to 16 bit indices
+		unsigned int y = detail::andn(x, x - 0x00010001u) & 0x80008000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 4;
+		return true;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	bool least_significant_zero_a16(unsigned int x, unsigned int & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 16 zero bits aligned to 16 bit indices
+		unsigned int y = (x - 0x00010001u) & ~x & 0x80008000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 4;
+		return true;
+	}
+
 #if defined(_MSC_VER) || !defined(__LP64__)
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
@@ -380,6 +408,26 @@ namespace ful
 	{
 		unsigned int outout;
 		const auto ret = least_significant_zero_byte(static_cast<unsigned int>(x), outout);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a16(unsigned long x, unsigned long & out, tag_bmi_type)
+	{
+		unsigned int outout;
+		const auto ret = least_significant_zero_a16(static_cast<unsigned int>(x), outout, tag_bmi);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	bool least_significant_zero_a16(unsigned long x, unsigned long & out)
+	{
+		unsigned int outout;
+		const auto ret = least_significant_zero_a16(static_cast<unsigned int>(x), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
@@ -438,6 +486,62 @@ namespace ful
 		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a16(unsigned long long x, unsigned long long & out, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 16 zero bits aligned to 16 bit indices
+		unsigned long long y = detail::andn(x, x - 0x0001000100010001u) & 0x8000800080008000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 4;
+		return true;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	bool least_significant_zero_a16(unsigned long long x, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 16 zero bits aligned to 16 bit indices
+		unsigned long long y = (x - 0x0001000100010001u) & ~x & 0x8000800080008000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 4;
+		return true;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a32(unsigned long long x, unsigned long long & out, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 32 zero bits aligned to 32 bit indices
+		unsigned long long y = detail::andn(x, x - 0x0000000100000001u) & 0x8000000080000000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 5;
+		return true;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_inline
+	bool least_significant_zero_a32(unsigned long long x, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 32 zero bits aligned to 32 bit indices
+		unsigned long long y = (x - 0x0000000100000001u) & ~x & 0x8000000080000000u;
+		if (y == 0)
+			return false;
+
+		out = least_significant_set_bit(y) >> 5;
+		return true;
+	}
 #endif
 
 #if defined(__LP64__)
@@ -469,6 +573,46 @@ namespace ful
 	{
 		unsigned long long outout;
 		const auto ret = least_significant_zero_byte(static_cast<unsigned long long>(x), outout);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a16(unsigned long x, unsigned long & out, tag_bmi_type)
+	{
+		unsigned long long outout;
+		const auto ret = least_significant_zero_a16(static_cast<unsigned long long>(x), outout, tag_bmi);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	bool least_significant_zero_a16(unsigned long x, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = least_significant_zero_a16(static_cast<unsigned long long>(x), outout);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_target("bmi") ful_inline
+	bool least_significant_zero_a32(unsigned long x, unsigned long & out, tag_bmi_type)
+	{
+		unsigned long long outout;
+		const auto ret = least_significant_zero_a32(static_cast<unsigned long long>(x), outout, tag_bmi);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_inline
+	bool least_significant_zero_a32(unsigned long x, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = least_significant_zero_a32(static_cast<unsigned long long>(x), outout);
 		out = static_cast<unsigned long long>(outout);
 		return ret;
 	}

@@ -13,8 +13,28 @@
 # include <asmlib.h>
 #endif
 
+#if HAVE_EASTDC
+# include <EAStdC/EAString.h>
+#endif
+
 #if HAVE_EASTL
 # include <EASTL/string.h>
+#endif
+
+#if HAVE_LIBUNISTRING
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wimplicit-int-conversion"
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wconversion"
+# endif
+# include <unistr.h>
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 #include <vector>
@@ -1558,5 +1578,690 @@ TEST_CASE("dump find_8_32 small", "[.][dump]")
 			meter.measure([&](int){ return find_8_32_small_avx2(reinterpret_cast<const char8 *>(buffer.beg() + 3), reinterpret_cast<const char8 *>(buffer.end()), 0x62626262); }); // 'bbbb'
 		};
 #endif
+	}
+}
+
+namespace
+{
+#if defined(__AVX2__)
+	const unit_utf8 * strend_8_avx2(const unit_utf8 * cstr)
+	{
+		const __m256i c256 = _mm256_setzero_si256();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+			const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset + index;
+			}
+
+			cstr += 32;
+		}
+
+		while (true)
+		{
+			cstr += 32;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32));
+			const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 32 + index;
+			}
+		}
+	}
+
+	ful::usize strlen_8_avx2(const unit_utf8 * cstr)
+	{
+		return strend_8_avx2(cstr) - cstr;
+	}
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+	const unit_utf8 * strend_8_sse2(const unit_utf8 * cstr)
+	{
+		const __m128i c128 = _mm_setzero_si128();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+			const __m128i cmp = _mm_cmpeq_epi8(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset + index;
+			}
+
+			cstr += 16;
+		}
+
+		while (true)
+		{
+			cstr += 16;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16));
+			const __m128i cmp = _mm_cmpeq_epi8(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 16 + index;
+			}
+		}
+	}
+
+	ful::usize strlen_8_sse2(const unit_utf8 * cstr)
+	{
+		return strend_8_sse2(cstr) - cstr;
+	}
+#endif
+
+	const unit_utf8 * strend_8_unroll8(const unit_utf8 * cstr)
+	{
+		const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+			uint64 index;
+			if (least_significant_zero_byte(qword >> (offset * 8), index))
+				return cstr + offset + index;
+
+			cstr += 8;
+		}
+
+		while (true)
+		{
+			cstr += 8;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8);
+
+			uint64 index;
+			if (least_significant_zero_byte(qword, index))
+				return cstr - 8 + index;
+		}
+	}
+
+	ful::usize strlen_8_unroll8(const unit_utf8 * cstr)
+	{
+		return strend_8_unroll8(cstr) - cstr;
+	}
+
+	const unit_utf8 * strend_8_naive(const unit_utf8 * cstr)
+	{
+		if (*cstr != 0)
+		{
+			do
+			{
+				cstr++;
+			}
+			while (*cstr != 0);
+		}
+		return cstr;
+	}
+
+	ful::usize strlen_8_naive(const unit_utf8 * cstr)
+	{
+		return strend_8_naive(cstr) - cstr;
+	}
+}
+
+TEST_CASE("dump strlen_8", "[.][dump]")
+{
+	BENCHMARK_DUMP("plot/strlen_8.dump", log_style, 1, 18, "#chars")
+	{
+		BENCHMARK_GROUP("strlen (std)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int) { return std::strlen(buffer.cstr()); });
+		};
+
+#if HAVE_ASMLIB
+		BENCHMARK_GROUP("strlen (asmlib)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int) { return A_strlen(buffer.cstr()); });
+		};
+#endif
+
+#if HAVE_EASTDC
+		BENCHMARK_GROUP("strlen (eastdc)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return EA::StdC::Strlen(buffer.cstr()); });
+		};
+#endif
+
+#if HAVE_LIBUNISTRING
+		BENCHMARK_GROUP("strlen (libunistring)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return u8_strlen(reinterpret_cast<const uint8_t *>(buffer.cstr())); });
+		};
+#endif
+
+#if defined(__AVX2__)
+		BENCHMARK_GROUP("strlen avx2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return strlen_8_avx2(buffer.cstr()); });
+		};
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_GROUP("strlen sse2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return strlen_8_sse2(buffer.cstr()); });
+		};
+#endif
+
+		BENCHMARK_GROUP("strlen unroll 8")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return strlen_8_unroll8(buffer.cstr()); });
+		};
+
+		BENCHMARK_GROUP("strlen naive")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf8 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int){ return strlen_8_naive(buffer.cstr()); });
+		};
+	}
+}
+
+namespace
+{
+#if defined(__AVX2__)
+	const unit_utf16 * strend_16_avx2(const unit_utf16 * cstr)
+	{
+		const __m256i c256 = _mm256_setzero_si256();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 2;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+			const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset / 2 + index / 2;
+			}
+
+			cstr += 32 / 2;
+		}
+
+		while (true)
+		{
+			cstr += 32 / 2;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 2));
+			const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 32 / 2 + index / 2;
+			}
+		}
+	}
+
+	ful::usize strlen_16_avx2(const unit_utf16 * cstr)
+	{
+		return strend_16_avx2(cstr) - cstr;
+	}
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+	const unit_utf16 * strend_16_sse2(const unit_utf16 * cstr)
+	{
+		const __m128i c128 = _mm_setzero_si128();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 2;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+			const __m128i cmp = _mm_cmpeq_epi16(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset / 2 + index / 2;
+			}
+
+			cstr += 16 / 2;
+		}
+
+		while (true)
+		{
+			cstr += 16 / 2;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 2));
+			const __m128i cmp = _mm_cmpeq_epi16(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 16 / 2 + index / 2;
+			}
+		}
+	}
+
+	ful::usize strlen_16_sse2(const unit_utf16 * cstr)
+	{
+		return strend_16_sse2(cstr) - cstr;
+	}
+#endif
+
+	const unit_utf16 * strend_16_unroll8(const unit_utf16 * cstr)
+	{
+		const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 2;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+			uint64 index;
+			if (least_significant_zero_a16(qword >> (offset * 8), index))
+				return cstr + offset / 2 + index;
+
+			cstr += 8 / 2;
+		}
+
+		while (true)
+		{
+			cstr += 8 / 2;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 2);
+
+			uint64 index;
+			if (least_significant_zero_a16(qword, index))
+				return cstr - 8 / 2 + index;
+		}
+	}
+
+	ful::usize strlen_16_unroll8(const unit_utf16 * cstr)
+	{
+		return strend_16_unroll8(cstr) - cstr;
+	}
+
+	const unit_utf16 * strend_16_naive(const unit_utf16 * cstr)
+	{
+		if (*cstr != 0)
+		{
+			do
+			{
+				cstr++;
+			}
+			while (*cstr != 0);
+		}
+		return cstr;
+	}
+
+	ful::usize strlen_16_naive(const unit_utf16 * cstr)
+	{
+		return strend_16_naive(cstr) - cstr;
+	}
+}
+
+TEST_CASE("dump strlen_16", "[.][dump]")
+{
+	BENCHMARK_DUMP("plot/strlen_16.dump", log_style, 1, 17, "#chars")
+	{
+#if defined(_MSC_VER)
+		BENCHMARK_GROUP("wcslen (std)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf8>('a'));
+
+			meter.measure([&](int) { return std::wcslen(buffer.cstr()); });
+		};
+#endif
+
+#if HAVE_EASTDC
+		BENCHMARK_GROUP("strlen (eastdc)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return EA::StdC::Strlen(buffer.cstr()); });
+		};
+#endif
+
+#if HAVE_LIBUNISTRING
+		BENCHMARK_GROUP("strlen (libunistring)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return u16_strlen(reinterpret_cast<const uint16_t *>(buffer.cstr())); });
+		};
+#endif
+
+#if defined(__AVX2__)
+		BENCHMARK_GROUP("strlen avx2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return strlen_16_avx2(buffer.cstr()); });
+		};
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_GROUP("strlen sse2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return strlen_16_sse2(buffer.cstr()); });
+		};
+#endif
+
+		BENCHMARK_GROUP("strlen unroll 8")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return strlen_16_unroll8(buffer.cstr()); });
+		};
+
+		BENCHMARK_GROUP("strlen naive")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf16 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf16>('a'));
+
+			meter.measure([&](int){ return strlen_16_naive(buffer.cstr()); });
+		};
+	}
+}
+
+namespace
+{
+#if defined(__AVX2__)
+	const unit_utf32 * strend_32_avx2(const unit_utf32 * cstr)
+	{
+		const __m256i c256 = _mm256_setzero_si256();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 4;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+			const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset / 4 + index / 4;
+			}
+
+			cstr += 32 / 4;
+		}
+
+		while (true)
+		{
+			cstr += 32 / 4;
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 4));
+			const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
+			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 32 / 4 + index / 4;
+			}
+		}
+	}
+
+	ful::usize strlen_32_avx2(const unit_utf32 * cstr)
+	{
+		return strend_32_avx2(cstr) - cstr;
+	}
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+	const unit_utf32 * strend_32_sse2(const unit_utf32 * cstr)
+	{
+		const __m128i c128 = _mm_setzero_si128();
+
+		const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 4;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+			const __m128i cmp = _mm_cmpeq_epi32(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr + offset / 4 + index / 4;
+			}
+
+			cstr += 16 / 4;
+		}
+
+		while (true)
+		{
+			cstr += 16 / 4;
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 4));
+			const __m128i cmp = _mm_cmpeq_epi32(line, c128);
+			const unsigned int mask = _mm_movemask_epi8(cmp);
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return cstr - 16 / 4 + index / 4;
+			}
+		}
+	}
+
+	ful::usize strlen_32_sse2(const unit_utf32 * cstr)
+	{
+		return strend_32_sse2(cstr) - cstr;
+	}
+#endif
+
+	const unit_utf32 * strend_32_unroll8(const unit_utf32 * cstr)
+	{
+		const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+		if (offset != 0)
+		{
+			cstr -= offset / 4;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+			uint64 index;
+			if (least_significant_zero_a32(qword >> (offset * 8), index))
+				return cstr + offset / 4 + index;
+
+			cstr += 8 / 4;
+		}
+
+		while (true)
+		{
+			cstr += 8 / 4;
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 4);
+
+			uint64 index;
+			if (least_significant_zero_a32(qword, index))
+				return cstr - 8 / 4 + index;
+		}
+	}
+
+	ful::usize strlen_32_unroll8(const unit_utf32 * cstr)
+	{
+		return strend_32_unroll8(cstr) - cstr;
+	}
+
+	const unit_utf32 * strend_32_naive(const unit_utf32 * cstr)
+	{
+		if (*cstr != 0)
+		{
+			do
+			{
+				cstr++;
+			}
+			while (*cstr != 0);
+		}
+		return cstr;
+	}
+
+	ful::usize strlen_32_naive(const unit_utf32 * cstr)
+	{
+		return strend_32_naive(cstr) - cstr;
+	}
+}
+
+TEST_CASE("dump strlen_32", "[.][dump]")
+{
+	BENCHMARK_DUMP("plot/strlen_32.dump", log_style, 1, 16, "#chars")
+	{
+#if HAVE_EASTDC
+		BENCHMARK_GROUP("strlen (eastdc)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return EA::StdC::Strlen(buffer.cstr()); });
+		};
+#endif
+
+#if HAVE_LIBUNISTRING
+		BENCHMARK_GROUP("strlen (libunistring)")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return u32_strlen(reinterpret_cast<const uint32_t *>(buffer.cstr())); });
+		};
+#endif
+
+#if defined(__AVX2__)
+		BENCHMARK_GROUP("strlen avx2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return strlen_32_avx2(buffer.cstr()); });
+		};
+#endif
+
+#if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		BENCHMARK_GROUP("strlen sse2")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return strlen_32_sse2(buffer.cstr()); });
+		};
+#endif
+
+		BENCHMARK_GROUP("strlen unroll 8")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return strlen_32_unroll8(buffer.cstr()); });
+		};
+
+		BENCHMARK_GROUP("strlen naive")(Catch::Benchmark::Groupometer meter)
+		{
+			buffer_utf32 buffer;
+			buffer.allocate(meter.size());
+
+			std::fill(buffer.beg(), buffer.end(), static_cast<unit_utf32>('a'));
+
+			meter.measure([&](int){ return strlen_32_naive(buffer.cstr()); });
+		};
 	}
 }

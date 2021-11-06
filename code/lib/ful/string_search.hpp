@@ -16,6 +16,9 @@ namespace ful
 		extern const char16 * ful_dispatch(find_unit_16_16)(const char16 * begin, const char16 * end, char16 c);
 		extern const char16 * ful_dispatch(find_unit_16_32)(const char16 * begin, const char16 * end, char32 c);
 		extern const char32 * ful_dispatch(find_unit_32_32)(const char32 * begin, const char32 * end, char32 c);
+		extern const char8 * ful_dispatch(strend_8)(const char8 * cstr);
+		extern const char16 * ful_dispatch(strend_16)(const char16 * cstr);
+		extern const char32 * ful_dispatch(strend_32)(const char32 * cstr);
 #endif
 
 		ful_inline
@@ -692,6 +695,324 @@ namespace ful
 		{
 			return find_unit_32_32_generic(begin, end, c);
 		}
+
+		ful_inline
+		const char8 * strend_8_generic(const char8 * cstr)
+		{
+			const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+				uint64 index;
+				if (least_significant_zero_byte(qword >> (offset * 8), index))
+					return cstr + offset + index;
+
+				cstr += 8;
+			}
+
+			while (true)
+			{
+				cstr += 8;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8);
+
+				uint64 index;
+				if (least_significant_zero_byte(qword, index))
+					return cstr - 8 + index;
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		const char8 * strend_8_sse2(const char8 * cstr)
+		{
+			const __m128i c128 = _mm_setzero_si128();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset + index;
+				}
+
+				cstr += 16;
+			}
+
+			while (true)
+			{
+				cstr += 16;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16));
+				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 16 + index;
+				}
+			}
+		}
+
+		ful_target("avx2") ful_inline
+		const char8 * strend_8_avx2(const char8 * cstr)
+		{
+			const __m256i c256 = _mm256_setzero_si256();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset + index;
+				}
+
+				cstr += 32;
+			}
+
+			while (true)
+			{
+				cstr += 32;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32));
+				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 32 + index;
+				}
+			}
+		}
+
+		ful_inline
+		const char16 * strend_16_generic(const char16 * cstr)
+		{
+			const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 2;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+				uint64 index;
+				if (least_significant_zero_a16(qword >> (offset * 8), index))
+					return cstr + offset / 2 + index;
+
+				cstr += 8 / 2;
+			}
+
+			while (true)
+			{
+				cstr += 8 / 2;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 2);
+
+				uint64 index;
+				if (least_significant_zero_a16(qword, index))
+					return cstr - 8 / 2 + index;
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		const char16 * strend_16_sse2(const char16 * cstr)
+		{
+			const __m128i c128 = _mm_setzero_si128();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 2;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+				const __m128i cmp = _mm_cmpeq_epi16(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset / 2 + index / 2;
+				}
+
+				cstr += 16 / 2;
+			}
+
+			while (true)
+			{
+				cstr += 16 / 2;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 2));
+				const __m128i cmp = _mm_cmpeq_epi16(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 16 / 2 + index / 2;
+				}
+			}
+		}
+
+		ful_target("avx2") ful_inline
+		const char16 * strend_16_avx2(const char16 * cstr)
+		{
+			const __m256i c256 = _mm256_setzero_si256();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 2;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+				const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset / 2 + index / 2;
+				}
+
+				cstr += 32 / 2;
+			}
+
+			while (true)
+			{
+				cstr += 32 / 2;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 2));
+				const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 32 / 2 + index / 2;
+				}
+			}
+		}
+
+		ful_inline
+		const char32 * strend_32_generic(const char32 * cstr)
+		{
+			const usize offset = reinterpret_cast<puint>(cstr) & (8 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 4;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr);
+
+				uint64 index;
+				if (least_significant_zero_a32(qword >> (offset * 8), index))
+					return cstr + offset / 4 + index;
+
+				cstr += 8 / 4;
+			}
+
+			while (true)
+			{
+				cstr += 8 / 4;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 4);
+
+				uint64 index;
+				if (least_significant_zero_a32(qword, index))
+					return cstr - 8 / 4 + index;
+			}
+		}
+
+		ful_target("sse2") ful_inline
+		const char32 * strend_32_sse2(const char32 * cstr)
+		{
+			const __m128i c128 = _mm_setzero_si128();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (16 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 4;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
+				const __m128i cmp = _mm_cmpeq_epi32(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset / 4 + index / 4;
+				}
+
+				cstr += 16 / 4;
+			}
+
+			while (true)
+			{
+				cstr += 16 / 4;
+
+				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 4));
+				const __m128i cmp = _mm_cmpeq_epi32(line, c128);
+				const unsigned int mask = _mm_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 16 / 4 + index / 4;
+				}
+			}
+		}
+
+		ful_target("avx2") ful_inline
+		const char32 * strend_32_avx2(const char32 * cstr)
+		{
+			const __m256i c256 = _mm256_setzero_si256();
+
+			const usize offset = reinterpret_cast<puint>(cstr) & (32 - 1);
+
+			if (offset != 0)
+			{
+				cstr -= offset / 4;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
+				const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr + offset / 4 + index / 4;
+				}
+
+				cstr += 32 / 4;
+			}
+
+			while (true)
+			{
+				cstr += 32 / 4;
+
+				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 4));
+				const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
+				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return cstr - 32 / 4 + index / 4;
+				}
+			}
+		}
 	}
 
 	// prevents implicit casts from inbuilt characters with single quotes
@@ -1149,5 +1470,68 @@ namespace ful
 		-> decltype(find(begin(x), end(x), c))
 	{
 		return find(begin(x), end(x), c);
+	}
+
+	ful_inline const char8 * strend(const char8 * cstr)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::strend_8(cstr);
+#elif defined(__AVX2__)
+		return detail::strend_8_avx2(cstr);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::strend_8_sse2(cstr);
+#else
+		return detail::strend_8_generic(cstr);
+#endif
+	}
+
+	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
+	ful_inline const T * strend(const T * cstr)
+	{
+		return reinterpret_cast<const T *>(strend(reinterpret_cast<const char8 *>(cstr)));
+	}
+
+	ful_inline const char16 * strend(const char16 * cstr)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::strend_16(cstr);
+#elif defined(__AVX2__)
+		return detail::strend_16_avx2(cstr);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::strend_16_sse2(cstr);
+#else
+		return detail::strend_16_generic(cstr);
+#endif
+	}
+
+	template <typename T, ful_requires(sizeof(T) == sizeof(char16))>
+	ful_inline const T * strend(const T * cstr)
+	{
+		return reinterpret_cast<const T *>(strend(reinterpret_cast<const char16 *>(cstr)));
+	}
+
+	ful_inline const char32 * strend(const char32 * cstr)
+	{
+#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+		return detail::strend_32(cstr);
+#elif defined(__AVX2__)
+		return detail::strend_32_avx2(cstr);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+		return detail::strend_32_sse2(cstr);
+#else
+		return detail::strend_32_generic(cstr);
+#endif
+	}
+
+	template <typename T, ful_requires(sizeof(T) == sizeof(char32))>
+	ful_inline const T * strend(const T * cstr)
+	{
+		return reinterpret_cast<const T *>(strend(reinterpret_cast<const char32 *>(cstr)));
+	}
+
+	template <typename T>
+	ful_inline usize strlen(const T * cstr)
+	{
+		return strend(cstr) - cstr;
 	}
 }
