@@ -383,13 +383,13 @@ namespace
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
-		size_t first_size = (last - first) * sizeof(unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(unit_utf32le);
+		size_t first_size = (last - first) * sizeof(ful::unit_utf8);
+		size_t begin_size = (end - begin) * sizeof(ful::unit_utf32le);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
 
-		return reinterpret_cast<unit_utf32le *>(begin_char);
+		return reinterpret_cast<ful::unit_utf32le *>(begin_char);
 	}
 #endif
 
@@ -399,7 +399,7 @@ namespace
 		ful_unused(end);
 
 		size_t size;
-		u8_to_u32(reinterpret_cast<const ful::uint8_t *>(first), last - first, reinterpret_cast<ful::uint32_t *>(begin), &size);
+		u8_to_u32(reinterpret_cast<const ful::uint8 *>(first), last - first, reinterpret_cast<ful::uint32 *>(begin), &size);
 		return begin + size;
 	}
 #endif

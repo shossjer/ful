@@ -20,6 +20,17 @@ namespace ful
 
 	namespace hck
 	{
+		namespace detail
+		{
+			template <typename T>
+			static auto iter_value_impl(const T *) -> T;
+			template <typename T>
+			static auto iter_value_impl(const T &) -> typename T::value_type;
+		}
+		template <typename T>
+		using iter_value_t = decltype(detail::iter_value_impl(hck::declval<T &>()));
+		// note this is a simplification of the standard iter_value_t
+
 		template <typename R>
 		using iterator_t = decltype(begin(hck::declval<R &>()));
 

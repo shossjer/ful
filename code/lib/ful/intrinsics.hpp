@@ -15,7 +15,7 @@
 // warning C4146: unary minus operator applied to unsigned type, result still unsigned
 #endif
 
-#define ful_align_next(ptr, n) reinterpret_cast<decltype(ptr)>(reinterpret_cast<ful::puint>((ptr) + (n)) & -(n))
+#define ful_align_next(ptr, n) reinterpret_cast<decltype(ptr + 0)>(reinterpret_cast<ful::puint>((ptr) + (n)) & -(n))
 #define ful_align_next_8(ptr) ful_align_next(ptr, 8)
 #define ful_align_next_16(ptr) ful_align_next(ptr, 16)
 #define ful_align_next_32(ptr) ful_align_next(ptr, 32)

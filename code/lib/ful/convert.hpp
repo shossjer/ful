@@ -2,6 +2,8 @@
 
 #include "ful/unicode.hpp"
 
+#include "ful/ranges.hpp"
+
 namespace ful
 {
 	template <typename From, typename To>
@@ -357,10 +359,10 @@ namespace ful
 					const uint32 valuf = (b0 << 10) ^ b1 ^ 0x360dc00;
 					const uint32 value = valuf + 0x10000;
 
-					begin[0] = static_cast<unit_utf8>(value >> 18 | 0xf0);
-					begin[1] = static_cast<unit_utf8>(value >> 12 & 0x3f | 0x80);
-					begin[2] = static_cast<unit_utf8>(value >> 6 & 0x3f | 0x80);
-					begin[3] = static_cast<unit_utf8>(value & 0x3f | 0x80);
+					begin[0] = static_cast<unit_utf8>((value >> 18) | 0xf0);
+					begin[1] = static_cast<unit_utf8>(((value >> 12) & 0x3f) | 0x80);
+					begin[2] = static_cast<unit_utf8>(((value >> 6) & 0x3f) | 0x80);
+					begin[3] = static_cast<unit_utf8>((value & 0x3f) | 0x80);
 					first += 2;
 					begin += 4;
 					if (first == last)
@@ -805,10 +807,10 @@ namespace ful
 						const uint32 valuf = (b0 << 10) ^ b1 ^ 0x360dc00;
 						const uint32 value = valuf + 0x10000;
 
-						begin[0] = static_cast<unit_utf8>(value >> 18 | 0xf0);
-						begin[1] = static_cast<unit_utf8>(value >> 12 & 0x3f | 0x80);
-						begin[2] = static_cast<unit_utf8>(value >> 6 & 0x3f | 0x80);
-						begin[3] = static_cast<unit_utf8>(value & 0x3f | 0x80);
+						begin[0] = static_cast<unit_utf8>((value >> 18) | 0xf0);
+						begin[1] = static_cast<unit_utf8>(((value >> 12) & 0x3f) | 0x80);
+						begin[2] = static_cast<unit_utf8>(((value >> 6) & 0x3f) | 0x80);
+						begin[3] = static_cast<unit_utf8>((value & 0x3f) | 0x80);
 						first += 2;
 						begin += 4;
 						if (!(first <= last_chunk))

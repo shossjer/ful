@@ -3,7 +3,13 @@
 
 # include <EASTL/string.h>
 
-void * __cdecl operator new[](size_t size, const char * name, int flags, unsigned debugFlags, const char * file, int line)
+#if defined(_MSC_VER)
+# define ful_cdecl __cdecl
+#elif defined(__GNUC__)
+# define ful_cdecl
+#endif
+
+void * ful_cdecl operator new[](size_t size, const char * name, int flags, unsigned debugFlags, const char * file, int line)
 {
 	ful_unused(name);
 	ful_unused(flags);
