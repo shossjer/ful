@@ -1326,12 +1326,13 @@ namespace ful
 	template <typename Base>
 	class string_container;
 
+	// return end of output, or nullptr if allocation fails
 	template <typename First, typename Last, typename Base>
 	ful_inline auto convert(First first, Last last, string_container<Base> & x)
 		-> decltype(convert(first, last, x.data()))
 	{
 		if (!x.reserve(x.size() + convert_traits<hck::iter_value_t<First>, typename string_container<Base>::value_type>::max_size()))
-			return x.data() + x.size();
+			return nullptr;
 
 		const auto it = convert(first, last, x.data() + x.size());
 		x.reduce(it);

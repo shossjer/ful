@@ -129,7 +129,7 @@ namespace ful
 			ful_unused(last);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 
 		template <typename Char>
@@ -143,7 +143,7 @@ namespace ful
 			ful_unused(u);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 
 		ful_inline iterator append_reserve(const_pointer first, const_pointer last, usize size)
@@ -154,7 +154,7 @@ namespace ful
 			ful_unused(last);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 
 		template <typename Char>
@@ -166,7 +166,7 @@ namespace ful
 			ful_unused(u);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 
 		ful_inline iterator assign_reserve(const_pointer first, const_pointer last, usize size)
@@ -177,7 +177,7 @@ namespace ful
 			ful_unused(last);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 
 		template <typename Char>
@@ -189,7 +189,7 @@ namespace ful
 			ful_unused(u);
 			ful_unused(size);
 
-			return end_;
+			return nullptr;
 		}
 	};
 

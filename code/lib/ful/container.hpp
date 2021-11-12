@@ -312,7 +312,7 @@ namespace ful
 		return false;
 	}
 
-	// return element, or end if allocation failure
+	// return element, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto push_back(string_container<Base> & x, Char u)
 		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
@@ -326,14 +326,14 @@ namespace ful
 		x.reduce(x.end() - 1);
 	}
 
-	// return element, or end if allocation failure
+	// return element, or nullptr if allocation fails
 	template <typename Base>
 	ful_inline typename string_container<Base>::iterator append(string_container<Base> & x, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
 	{
 		return x.append(first, last);
 	}
 
-	// return element, or end if allocation failure
+	// return element, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto append(string_container<Base> & x, usize count, Char u)
 		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
@@ -341,14 +341,14 @@ namespace ful
 		return x.append(count, u);
 	}
 
-	// return (possibly relocated) it, or end if allocation failure
+	// return (possibly relocated) it, or nullptr if allocation fails
 	template <typename Base>
 	ful_inline typename string_container<Base>::iterator insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
 	{
 		return x.insert(at, first, last);
 	}
 
-	// return (possibly relocated) it, or end if allocation failure
+	// return (possibly relocated) it, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, usize count, Char u)
 		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
@@ -356,14 +356,14 @@ namespace ful
 		return x.insert(at, count, u);
 	}
 
-	// return begin, or end if allocation failure
+	// return begin, or nullptr if allocation fails
 	template <typename Base>
 	ful_inline typename string_container<Base>::iterator assign(string_container<Base> & x, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
 	{
 		return x.assign(first, last);
 	}
 
-	// return begin, or end if allocation failure
+	// return begin, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto assign(string_container<Base> & x, usize count, Char u)
 		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
@@ -371,14 +371,14 @@ namespace ful
 		return x.assign(count, u);
 	}
 
-	// return (possibly relocated) from, or end if allocation failure
+	// return (possibly relocated) from, or nullptr if allocation fails
 	template <typename Base>
 	ful_inline typename string_container<Base>::iterator replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
 	{
 		return x.replace(from, to, first, last);
 	}
 
-	// return (possibly relocated) from, or end if allocation failure
+	// return (possibly relocated) from, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, usize count, Char u)
 		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
@@ -410,12 +410,12 @@ namespace ful
 		x.erase(from, to);
 	}
 
-	// return end of copy, or begin if allocation failure
+	// return end of copy, or nullptr if allocation fails
 	template <typename Base>
 	ful_inline typename string_container<Base>::pointer copy(typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last, string_container<Base> & x)
 	{
 		const auto it = x.assign(first, last);
-		return it != x.end() ? x.end() : x.begin();
+		return it == nullptr ? nullptr : x.end();
 	}
 
 	//template <typename Base>

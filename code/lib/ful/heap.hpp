@@ -171,11 +171,11 @@ namespace ful
 		iterator replace_reserve(const_iterator from, const_iterator to, const_pointer first, const_pointer last, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			ful_assume((reinterpret_cast<puint>(beg_) & (8 - 1)) == 0);
 			ful_assume((reinterpret_cast<puint>(new_beg) & (8 - 1)) == 0);
@@ -200,11 +200,11 @@ namespace ful
 		iterator replace_reserve(const_iterator from, const_iterator to, usize count, Char u, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			ful_assume((reinterpret_cast<puint>(beg_) & (8 - 1)) == 0);
 			ful_assume((reinterpret_cast<puint>(new_beg) & (8 - 1)) == 0);
@@ -228,11 +228,11 @@ namespace ful
 		iterator append_reserve(const_pointer first, const_pointer last, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			ful_assume((reinterpret_cast<puint>(beg_) & (8 - 1)) == 0);
 			ful_assume((reinterpret_cast<puint>(new_beg) & (8 - 1)) == 0);
@@ -256,11 +256,11 @@ namespace ful
 		iterator append_reserve(usize count, Char u, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			ful_assume((reinterpret_cast<puint>(beg_) & (8 - 1)) == 0);
 			ful_assume((reinterpret_cast<puint>(new_beg) & (8 - 1)) == 0);
@@ -283,11 +283,11 @@ namespace ful
 		iterator assign_reserve(const_pointer first, const_pointer last, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			const pointer new_end = memcopy(first, last, new_beg);
 			const pointer new_cap = new_beg + size;
@@ -307,11 +307,11 @@ namespace ful
 		iterator assign_reserve(usize count, Char u, usize size) noexcept
 		{
 			if (!ful_expect(size <= max_size()))
-				return end_;
+				return nullptr;
 
 			const pointer new_beg = static_cast<pointer>(allocate((size + 1) * sizeof(value_type))); // one extra for null
 			if (!ful_check(new_beg))
-				return end_;
+				return nullptr;
 
 			const pointer new_end = new_beg + count * sizeof(hck::compact_type_t<Char>) / sizeof(value_type); memset(new_beg, new_end, u);
 			const pointer new_cap = new_beg + size;

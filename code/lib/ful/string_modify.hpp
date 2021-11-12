@@ -6,24 +6,24 @@
 
 namespace ful
 {
-	// return end of copy (or begin if the destination is not big enough in debug builds)
+	// return end of output (or nullptr if the destination is not big enough in debug builds)
 	template <typename First, typename Last, typename Begin, typename End>
 	ful_inline auto copy(First first, Last last, Begin begin, End end)
 		-> decltype(memcopy(first, last, begin))
 	{
 		if (!ful_expect(static_cast<usize>(last - first) <= static_cast<usize>(end - begin)))
-			return begin;
+			return nullptr;
 
 		return memcopy(first, last, begin);
 	}
 
-	// return end of copy (or begin if the destination is not big enough in debug builds)
+	// return end of output (or nullptr if the destination is not big enough in debug builds)
 	template <typename First, typename Last, typename T, unsigned long long N>
 	ful_inline auto copy(First first, Last last, T (& y)[N])
 		-> decltype(memcopy(first, last, y + 0))
 	{
 		if (!ful_expect(static_cast<usize>(last - first) <= N))
-			return y + 0;
+			return nullptr;
 
 		return memcopy(first, last, y + 0);
 	}
