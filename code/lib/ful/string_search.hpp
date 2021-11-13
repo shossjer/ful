@@ -4,6 +4,8 @@
 # error string.hpp must be included before string_search.hpp
 #endif
 
+#include "ful/stdhacks.hpp"
+
 namespace ful
 {
 	namespace detail

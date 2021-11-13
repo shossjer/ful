@@ -4,8 +4,6 @@
 
 #include "ful/string.hpp"
 #include "ful/ranges.hpp"
-#include "ful/string_modify.hpp"
-#include "ful/string_search.hpp"
 
 namespace ful
 {

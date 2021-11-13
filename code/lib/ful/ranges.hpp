@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ful/compiler.hpp"
-#include "ful/stdhacks.hpp"
 #include "ful/stdint.hpp"
 
 namespace ful
@@ -20,6 +19,9 @@ namespace ful
 
 	namespace hck
 	{
+		template <typename T>
+		static T && declval();
+
 		namespace detail
 		{
 			template <typename T>

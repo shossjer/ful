@@ -1,4 +1,6 @@
 #include "ful/view.hpp"
+#include "ful/string_modify.hpp"
+#include "ful/string_search.hpp"
 
 #include "buffer.hpp"
 #include "data.hpp"

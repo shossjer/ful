@@ -1,4 +1,5 @@
 #include "ful/memory.hpp"
+#include "ful/string_modify.hpp"
 
 #include <catch2/catch.hpp>
 

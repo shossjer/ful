@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ful/compiler.hpp"
+#include "ful/stdhacks.hpp"
 #include "ful/types.hpp"
 
 #include "ful/intrinsics.hpp"
