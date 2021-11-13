@@ -309,6 +309,20 @@ namespace ful
 		return end - beg;
 	}
 
+	template <typename Begin, typename End>
+	ful_inline auto point_count(Begin begin, End end)
+		-> decltype(point_count(to_address(begin), to_address(end)))
+	{
+		return point_count(to_address(begin), to_address(end));
+	}
+
+	template <typename R>
+	ful_inline auto point_count(R && x)
+		-> decltype(point_count(begin(x), end(x)))
+	{
+		return point_count(begin(x), end(x));
+	}
+
 	ful_inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)

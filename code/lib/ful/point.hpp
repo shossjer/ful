@@ -5,9 +5,7 @@
 
 #include "ful/intrinsics.hpp"
 
-#include "ful/string.hpp"
 #include "ful/ranges.hpp"
-#include "ful/string_search.hpp"
 
 namespace ful
 {
@@ -256,8 +254,8 @@ namespace ful
 	{
 		struct no_char_type {};
 
-		template <typename T>
-		ful_inline T * find(T *, T *, no_char_type) { ful_unreachable(); }
+		template <typename Begin, typename End>
+		ful_inline Begin find(Begin, End, no_char_type) { ful_unreachable(); }
 		template <typename R>
 		ful_inline hck::iterator_t<R> find(R &&, no_char_type) { ful_unreachable(); }
 		template <typename R>
@@ -279,10 +277,10 @@ namespace ful
 		ful_inline no_char_type try_char(const T *, ...) { return no_char_type{}; }
 	}
 
-	template <typename T>
-	ful_inline T * find(T * begin, T * end, point_utf p)
+	template <typename Begin, typename End>
+	ful_inline Begin find(Begin begin, End end, point_utf p)
 	{
-		point_buffer<T, 1> buffer;
+		point_buffer<hck::iter_value_t<Begin>, 1> buffer;
 		const auto it = encode(p, buffer);
 
 		switch ((it - buffer) * sizeof(T))

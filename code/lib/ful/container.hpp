@@ -37,17 +37,22 @@ namespace ful
 			return true;
 		}
 
-		ful_inline iterator insert(const_iterator at, const_pointer first, const_pointer last)
+		template <typename First, typename Last>
+		ful_inline auto insert(const_iterator at, First first, Last last)
+			-> decltype(to_address(first), to_address(last), iterator())
 		{
+			const const_pointer first_ptr = to_address(first);
+			const const_pointer last_ptr = to_address(last);
+
 			pointer new_end;
-			if (ful_add_overflow(this->end_, last - first, new_end) || this->beg_ + this->capacity() < new_end)
+			if (ful_add_overflow(this->end_, last_ptr - first_ptr, new_end) || this->beg_ + this->capacity() < new_end)
 			{
-				return this->replace_reserve(at, at, first, last, new_end - this->beg_);
+				return this->replace_reserve(at, at, first_ptr, last_ptr, new_end - this->beg_);
 			}
 			else
 			{
 				memmover(at, this->end_, new_end);
-				memcopy(first, last, const_cast<iterator>(at));
+				memcopy(first_ptr, last_ptr, const_cast<iterator>(at));
 
 				*new_end = value_type{};
 
@@ -78,17 +83,22 @@ namespace ful
 			}
 		}
 
-		ful_inline iterator replace(const_iterator from, const_iterator to, const_pointer first, const_pointer last)
+		template <typename First, typename Last>
+		ful_inline auto replace(const_iterator from, const_iterator to, First first, Last last)
+			-> decltype(to_address(first), to_address(last), iterator())
 		{
+			const const_pointer first_ptr = to_address(first);
+			const const_pointer last_ptr = to_address(last);
+
 			pointer new_end;
-			if (ful_add_overflow(const_cast<iterator>(from) + (this->end_ - to), last - first, new_end) || this->beg_ + this->capacity() < new_end)
+			if (ful_add_overflow(const_cast<iterator>(from) + (this->end_ - to), last_ptr - first_ptr, new_end) || this->beg_ + this->capacity() < new_end)
 			{
-				return this->replace_reserve(from, to, first, last, new_end - this->beg_);
+				return this->replace_reserve(from, to, first_ptr, last_ptr, new_end - this->beg_);
 			}
 			else
 			{
 				memmove(to, this->end_, new_end - (this->end_ - to));
-				memcopy(first, last, const_cast<iterator>(from));
+				memcopy(first_ptr, last_ptr, const_cast<iterator>(from));
 
 				*new_end = value_type{};
 
@@ -131,18 +141,23 @@ namespace ful
 		// note strictly not necessary since this is equivalent to
 		// `insert(end_, first, last)` but the compilers have some trouble
 		// optimizing that
-		ful_inline iterator append(const_pointer first, const_pointer last)
+		template <typename First, typename Last>
+		ful_inline auto append(First first, Last last)
+			-> decltype(to_address(first), to_address(last), iterator())
 		{
+			const const_pointer first_ptr = to_address(first);
+			const const_pointer last_ptr = to_address(last);
+
 			pointer new_end;
-			if (ful_add_overflow(this->end_, last - first, new_end) || this->beg_ + this->capacity() < new_end)
+			if (ful_add_overflow(this->end_, last_ptr - first_ptr, new_end) || this->beg_ + this->capacity() < new_end)
 			{
-				return this->append_reserve(first, last, new_end - this->beg_);
+				return this->append_reserve(first_ptr, last_ptr, new_end - this->beg_);
 			}
 			else
 			{
 				const iterator pivot = this->end_;
 
-				memcopy(first, last, pivot);
+				memcopy(first_ptr, last_ptr, pivot);
 
 				*new_end = value_type{};
 
@@ -207,15 +222,20 @@ namespace ful
 		// note strictly not necessary since this is equivalent to
 		// `replace(begin, end, first, last)` but the compilers have some
 		// trouble optimizing that
-		ful_inline iterator assign(const_pointer first, const_pointer last)
+		template <typename First, typename Last>
+		ful_inline auto assign(First first, Last last)
+			-> decltype(to_address(first), to_address(last), iterator())
 		{
-			if (this->capacity() < static_cast<usize>(last - first))
+			const const_pointer first_ptr = to_address(first);
+			const const_pointer last_ptr = to_address(last);
+
+			if (this->capacity() < static_cast<usize>(last_ptr - first_ptr))
 			{
-				return this->assign_reserve(first, last, static_cast<usize>(last - first));
+				return this->assign_reserve(first_ptr, last_ptr, static_cast<usize>(last_ptr - first_ptr));
 			}
 			else
 			{
-				const pointer new_end = memcopy(first, last, this->beg_);
+				const pointer new_end = memcopy(first_ptr, last_ptr, this->beg_);
 
 				*new_end = value_type{};
 
@@ -327,8 +347,8 @@ namespace ful
 	}
 
 	// return element, or nullptr if allocation fails
-	template <typename Base>
-	ful_inline typename string_container<Base>::iterator append(string_container<Base> & x, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
+	template <typename Base, typename First, typename Last>
+	ful_inline typename string_container<Base>::iterator append(string_container<Base> & x, First first, Last last)
 	{
 		return x.append(first, last);
 	}
@@ -342,8 +362,8 @@ namespace ful
 	}
 
 	// return (possibly relocated) it, or nullptr if allocation fails
-	template <typename Base>
-	ful_inline typename string_container<Base>::iterator insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
+	template <typename Base, typename First, typename Last>
+	ful_inline typename string_container<Base>::iterator insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, First first, Last last)
 	{
 		return x.insert(at, first, last);
 	}
@@ -357,8 +377,8 @@ namespace ful
 	}
 
 	// return begin, or nullptr if allocation fails
-	template <typename Base>
-	ful_inline typename string_container<Base>::iterator assign(string_container<Base> & x, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
+	template <typename Base, typename First, typename Last>
+	ful_inline typename string_container<Base>::iterator assign(string_container<Base> & x, First first, Last last)
 	{
 		return x.assign(first, last);
 	}
@@ -372,8 +392,8 @@ namespace ful
 	}
 
 	// return (possibly relocated) from, or nullptr if allocation fails
-	template <typename Base>
-	ful_inline typename string_container<Base>::iterator replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last)
+	template <typename Base, typename First, typename Last>
+	ful_inline typename string_container<Base>::iterator replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, First first, Last last)
 	{
 		return x.replace(from, to, first, last);
 	}
@@ -411,8 +431,9 @@ namespace ful
 	}
 
 	// return end of copy, or nullptr if allocation fails
-	template <typename Base>
-	ful_inline typename string_container<Base>::pointer copy(typename string_container<Base>::const_pointer first, typename string_container<Base>::const_pointer last, string_container<Base> & x)
+	template <typename First, typename Last, typename Base>
+	ful_inline auto copy(First first, Last last, string_container<Base> & x)
+		-> decltype(x.assign(first, last))
 	{
 		const auto it = x.assign(first, last);
 		return it == nullptr ? nullptr : x.end();

@@ -9,23 +9,31 @@ namespace ful
 	// return end of output (or nullptr if the destination is not big enough in debug builds)
 	template <typename First, typename Last, typename Begin, typename End>
 	ful_inline auto copy(First first, Last last, Begin begin, End end)
-		-> decltype(memcopy(first, last, begin))
+		-> decltype(memcopy(to_address(first), to_address(last), to_address(begin)))
 	{
-		if (!ful_expect(static_cast<usize>(last - first) <= static_cast<usize>(end - begin)))
+		const auto first_ptr = to_address(first);
+		const auto last_ptr = to_address(last);
+		const auto begin_ptr = to_address(begin);
+		const auto end_ptr = to_address(end);
+
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) <= static_cast<usize>(end_ptr - begin_ptr)))
 			return nullptr;
 
-		return memcopy(first, last, begin);
+		return memcopy(first_ptr, last_ptr, begin_ptr);
 	}
 
 	// return end of output (or nullptr if the destination is not big enough in debug builds)
 	template <typename First, typename Last, typename T, unsigned long long N>
 	ful_inline auto copy(First first, Last last, T (& y)[N])
-		-> decltype(memcopy(first, last, y + 0))
+		-> decltype(memcopy(to_address(first), to_address(last), y + 0))
 	{
-		if (!ful_expect(static_cast<usize>(last - first) <= N))
+		const auto first_ptr = to_address(first);
+		const auto last_ptr = to_address(last);
+
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) <= N))
 			return nullptr;
 
-		return memcopy(first, last, y + 0);
+		return memcopy(first_ptr, last_ptr, y + 0);
 	}
 
 	namespace detail
@@ -36,34 +44,34 @@ namespace ful
 		constexpr ful_pure auto get_alignment(const R & x, ...) -> usize { return ful_unused(x), 1; }
 	}
 
-	// return end of copy (or begin if the destination is not big enough in debug builds)
+	// return end of output (or nullptr if the destination is not big enough in debug builds)
 	template <typename R, typename Begin, typename End>
 	ful_inline auto copy(const R & x, Begin begin_, End end_)
-		-> decltype(copy(begin(x), end(x), begin_, end_))
+		-> decltype(copy(to_address(begin(x)), to_address(end(x)), begin_, end_))
 	{
-		const auto first = begin(x);
-		const auto last = end(x);
-		ful_assume(reinterpret_cast<puint>(first) % detail::get_alignment(x, 0) == 0);
+		const auto first_ptr = to_address(begin(x));
+		const auto last_ptr = to_address(end(x));
+		ful_assume(reinterpret_cast<puint>(first_ptr) % detail::get_alignment(x, 0) == 0);
 
-		return copy(first, last, begin_, end_);
+		return copy(first_ptr, last_ptr, begin_, end_);
 	}
 
-	// return end of copy, or begin on failure (as determined by the destination)
+	// return end of output, or nullptr on failure (as determined by the destination)
 	template <typename R1, typename R2>
 	ful_inline auto copy(const R1 & x, R2 & y)
-		-> decltype(copy(begin(x), end(x), y))
+		-> decltype(copy(to_address(begin(x)), to_address(end(x)), y))
 	{
-		const auto first = begin(x);
-		const auto last = end(x);
-		ful_assume(reinterpret_cast<puint>(first) % detail::get_alignment(x, 0) == 0);
+		const auto first_ptr = to_address(begin(x));
+		const auto last_ptr = to_address(end(x));
+		ful_assume(reinterpret_cast<puint>(first_ptr) % detail::get_alignment(x, 0) == 0);
 
-		return copy(first, last, y);
+		return copy(first_ptr, last_ptr, y);
 	}
 
 	template <typename R, typename Char>
 	ful_inline auto fill(R & x, Char c)
-		-> decltype(memset(begin(x), end(x), c))
+		-> decltype(memset(to_address(begin(x)), to_address(end(x)), c))
 	{
-		return memset(begin(x), end(x), c);
+		return memset(to_address(begin(x)), to_address(end(x)), c);
 	}
 }

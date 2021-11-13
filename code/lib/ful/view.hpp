@@ -30,9 +30,10 @@ namespace ful
 
 		view_base() = default;
 
-		ful_inline constexpr explicit view_base(const_pointer begin, const_pointer end) noexcept
-			: beg_(begin)
-			, end_(end)
+		template <typename Begin, typename End, decltype(to_address(hck::declval<Begin>()), to_address(hck::declval<End>()), int()) = 0>
+		ful_inline constexpr explicit view_base(Begin begin, End end) noexcept
+			: beg_(to_address(begin))
+			, end_(to_address(end))
 		{}
 
 		ful_inline constexpr explicit view_base(const_pointer data, usize size) noexcept

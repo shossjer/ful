@@ -22,7 +22,8 @@ namespace ful
 
 		cstr_base() = default;
 
-		ful_inline explicit cstr_base(const_pointer begin, const_pointer end)
+		template <typename Begin, typename End>
+		ful_inline constexpr explicit cstr_base(Begin begin, End end) noexcept
 			: view_base<T>(begin, end)
 		{
 			ful_unused(ful_expect(*end == value_type{}));

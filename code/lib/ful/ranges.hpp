@@ -45,4 +45,10 @@ namespace ful
 		using range_value_t = decltype(detail::range_value_impl(hck::declval<R &>()));
 		// note this is a simplification of the standard range_value_t
 	}
+
+	template <typename T>
+	ful_inline ful_pure constexpr T * to_address(T * x) { return x; }
+
+	template <typename T>
+	ful_inline ful_pure constexpr auto to_address(const T & x) -> decltype(x.operator->()) { return to_address(x.operator->()); }
 }
