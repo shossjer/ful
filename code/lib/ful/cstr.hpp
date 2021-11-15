@@ -29,18 +29,25 @@ namespace ful
 			ful_unused(ful_expect(*end == value_type{}));
 		}
 
-		ful_inline explicit cstr_base(const_pointer data, usize size)
+		ful_inline constexpr explicit cstr_base(const_pointer data, usize size) noexcept
 			: view_base<T>(data, size)
 		{
 			ful_unused(ful_expect(data[size] == value_type{}));
 		}
 
 		template <unsigned long long N>
-		ful_inline cstr_base(const value_type (& str)[N])
+		ful_inline constexpr explicit cstr_base(const value_type (& str)[N]) noexcept
 			: view_utf8(str, str + N - 1) // subtract terminating null
 		{
 			ful_unused(ful_expect(str[N - 1] == value_type{}));
 		}
+
+		cstr_base(const cstr_base &) = default;
+
+		template <typename R>
+		ful_inline constexpr explicit cstr_base(const R & x) noexcept
+			: view_utf8(x.c_str(), x.size())
+		{}
 
 	public:
 

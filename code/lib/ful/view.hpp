@@ -39,6 +39,13 @@ namespace ful
 			, end_(data + size)
 		{}
 
+		view_base(const view_base &) = default;
+
+		template <typename R, decltype(hck::adl_begin(hck::declval<R>()), hck::adl_end(hck::declval<R>()), int()) = 0>
+		ful_inline constexpr explicit view_base(const R & x) noexcept
+			: view_base(hck::adl_begin(x), hck::adl_end(x))
+		{}
+
 		ful_inline void swap(view_base & other) noexcept
 		{
 			const auto tmp_beg = beg_;

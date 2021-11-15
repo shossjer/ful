@@ -46,6 +46,11 @@ namespace ful
 		template <typename R>
 		using range_value_t = decltype(detail::range_value_impl(hck::declval<R &>()));
 		// note this is a simplification of the standard range_value_t
+
+		template <typename T>
+		ful_inline ful_pure constexpr auto adl_begin(const T & x) -> decltype(begin(x)) { return begin(x); }
+		template <typename T>
+		ful_inline ful_pure constexpr auto adl_end(const T & x) -> decltype(end(x)) { return end(x); }
 	}
 
 	template <typename T>
