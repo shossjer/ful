@@ -14,6 +14,7 @@ set(FULLIB_SOURCES
 
 set(FULLIB_HEADERS
 	lib/ful/compiler.hpp
+	lib/ful/constexpr.hpp
 	lib/ful/container.hpp
 	lib/ful/convert.hpp
 	lib/ful/cstr.hpp

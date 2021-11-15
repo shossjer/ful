@@ -2,6 +2,7 @@
 
 #include "ful/viewfwd.hpp"
 
+#include "ful/constexpr.hpp"
 #include "ful/string.hpp"
 #include "ful/ranges.hpp"
 
@@ -97,6 +98,12 @@ namespace ful
 		ful_inline constexpr usize size() const { return siz_; }
 #else
 		ful_inline constexpr usize size() const { return end_ - beg_; }
+#endif
+
+#if defined(_MSC_VER)
+		ful_inline ful_pure constexpr friend bool cxp_equals(const view_base & x, const view_base & y) { return cxp::equals(x.beg_, x.beg_ + x.siz_, y.beg_, y.beg_ + y.siz_); }
+#else
+		ful_inline ful_pure constexpr friend bool cxp_equals(const view_base & x, const view_base & y) { return cxp::equals(x.beg_, x.end_, y.beg_, y.end_); }
 #endif
 
 		template <typename Stream>
