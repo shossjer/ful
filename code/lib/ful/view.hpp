@@ -22,7 +22,12 @@ namespace ful
 	private:
 
 		const_pointer beg_;
+		// note end_ does not work with constexpr, but siz_ does!
+#if defined(_MSC_VER)
+		size_t siz_;
+#else
 		const_pointer end_;
+#endif
 
 	public:
 
@@ -31,12 +36,20 @@ namespace ful
 		template <typename Begin, typename End, decltype(to_address(hck::declval<Begin>()), to_address(hck::declval<End>()), int()) = 0>
 		ful_inline constexpr explicit view_base(Begin begin, End end) noexcept
 			: beg_(to_address(begin))
+#if defined(_MSC_VER)
+			, siz_(to_address(end) - beg_)
+#else
 			, end_(to_address(end))
+#endif
 		{}
 
 		ful_inline constexpr explicit view_base(const_pointer data, usize size) noexcept
 			: beg_(data)
+#if defined(_MSC_VER)
+			, siz_(size)
+#else
 			, end_(data + size)
+#endif
 		{}
 
 		view_base(const view_base &) = default;
@@ -49,22 +62,48 @@ namespace ful
 		ful_inline void swap(view_base & other) noexcept
 		{
 			const auto tmp_beg = beg_;
+#if defined(_MSC_VER)
+			const auto tmp_siz = siz_;
+#else
 			const auto tmp_end = end_;
+#endif
 
 			beg_ = other.beg_;
+#if defined(_MSC_VER)
+			siz_ = other.siz_;
+#else
 			end_ = other.end_;
+#endif
 
 			other.beg_ = tmp_beg;
+#if defined(_MSC_VER)
+			other.siz_ = tmp_siz;
+#else
 			other.end_ = tmp_end;
+#endif
 		}
 
 	public:
 
-		ful_inline constexpr const_pointer begin() const { return beg_; }
-		ful_inline constexpr const_pointer end() const { return end_; }
+		ful_inline constexpr const_iterator begin() const { return beg_; }
+#if defined(_MSC_VER)
+		ful_inline constexpr const_iterator end() const { return beg_ + siz_; }
+#else
+		ful_inline constexpr const_iterator end() const { return end_; }
+#endif
 
-		ful_inline constexpr usize size() const { return end_ - beg_; }
 		ful_inline constexpr const_pointer data() const { return beg_; }
+#if defined(_MSC_VER)
+		ful_inline constexpr usize size() const { return siz_; }
+#else
+		ful_inline constexpr usize size() const { return end_ - beg_; }
+#endif
+
+		template <typename Stream>
+		friend Stream & operator << (Stream & stream, const view_base & x)
+		{
+			return stream.write(x.data(), x.size());
+		}
 	};
 
 	template <typename T>
