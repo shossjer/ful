@@ -64,6 +64,12 @@ namespace ful
 	}
 
 	template <typename T>
+	ful_inline ful_pure constexpr cstr_base<T> drop(const cstr_base<T> & x, usize size)
+	{
+		return ful_unused(ful_expect(size <= static_cast<usize>(end(x) - begin(x)))), from(x, begin(x) + size);
+	}
+
+	template <typename T>
 	ful_inline ful_pure constexpr cstr_base<T> last(const cstr_base<T> & x, usize size)
 	{
 		return ful_unused(ful_expect(size <= static_cast<usize>(end(x) - begin(x)))), from(x, x.end() - size);

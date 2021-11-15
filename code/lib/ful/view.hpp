@@ -147,6 +147,12 @@ namespace ful
 	}
 
 	template <typename R>
+	ful_inline ful_pure constexpr view_base<hck::range_value_t<R>> drop(const R & x, usize size)
+	{
+		return ful_unused(ful_expect(size <= static_cast<usize>(end(x) - begin(x)))), from(x, begin(x) + size);
+	}
+
+	template <typename R>
 	ful_inline ful_pure constexpr view_base<hck::range_value_t<R>> first(const R & x, usize size)
 	{
 		return ful_unused(ful_expect(size <= static_cast<usize>(end(x) - begin(x)))), view_base<hck::range_value_t<R>>(begin(x), size);
