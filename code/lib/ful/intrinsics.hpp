@@ -122,18 +122,6 @@ namespace ful
 		return static_cast<unsigned int>(-1) >> (sizeof(unsigned int) * byte_size - n);
 	}
 
-	// get the index of the most significant set bit
-	template <typename T>
-	ful_inline
-	unsigned int most_significant_set_bit(T x)
-	{
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || (defined(_MSC_VER) && defined(_M_IX86)) || defined(__i386__)
-		return detail::bsr(x);
-#else
-# error Missing implementation!
-#endif
-	}
-
 	// get the index of the nth set bit
 	ful_inline
 	unsigned int index_set_bit(unsigned int x, unsigned int n)
@@ -146,33 +134,6 @@ namespace ful
 		return detail::bsf(x);
 #else
 # error Missing implementation!
-#endif
-	}
-
-	// get the number of leading zero bits
-	template <typename T>
-#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
-	ful_target("lzcnt")
-#elif defined(__POPCNT__) || (defined(_MSC_VER) && defined(__AVX__))
-	ful_target("popcnt")
-#endif
-	ful_inline
-	auto count_leading_zeros(T x)
-#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
-		-> decltype(detail::lzcnt(x))
-#elif defined(__POPCNT__) || (defined(_MSC_VER) && defined(__AVX__))
-		-> decltype(detail::popcnt(x))
-#else
-		-> decltype(detail::count_leading_zeros(x))
-#endif
-	{
-#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
-		return detail::lzcnt(x);
-#elif defined(__POPCNT__) || (defined(_MSC_VER) && defined(__AVX__))
-		// Hacker's Delight, 2nd ed, p 102
-		return detail::popcnt(~set_lower_bits(x)); // todo benchmark
-#else
-		return x ? static_cast<decltype(detail::bsf(x))>(sizeof(T) * byte_size) - detail::bsr(x) : 0;
 #endif
 	}
 
@@ -253,6 +214,28 @@ namespace ful
 
 	// get the number of trailing zero bits
 	template <typename T>
+	ful_target("lzcnt") ful_inline
+	auto count_leading_zero_bits(T x, tag_lzcnt_type) -> decltype(detail::lzcnt(x)) { return detail::lzcnt(x); }
+
+	// get the number of leading zero bits
+	template <typename T>
+	ful_inline
+	auto count_leading_zero_bits(T x)
+#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
+		-> decltype(detail::lzcnt(x))
+#else
+		-> decltype(count_leading_zero_bits(x, tag_lzcnt))
+#endif
+	{
+#if defined(__LZCNT__) || (defined(_MSC_VER) && defined(__AVX2__))
+		return count_leading_zero_bits(x, tag_lzcnt);
+#else
+		return x ? detail::bsr(x) ^ static_cast<decltype(detail::bsr(x))>(sizeof(T) * byte_size - 1) : static_cast<decltype(detail::bsr(x))>(sizeof(T) * byte_size);
+#endif
+	}
+
+	// get the number of trailing zero bits
+	template <typename T>
 	ful_target("bmi") ful_inline
 	auto count_trailing_zero_bits(T x, tag_bmi_type) -> decltype(detail::tzcnt(x)) { return detail::tzcnt(x); }
 
@@ -295,22 +278,21 @@ namespace ful
 		return detail::bsf(x);
 	}
 
+	// get the index of the most significant set bit
+	template <typename T>
+	ful_inline
+	unsigned int most_significant_set_bit(T x)
+	{
+		return detail::bsr(x);
+	}
+
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
 	unsigned int least_significant_zero_byte(unsigned int x, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
-		return count_trailing_zero_bits(y, tag_bmi) >> 3;
-	}
-
-	// get the index of the least significant zero byte
-	ful_target("popcnt") ful_inline
-	unsigned int least_significant_zero_byte(unsigned int x, tag_popcnt_type)
-	{
-		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
-		return count_trailing_zero_bits(y, tag_popcnt) >> 3;
+		return least_significant_set_bit(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -319,7 +301,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
-		return count_trailing_zero_bits(y) >> 3;
+		return least_significant_set_bit(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -376,14 +358,54 @@ namespace ful
 		return true;
 	}
 
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	unsigned int most_significant_zero_byte(unsigned int x, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		return most_significant_set_bit(y) >> 3;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	unsigned int most_significant_zero_byte(unsigned int x)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		return most_significant_set_bit(y) >> 3;
+	}
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	bool most_significant_zero_byte(unsigned int x, unsigned int & out, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_byte(unsigned int x, unsigned int & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
+
 #if defined(_MSC_VER) || !defined(__LP64__)
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
 	unsigned long least_significant_zero_byte(unsigned long x, tag_bmi_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x), tag_bmi)); }
-
-	// get the index of the least significant zero byte
-	ful_target("popcnt") ful_inline
-	unsigned long least_significant_zero_byte(unsigned long x, tag_popcnt_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned int>(x), tag_popcnt)); }
 
 	// get the index of the least significant zero byte
 	ful_inline
@@ -428,6 +450,34 @@ namespace ful
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	unsigned long most_significant_zero_byte(unsigned long x, tag_bmi_type) { return static_cast<unsigned long>(most_significant_zero_byte(static_cast<unsigned int>(x), tag_bmi)); }
+
+	// get the index of the most significant zero byte
+	ful_inline
+	unsigned long most_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(most_significant_zero_byte(static_cast<unsigned int>(x))); }
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	bool most_significant_zero_byte(unsigned long x, unsigned long & out, tag_bmi_type)
+	{
+		unsigned int outout;
+		const auto ret = most_significant_zero_byte(static_cast<unsigned int>(x), outout, tag_bmi);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_byte(unsigned long x, unsigned long & out)
+	{
+		unsigned int outout;
+		const auto ret = most_significant_zero_byte(static_cast<unsigned int>(x), outout);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
 #endif
 
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
@@ -437,16 +487,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
-		return count_trailing_zero_bits(y, tag_bmi) >> 3;
-	}
-
-	// get the index of the least significant zero byte
-	ful_target("popcnt") ful_inline
-	unsigned long long least_significant_zero_byte(unsigned long long x, tag_popcnt_type)
-	{
-		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
-		return count_trailing_zero_bits(y, tag_popcnt) >> 3;
+		return least_significant_set_bit(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -455,7 +496,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
-		return count_trailing_zero_bits(y) >> 3;
+		return least_significant_set_bit(y) >> 3;
 	}
 
 	// get the index of the least significant zero byte
@@ -539,16 +580,56 @@ namespace ful
 		out = least_significant_set_bit(y) >> 5;
 		return true;
 	}
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	unsigned long long most_significant_zero_byte(unsigned long long x, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		return most_significant_set_bit(y) >> 3;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	unsigned long long most_significant_zero_byte(unsigned long long x)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		return most_significant_set_bit(y) >> 3;
+	}
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	bool most_significant_zero_byte(unsigned long long x, unsigned long long & out, tag_bmi_type)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_byte(unsigned long long x, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
 #endif
 
 #if defined(__LP64__)
 	// get the index of the least significant zero byte
 	ful_target("bmi") ful_inline
 	unsigned long least_significant_zero_byte(unsigned long x, tag_bmi_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x), tag_bmi)); }
-
-	// get the index of the least significant zero byte
-	ful_target("popcnt") ful_inline
-	unsigned long least_significant_zero_byte(unsigned long x, tag_popcnt_type) { return static_cast<unsigned long>(least_significant_zero_byte(static_cast<unsigned long long>(x), tag_popcnt)); }
 
 	// get the index of the least significant zero byte
 	ful_inline
@@ -613,6 +694,34 @@ namespace ful
 		out = static_cast<unsigned long long>(outout);
 		return ret;
 	}
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	unsigned long most_significant_zero_byte(unsigned long x, tag_bmi_type) { return static_cast<unsigned long>(most_significant_zero_byte(static_cast<unsigned long long>(x), tag_bmi)); }
+
+	// get the index of the most significant zero byte
+	ful_inline
+	unsigned long most_significant_zero_byte(unsigned long x) { return static_cast<unsigned long>(most_significant_zero_byte(static_cast<unsigned long long>(x))); }
+
+	// get the index of the most significant zero byte
+	ful_target("bmi") ful_inline
+	bool most_significant_zero_byte(unsigned long x, unsigned long & out, tag_bmi_type)
+	{
+		unsigned long long outout;
+		const auto ret = most_significant_zero_byte(static_cast<unsigned long long>(x), outout, tag_bmi);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_byte(unsigned long x, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = most_significant_zero_byte(static_cast<unsigned long long>(x), outout);
+		out = static_cast<unsigned long long>(outout);
+		return ret;
+	}
 #endif
 
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__)
@@ -657,6 +766,48 @@ namespace ful
 		out = least_significant_set_bit(y) >> 3;
 		return true;
 	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 2 overlapping 8 bits
+		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & 0x8080808080808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 3 overlapping 8 bits
+		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & 0x8080808080808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long long x0, unsigned long long x8, unsigned long long x16, unsigned long long x24, unsigned long long & out)
+	{
+		// Hacker's Delight, 2nd ed, p 118
+		// note modified to detect 4 overlapping 8 bits
+		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & ((x24 - 0x0101010101010101u) & ~x24) & 0x8080808080808080u;
+		if (y == 0)
+			return false;
+
+		out = most_significant_set_bit(y) >> 3;
+		return true;
+	}
 #endif
 
 #if defined(__LP64__)
@@ -686,6 +837,36 @@ namespace ful
 	{
 		unsigned long long outout;
 		const auto ret = least_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), static_cast<unsigned long long>(x24), outout);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = most_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), outout);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = most_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), outout);
+		out = static_cast<unsigned long>(outout);
+		return ret;
+	}
+
+	// get the index of the most significant zero byte
+	ful_inline
+	bool most_significant_zero_word(unsigned long x0, unsigned long x8, unsigned long x16, unsigned long x24, unsigned long & out)
+	{
+		unsigned long long outout;
+		const auto ret = most_significant_zero_word(static_cast<unsigned long long>(x0), static_cast<unsigned long long>(x8), static_cast<unsigned long long>(x16), static_cast<unsigned long long>(x24), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
 	}

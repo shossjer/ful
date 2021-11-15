@@ -378,8 +378,12 @@ namespace ful
 				const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end_line));
 				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
 				const unsigned int mask = _mm_movemask_epi8(cmp);
-				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
-				return end_line + index;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return end_line + index;
+				}
+				return end;
 			}
 		}
 
@@ -415,8 +419,12 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
 				const unsigned int mask = _mm_movemask_epi8(andcmp);
-				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
-				return end_line + index;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return end_line + index;
+				}
+				return end;
 			}
 		}
 
@@ -559,7 +567,7 @@ namespace ful
 			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
 			const __m256i c2562 = _mm256_set1_epi8((uint8)(static_cast<uint16>(c) >> 8));
 
-			const char8 * const end_line = end - 33;
+			const char8 * const end_line = end - 32 - 1;
 			do
 			{
 				const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
@@ -585,8 +593,12 @@ namespace ful
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i andcmp = _mm256_and_si256(cmp1, cmp2);
 				const unsigned int mask = _mm256_movemask_epi8(andcmp);
-				const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
-				return end_line + index;
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return end_line + index;
+				}
+				return end;
 			}
 		}
 

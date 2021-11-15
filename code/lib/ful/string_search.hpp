@@ -1021,6 +1021,10 @@ namespace ful
 	// (e.g. 'a') to int/char32
 	template <typename T>
 	const T * find(T * from, T * to, char u) = delete;
+#if defined(_MSC_VER)
+	template <typename T>
+	const T * find(T * from, T * to, wchar_t u) = delete;
+#endif
 
 	ful_inline const char8 * find(const char8 * begin, const char8 * end, char8 c)
 	{
@@ -1072,20 +1076,29 @@ namespace ful
 				if (least_significant_zero_byte(qword1 ^ bytes, index))
 					return begin + index;
 
-				index = least_significant_zero_byte(qword2 ^ bytes);
-				return end - 8 + index;
+				if (least_significant_zero_byte(qword2 ^ bytes, index))
+					return end - 8 + index;
+
+				return end;
 			}
 			case 8:
 			case 7:
 			case 6:
 			case 5:
 			{
-				const uint64 bytes = 0x0101010101010101u * (uint8)c;
+				const uint32 bytes = 0x01010101u * (uint8)c;
 
-				const uint64 qword = (static_cast<uint64>(*reinterpret_cast<const uint32 *>(end - 4)) << (size - 4)) | *reinterpret_cast<const uint32 *>(begin);
+				const uint32 dword1 = *reinterpret_cast<const uint32 *>(begin);
+				const uint32 dword2 = *reinterpret_cast<const uint32 *>(end - 4);
 
-				const uint64 index = least_significant_zero_byte(qword ^ bytes);
-				return begin + index;
+				uint32 index;
+				if (least_significant_zero_byte(dword1 ^ bytes, index))
+					return begin + index;
+
+				if (least_significant_zero_byte(dword2 ^ bytes, index))
+					return end - 4 + index;
+
+				return end;
 			}
 			case 4: if (*begin == c) return begin; begin++; ful_fallthrough;
 			case 3: if (*begin == c) return begin; begin++; ful_fallthrough;
@@ -1101,7 +1114,7 @@ namespace ful
 			return detail::find_unit_8_8(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_8_8_avx2(begin, end, c);
-#elif defined(__SSE2__)
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 			return detail::find_unit_8_8_sse2(begin, end, c);
 #else
 			return detail::find_unit_8_8_generic(begin, end, c);
@@ -1465,6 +1478,13 @@ namespace ful
 	ful_inline T * find(T * begin, T * end, char32 c)
 	{
 		return const_cast<T *>(find(const_cast<const T *>(begin), const_cast<const T *>(end), c));
+	}
+
+	template <typename Begin, typename End, typename Char>
+	ful_inline auto find(Begin begin, End end, Char c)
+		-> decltype(find(to_address(begin), to_address(end), c))
+	{
+		return find(to_address(begin), to_address(end), c);
 	}
 
 	template <typename R, typename Char>
