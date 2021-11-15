@@ -1598,4 +1598,15 @@ namespace ful
 		}
 	}
 
+	template <typename T>
+	ful_inline ful_pure bool equal(const T * beg1, const T * end1, const T * beg2)
+	{
+		return equal(reinterpret_cast<const byte *>(beg1), reinterpret_cast<const byte *>(end1), reinterpret_cast<const byte *>(beg2));
+	}
+
+	template <typename T>
+	ful_inline ful_pure bool equal(const T * beg1, const T * end1, const T * beg2, const T * end2)
+	{
+		return equal(reinterpret_cast<const byte *>(beg1), reinterpret_cast<const byte *>(end1), reinterpret_cast<const byte *>(beg2), reinterpret_cast<const byte *>(end2));
+	}
 }

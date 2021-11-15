@@ -266,13 +266,6 @@ namespace ful
 				return this->beg_;
 			}
 		}
-
-		ful_inline ful_pure friend bool operator == (const string_container & x, const string_container & y) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(y.beg_), reinterpret_cast<const byte *>(y.end_)); }
-		ful_inline ful_pure friend bool operator == (const string_container & x, const_pointer s) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
-		ful_inline ful_pure friend bool operator == (const_pointer s, const string_container & x) { return equal(reinterpret_cast<const byte *>(x.beg_), reinterpret_cast<const byte *>(x.end_), reinterpret_cast<const byte *>(s)); }
-		ful_inline ful_pure friend bool operator != (const string_container & x, const string_container & y) { return !(x == y); }
-		ful_inline ful_pure friend bool operator != (const string_container & x, const_pointer s) { return !(x == s); }
-		ful_inline ful_pure friend bool operator != (const_pointer s, const string_container & x) { return !(x == s); }
 	};
 
 	template <typename Base>
