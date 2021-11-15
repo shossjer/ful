@@ -74,4 +74,28 @@ namespace ful
 	{
 		return memset(to_address(begin(x)), to_address(end(x)), c);
 	}
+
+	// return element, or nullptr if allocation fails
+	template <typename R1, typename R2>
+	ful_inline auto append(R1 & x, const R2 & y)
+		-> decltype(append(x, begin(y), end(y)))
+	{
+		return append(x, begin(y), end(y));
+	}
+
+	// return begin, or nullptr if allocation fails
+	template <typename R1, typename R2>
+	ful_inline auto assign(R1 & x, const R2 & y)
+		-> decltype(assign(x, begin(y), end(y)))
+	{
+		return assign(x, begin(y), end(y));
+	}
+
+	// return (possibly relocated) from, or nullptr if allocation fails
+	template <typename R1, typename Begin, typename End, typename R2>
+	ful_inline auto replace(R1 & x, Begin begin_, End end_, const R2 & y)
+		-> decltype(replace(x, begin_, end_, begin(y), end(y)))
+	{
+		return replace(x, begin_, end_, begin(y), end(y));
+	}
 }
