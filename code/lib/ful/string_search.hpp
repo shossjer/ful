@@ -114,18 +114,17 @@ namespace ful
 				if (*reinterpret_cast<const char32 *>(begin + 13) == c) return begin + 13;
 				if (*reinterpret_cast<const char32 *>(begin + 14) == c) return begin + 14;
 				if (*reinterpret_cast<const char32 *>(begin + 15) == c) return begin + 15;
-				begin += 16;
 
-				switch (end - begin)
+				switch (size - 19)
 				{
-				case 10: goto case_10;
-				case 9: goto case_9;
-				case 8: goto case_8;
-				case 7: goto case_7;
-				case 6: goto case_6;
-				case 5: goto case_5;
-				case 4: goto case_4;
-				case 3: goto case_3;
+				case 7: goto case_10;
+				case 6: goto case_9;
+				case 5: goto case_8;
+				case 4: goto case_7;
+				case 3: goto case_6;
+				case 2: goto case_5;
+				case 1: goto case_4;
+				case 0: goto case_3;
 				default: ful_unreachable();
 				}
 			}
@@ -146,28 +145,27 @@ namespace ful
 				if (*reinterpret_cast<const char32 *>(begin + 5) == c) return begin + 5;
 				if (*reinterpret_cast<const char32 *>(begin + 6) == c) return begin + 6;
 				if (*reinterpret_cast<const char32 *>(begin + 7) == c) return begin + 7;
-				begin += 8;
 
-				switch (end - begin)
+				switch (size - 11)
 				{
-				case 10: goto case_10;
-				case 9: goto case_9;
-				case 8: goto case_8;
-				case 7: goto case_7;
-				case 6: goto case_6;
-				case 5: goto case_5;
-				case 4: goto case_4;
-				case 3: goto case_3;
+				case 7: goto case_10;
+				case 6: goto case_9;
+				case 5: goto case_8;
+				case 4: goto case_7;
+				case 3: goto case_6;
+				case 2: goto case_5;
+				case 1: goto case_4;
+				case 0: goto case_3;
 				default: ful_unreachable();
 				}
 			}
-			case 10: case_10: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 9: case_9: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 8: case_8: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 7: case_7: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 6: case_6: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 5: case_5: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 4: case_4: if (*reinterpret_cast<const char32 *>(begin) == c) return begin; begin++; ful_fallthrough;
+			case 10: case_10: if (*reinterpret_cast<const char32 *>(end - 10) == c) return end - 10; ful_fallthrough;
+			case 9: case_9: if (*reinterpret_cast<const char32 *>(end - 9) == c) return end - 9; ful_fallthrough;
+			case 8: case_8: if (*reinterpret_cast<const char32 *>(end - 8) == c) return end - 8; ful_fallthrough;
+			case 7: case_7: if (*reinterpret_cast<const char32 *>(end - 7) == c) return end - 7; ful_fallthrough;
+			case 6: case_6: if (*reinterpret_cast<const char32 *>(end - 6) == c) return end - 6; ful_fallthrough;
+			case 5: case_5: if (*reinterpret_cast<const char32 *>(end - 5) == c) return end - 5; ful_fallthrough;
+			case 4: case_4: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; ful_fallthrough;
 			case 3:
 			case 2:
 			case 1:
@@ -1107,18 +1105,17 @@ namespace ful
 				if (*reinterpret_cast<const char32 *>(end - 17) == c) return end - 17;
 				if (*reinterpret_cast<const char32 *>(end - 18) == c) return end - 18;
 				if (*reinterpret_cast<const char32 *>(end - 19) == c) return end - 19;
-				end -= 16;
 
-				switch (end - begin)
+				switch (size - 19)
 				{
-				case 10: goto case_10;
-				case 9: goto case_9;
-				case 8: goto case_8;
-				case 7: goto case_7;
-				case 6: goto case_6;
-				case 5: goto case_5;
-				case 4: goto case_4;
-				case 3: goto case_3;
+				case 7: goto case_10;
+				case 6: goto case_9;
+				case 5: goto case_8;
+				case 4: goto case_7;
+				case 3: goto case_6;
+				case 2: goto case_5;
+				case 1: goto case_4;
+				case 0: goto case_3;
 				default: ful_unreachable();
 				}
 			}
@@ -1139,32 +1136,31 @@ namespace ful
 				if (*reinterpret_cast<const char32 *>(end - 9) == c) return end - 9;
 				if (*reinterpret_cast<const char32 *>(end - 10) == c) return end - 10;
 				if (*reinterpret_cast<const char32 *>(end - 11) == c) return end - 11;
-				end -= 8;
 
-				switch (end - begin)
+				switch (size - 11)
 				{
-				case 10: goto case_10;
-				case 9: goto case_9;
-				case 8: goto case_8;
-				case 7: goto case_7;
-				case 6: goto case_6;
-				case 5: goto case_5;
-				case 4: goto case_4;
-				case 3: goto case_3;
+				case 7: goto case_10;
+				case 6: goto case_9;
+				case 5: goto case_8;
+				case 4: goto case_7;
+				case 3: goto case_6;
+				case 2: goto case_5;
+				case 1: goto case_4;
+				case 0: goto case_3;
 				default: ful_unreachable();
 				}
 			}
-			case 10: case_10: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 9: case_9: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 8: case_8: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 7: case_7: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 6: case_6: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 5: case_5: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
-			case 4: case_4: if (*reinterpret_cast<const char32 *>(end - 4) == c) return end - 4; end--; ful_fallthrough;
+			case 10: case_10: if (*reinterpret_cast<const char32 *>(begin + 6) == c) return begin + 6; ful_fallthrough;
+			case 9: case_9: if (*reinterpret_cast<const char32 *>(begin + 5) == c) return begin + 5; ful_fallthrough;
+			case 8: case_8: if (*reinterpret_cast<const char32 *>(begin + 4) == c) return begin + 4; ful_fallthrough;
+			case 7: case_7: if (*reinterpret_cast<const char32 *>(begin + 3) == c) return begin + 3; ful_fallthrough;
+			case 6: case_6: if (*reinterpret_cast<const char32 *>(begin + 2) == c) return begin + 2; ful_fallthrough;
+			case 5: case_5: if (*reinterpret_cast<const char32 *>(begin + 1) == c) return begin + 1; ful_fallthrough;
+			case 4: case_4: if (*reinterpret_cast<const char32 *>(begin + 0) == c) return begin + 0; ful_fallthrough;
 			case 3:
 			case 2:
 			case 1:
-			case 0: case_3: return begin + size;
+			case 0: case_3: return end;
 			default: ful_unreachable();
 			}
 		}
@@ -1791,11 +1787,11 @@ namespace ful
 
 				return end;
 			}
-			case 4: if (*begin == c) return begin; begin++; ful_fallthrough;
-			case 3: if (*begin == c) return begin; begin++; ful_fallthrough;
-			case 2: if (*begin == c) return begin; begin++; ful_fallthrough;
-			case 1: if (*begin == c) return begin; begin++; ful_fallthrough;
-			case 0: return begin;
+			case 4: if (*(end - 4) == c) return end - 4; ful_fallthrough;
+			case 3: if (*(end - 3) == c) return end - 3; ful_fallthrough;
+			case 2: if (*(end - 2) == c) return end - 2; ful_fallthrough;
+			case 1: if (*(end - 1) == c) return end - 1; ful_fallthrough;
+			case 0: return end;
 			default: ful_unreachable();
 			}
 		}
@@ -1879,14 +1875,14 @@ namespace ful
 				return detail::find_unit_8_16_sse2_9(begin, end, c, size);
 			}
 #endif
-			case 9: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 8: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 7: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 6: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 5: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 4: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 3: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
-			case 2: if (*reinterpret_cast<const char16 *>(begin) == c) return begin; begin++; ful_fallthrough;
+			case 9: if (*reinterpret_cast<const char16 *>(end - 9) == c) return end - 9; ful_fallthrough;
+			case 8: if (*reinterpret_cast<const char16 *>(end - 8) == c) return end - 8; ful_fallthrough;
+			case 7: if (*reinterpret_cast<const char16 *>(end - 7) == c) return end - 7; ful_fallthrough;
+			case 6: if (*reinterpret_cast<const char16 *>(end - 6) == c) return end - 6; ful_fallthrough;
+			case 5: if (*reinterpret_cast<const char16 *>(end - 5) == c) return end - 5; ful_fallthrough;
+			case 4: if (*reinterpret_cast<const char16 *>(end - 4) == c) return end - 4; ful_fallthrough;
+			case 3: if (*reinterpret_cast<const char16 *>(end - 3) == c) return end - 3; ful_fallthrough;
+			case 2: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; ful_fallthrough;
 			case 1:
 			case 0: return end;
 			default: ful_unreachable();
@@ -1966,16 +1962,16 @@ namespace ful
 				return detail::find_unit_8_24_sse2_5_17(begin, end, c, size);
 			}
 #endif
-			case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
-			case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin)) == c) return begin; begin++; ful_fallthrough;
+			case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 12)) == c) return end - 12; ful_fallthrough;
+			case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 11)) == c) return end - 11; ful_fallthrough;
+			case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 10)) == c) return end - 10; ful_fallthrough;
+			case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 9)) == c) return end - 9; ful_fallthrough;
+			case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 8)) == c) return end - 8; ful_fallthrough;
+			case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 7)) == c) return end - 7; ful_fallthrough;
+			case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 6)) == c) return end - 6; ful_fallthrough;
+			case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 5)) == c) return end - 5; ful_fallthrough;
+			case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 4)) == c) return end - 4; ful_fallthrough;
+			case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; ful_fallthrough;
 			case 2:
 			case 1:
 			case 0: return end;
@@ -2268,11 +2264,11 @@ namespace ful
 
 				return end;
 			}
-			case 4: if (*(end - 1) == c) return end - 1; end--; ful_fallthrough;
-			case 3: if (*(end - 1) == c) return end - 1; end--; ful_fallthrough;
-			case 2: if (*(end - 1) == c) return end - 1; end--; ful_fallthrough;
-			case 1: if (*(end - 1) == c) return end - 1; end--; ful_fallthrough;
-			case 0: return begin + size;
+			case 4: if (*(begin + 3) == c) return begin + 3; ful_fallthrough;
+			case 3: if (*(begin + 2) == c) return begin + 2; ful_fallthrough;
+			case 2: if (*(begin + 1) == c) return begin + 1; ful_fallthrough;
+			case 1: if (*(begin + 0) == c) return begin + 0; ful_fallthrough;
+			case 0: return end;
 			default: ful_unreachable();
 			}
 		}
@@ -2356,16 +2352,16 @@ namespace ful
 				return detail::rfind_unit_8_16_sse2_9(begin, end, c, size);
 			}
 #endif
-			case 9: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 8: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 7: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 6: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 5: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 4: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 3: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
-			case 2: if (*reinterpret_cast<const char16 *>(end - 2) == c) return end - 2; end--; ful_fallthrough;
+			case 9: if (*reinterpret_cast<const char16 *>(begin + 7) == c) return begin + 7; ful_fallthrough;
+			case 8: if (*reinterpret_cast<const char16 *>(begin + 6) == c) return begin + 6; ful_fallthrough;
+			case 7: if (*reinterpret_cast<const char16 *>(begin + 5) == c) return begin + 5; ful_fallthrough;
+			case 6: if (*reinterpret_cast<const char16 *>(begin + 4) == c) return begin + 4; ful_fallthrough;
+			case 5: if (*reinterpret_cast<const char16 *>(begin + 3) == c) return begin + 3; ful_fallthrough;
+			case 4: if (*reinterpret_cast<const char16 *>(begin + 2) == c) return begin + 2; ful_fallthrough;
+			case 3: if (*reinterpret_cast<const char16 *>(begin + 1) == c) return begin + 1; ful_fallthrough;
+			case 2: if (*reinterpret_cast<const char16 *>(begin + 0) == c) return begin + 0; ful_fallthrough;
 			case 1:
-			case 0: return begin + size;
+			case 0: return end;
 			default: ful_unreachable();
 			}
 		}
@@ -2443,19 +2439,19 @@ namespace ful
 				return detail::rfind_unit_8_24_sse2_5_17(begin, end, c, size);
 			}
 #endif
-			case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
-			case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(end - 3)) == c) return end - 3; end--; ful_fallthrough;
+			case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 9)) == c) return begin + 9; ful_fallthrough;
+			case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 8)) == c) return begin + 8; ful_fallthrough;
+			case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 7)) == c) return begin + 7; ful_fallthrough;
+			case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 6)) == c) return begin + 6; ful_fallthrough;
+			case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 5)) == c) return begin + 5; ful_fallthrough;
+			case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 4)) == c) return begin + 4; ful_fallthrough;
+			case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 3)) == c) return begin + 3; ful_fallthrough;
+			case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 2)) == c) return begin + 2; ful_fallthrough;
+			case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 1)) == c) return begin + 1; ful_fallthrough;
+			case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 0)) == c) return begin + 0; ful_fallthrough;
 			case 2:
 			case 1:
-			case 0: return begin + size;
+			case 0: return end;
 			default: ful_unreachable();
 			}
 		}
