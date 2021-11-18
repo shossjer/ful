@@ -82,7 +82,9 @@ void test_empty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can append empty range")
 	{
-		const auto it = append(a, nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = append(a, null_ptr, null_ptr);
 		CHECK(it == a.begin());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});
@@ -210,7 +212,9 @@ void test_empty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can insert empty range")
 	{
-		const auto it = insert(a, a.begin(), nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = insert(a, a.begin(), null_ptr, null_ptr);
 		CHECK(it == a.begin());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});
@@ -338,7 +342,9 @@ void test_empty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can assign empty range")
 	{
-		const auto it = assign(a, nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = assign(a, null_ptr, null_ptr);
 		CHECK(it == a.begin());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});
@@ -466,7 +472,9 @@ void test_empty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can replace empty range")
 	{
-		const auto it = replace(a, a.begin(), a.end(), nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = replace(a, a.begin(), a.end(), null_ptr, null_ptr);
 		CHECK(it == a.begin());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});
@@ -811,7 +819,9 @@ void test_nonempty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can append empty range")
 	{
-		const auto it = append(a, nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = append(a, null_ptr, null_ptr);
 		CHECK(it == a.begin() + 2);
 		REQUIRE(size(a) == 2);
 		CHECK(a.data()[0] == ful::unit_utf8{'a'});
@@ -959,7 +969,9 @@ void test_nonempty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can insert empty range")
 	{
-		const auto it = insert(a, a.begin() + 1, nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = insert(a, a.begin() + 1, null_ptr, null_ptr);
 		CHECK(it == a.begin() + 1);
 		REQUIRE(size(a) == 2);
 		CHECK(a.data()[0] == ful::unit_utf8{'a'});
@@ -1107,7 +1119,9 @@ void test_nonempty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can assign empty range")
 	{
-		const auto it = assign(a, nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = assign(a, null_ptr, null_ptr);
 		CHECK(it == a.begin());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});
@@ -1235,7 +1249,9 @@ void test_nonempty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can replace empty range")
 	{
-		const auto it = replace(a, a.begin() + 1, a.end(), nullptr, nullptr);
+		const char * const null_ptr = nullptr;
+
+		const auto it = replace(a, a.begin() + 1, a.end(), null_ptr, null_ptr);
 		CHECK(it == a.begin() + 1);
 		REQUIRE(size(a) == 1);
 		CHECK(a.data()[0] == ful::unit_utf8{'a'});
@@ -1426,7 +1442,9 @@ void test_nonempty_container_utf8(ful::string_container<Base> & a)
 
 	SECTION("can copy empty range into")
 	{
-		const auto it = copy(nullptr, nullptr, a);
+		const char * const null_ptr = nullptr;
+
+		const auto it = copy(null_ptr, null_ptr, a);
 		CHECK(it == a.end());
 		REQUIRE(empty(a));
 		CHECK(*a.data() == ful::unit_utf8{});

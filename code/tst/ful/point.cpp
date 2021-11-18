@@ -1,5 +1,6 @@
 #include "ful/point.hpp"
 #include "ful/static.hpp"
+#include "ful/string_init.hpp"
 #include "ful/string_search.hpp"
 
 #include "buffer.hpp"

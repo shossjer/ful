@@ -37,6 +37,7 @@ set(FULLIB_HEADERS
 	lib/ful/string_avx.hpp
 	lib/ful/string_avx2.hpp
 	lib/ful/string_compare.hpp
+	lib/ful/string_init.hpp
 	lib/ful/string_modify.hpp
 	lib/ful/string_none.hpp
 	lib/ful/string_search.hpp

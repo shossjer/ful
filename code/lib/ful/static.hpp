@@ -9,6 +9,11 @@
 
 namespace ful
 {
+	namespace detail
+	{
+		ful_inline void swap_small(byte * beg1, byte * end1, byte * beg2, byte * end2);
+	}
+
 	template <typename T, usize Capacity>
 	class static_string_base
 	{

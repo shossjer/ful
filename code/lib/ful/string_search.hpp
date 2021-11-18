@@ -1797,7 +1797,7 @@ namespace ful
 			else
 			{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-				return detail::find_unit_8_8(begin, end, c);
+				return detail::find_unit_8_8_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_8_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1878,7 +1878,7 @@ namespace ful
 			else
 			{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-				return detail::find_unit_8_16(begin, end, c);
+				return detail::find_unit_8_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_16_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1956,7 +1956,7 @@ namespace ful
 			else
 			{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-				return detail::find_unit_8_24(begin, end, c);
+				return detail::find_unit_8_24_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_24_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2032,7 +2032,7 @@ namespace ful
 			else
 			{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-				return detail::find_unit_8_32(begin, end, c);
+				return detail::find_unit_8_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2046,7 +2046,7 @@ namespace ful
 		ful_inline const char16 * find(const char16 * begin, const char16 * end, char16 c)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::find_unit_16_16(begin, end, c);
+			return detail::find_unit_16_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_16_16_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2059,7 +2059,7 @@ namespace ful
 		ful_inline const char16 * find(const char16 * begin, const char16 * end, char32 c)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::find_unit_16_32(begin, end, c);
+			return detail::find_unit_16_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_16_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2072,7 +2072,7 @@ namespace ful
 		ful_inline const char32 * find(const char32 * begin, const char32 * end, char32 c)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::find_unit_32_32(begin, end, c);
+			return detail::find_unit_32_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_32_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2177,7 +2177,7 @@ namespace ful
 		else
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::rfind_unit_8_8(begin, end, c);
+			return detail::rfind_unit_8_8_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_8_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2270,7 +2270,7 @@ namespace ful
 		else
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::rfind_unit_8_16(begin, end, c);
+			return detail::rfind_unit_8_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_16_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2360,7 +2360,7 @@ namespace ful
 		else
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::rfind_unit_8_24(begin, end, c);
+			return detail::rfind_unit_8_24_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_24_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2448,7 +2448,7 @@ namespace ful
 		else
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::rfind_unit_8_32(begin, end, c);
+			return detail::rfind_unit_8_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2474,7 +2474,7 @@ namespace ful
 	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char16 c)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::rfind_unit_16_16(begin, end, c);
+		return detail::rfind_unit_16_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_16_16_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2499,7 +2499,7 @@ namespace ful
 	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char32 c)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::rfind_unit_16_32(begin, end, c);
+		return detail::rfind_unit_16_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_16_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2524,7 +2524,7 @@ namespace ful
 	ful_inline const char32 * rfind(const char32 * begin, const char32 * end, char32 c)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::rfind_unit_32_32(begin, end, c);
+		return detail::rfind_unit_32_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_32_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2563,7 +2563,7 @@ namespace ful
 	ful_inline const char8 * strend(const char8 * cstr)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::strend_8(cstr);
+		return detail::strend_8_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_8_avx2(cstr);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2582,7 +2582,7 @@ namespace ful
 	ful_inline const char16 * strend(const char16 * cstr)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::strend_16(cstr);
+		return detail::strend_16_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_16_avx2(cstr);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2601,7 +2601,7 @@ namespace ful
 	ful_inline const char32 * strend(const char32 * cstr)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::strend_32(cstr);
+		return detail::strend_32_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_32_avx2(cstr);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))

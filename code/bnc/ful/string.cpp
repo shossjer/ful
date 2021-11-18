@@ -2,6 +2,7 @@
 #include "ful/types.hpp"
 
 #include "ful/string.hpp"
+#include "ful/string_init.hpp"
 
 #include "buffer.hpp"
 #include "constants.hpp"

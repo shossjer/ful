@@ -1,4 +1,5 @@
 #include "ful/string.hpp"
+#include "ful/string_init.hpp"
 
 #include "buffer.hpp"
 
@@ -222,11 +223,13 @@ TEST_CASE("mem", "")
 {
 	SECTION("nullptr")
 	{
-		CHECK(ful::memcopy(nullptr, nullptr, nullptr) == nullptr);
-		CHECK(ful::memmovef(nullptr, nullptr, nullptr) == nullptr);
-		CHECK(ful::memmover(nullptr, nullptr, nullptr) == nullptr);
-		CHECK(ful::memswap(nullptr, nullptr, nullptr) == nullptr);
-		ful::memset(nullptr, nullptr, 0);
+		char * const null_ptr = nullptr;
+
+		CHECK(ful::memcopy(null_ptr, null_ptr, null_ptr) == nullptr);
+		CHECK(ful::memmovef(null_ptr, null_ptr, null_ptr) == nullptr);
+		CHECK(ful::memmover(null_ptr, null_ptr, null_ptr) == nullptr);
+		CHECK(ful::memswap(null_ptr, null_ptr, null_ptr) == nullptr);
+		ful::memset(null_ptr, null_ptr, ful::char8{});
 	}
 
 	SECTION("size 1")

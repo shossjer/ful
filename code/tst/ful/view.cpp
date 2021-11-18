@@ -1,4 +1,5 @@
 #include "ful/view.hpp"
+#include "ful/string_init.hpp"
 #include "ful/string_modify.hpp"
 #include "ful/string_search.hpp"
 

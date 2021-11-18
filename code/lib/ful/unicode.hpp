@@ -273,7 +273,7 @@ namespace ful
 		ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::point_count_8(beg, end);
+			return detail::point_count_8_rtd(beg, end);
 #else
 			return detail::point_count_8_none(beg, end);
 #endif
@@ -282,7 +282,7 @@ namespace ful
 		ful_inline usize point_count(const unit_utf16 * beg, const unit_utf16 * end)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::point_count_16(beg, end);
+			return detail::point_count_16_rtd(beg, end);
 #else
 			return detail::point_count_16_none(beg, end);
 #endif
@@ -291,7 +291,7 @@ namespace ful
 		ful_inline usize point_count(const unit_utf61 * beg, const unit_utf61 * end)
 		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-			return detail::point_count_61(beg, end);
+			return detail::point_count_61_rtd(beg, end);
 #else
 			return detail::point_count_61_none(beg, end);
 #endif
@@ -325,7 +325,7 @@ namespace ful
 	ful_inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::point_next_8(s, n);
+		return detail::point_next_8_rtd(s, n);
 #else
 		return detail::point_next_8_none(s, n);
 #endif
@@ -334,7 +334,7 @@ namespace ful
 	ful_inline const unit_utf8 * point_prev(const unit_utf8 * s, usize n)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::point_prev_8(s, n);
+		return detail::point_prev_8_rtd(s, n);
 #else
 		return detail::point_prev_8_none(s, n);
 #endif

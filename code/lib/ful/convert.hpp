@@ -1064,7 +1064,7 @@ namespace ful
 	ful_inline unit_utf16 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_16(first, last, begin);
+		return detail::convert_8_16_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_8_16_avx2(first, last, begin);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1077,7 +1077,7 @@ namespace ful
 	ful_inline unit_utf61 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_61(first, last, begin);
+		return detail::convert_8_61_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_8_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1090,7 +1090,7 @@ namespace ful
 	ful_inline unit_utf32 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_32(first, last, begin);
+		return detail::convert_8_32_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_8_32_avx2(first, last, begin);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1103,7 +1103,7 @@ namespace ful
 	ful_inline unit_utf23 * convert(const unit_utf8 * first, const unit_utf8 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_8_23(first, last, begin);
+		return detail::convert_8_23_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_8_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1116,7 +1116,7 @@ namespace ful
 	ful_inline unit_utf8 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16_8(first, last, begin);
+		return detail::convert_16_8_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_16_8_avx2(first, last, begin);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1129,7 +1129,7 @@ namespace ful
 	ful_inline unit_utf61 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16_61(first, last, begin);
+		return detail::convert_16_61_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_16_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1142,7 +1142,7 @@ namespace ful
 	ful_inline unit_utf32 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16_32(first, last, begin);
+		return detail::convert_16_32_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_16_32_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1155,7 +1155,7 @@ namespace ful
 	ful_inline unit_utf23 * convert(const unit_utf16 * first, const unit_utf16 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_16_23(first, last, begin);
+		return detail::convert_16_23_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_16_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1168,7 +1168,7 @@ namespace ful
 	ful_inline unit_utf8 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_61_8(first, last, begin);
+		return detail::convert_61_8_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_61_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1181,7 +1181,7 @@ namespace ful
 	ful_inline unit_utf16 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_61_16(first, last, begin);
+		return detail::convert_61_16_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_61_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1194,7 +1194,7 @@ namespace ful
 	ful_inline unit_utf32 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_61_32(first, last, begin);
+		return detail::convert_61_32_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_61_32_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1207,7 +1207,7 @@ namespace ful
 	ful_inline unit_utf23 * convert(const unit_utf61 * first, const unit_utf61 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_61_23(first, last, begin);
+		return detail::convert_61_23_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_61_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1220,7 +1220,7 @@ namespace ful
 	ful_inline unit_utf8 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32_8(first, last, begin);
+		return detail::convert_32_8_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_32_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1233,7 +1233,7 @@ namespace ful
 	ful_inline unit_utf16 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32_16(first, last, begin);
+		return detail::convert_32_16_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_32_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1246,7 +1246,7 @@ namespace ful
 	ful_inline unit_utf61 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32_61(first, last, begin);
+		return detail::convert_32_61_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_32_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1259,7 +1259,7 @@ namespace ful
 	ful_inline unit_utf23 * convert(const unit_utf32 * first, const unit_utf32 * last, unit_utf23 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_32_23(first, last, begin);
+		return detail::convert_32_23_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_32_23_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1272,7 +1272,7 @@ namespace ful
 	ful_inline unit_utf8 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf8 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_23_8(first, last, begin);
+		return detail::convert_23_8_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_23_8_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1285,7 +1285,7 @@ namespace ful
 	ful_inline unit_utf16 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf16 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_23_16(first, last, begin);
+		return detail::convert_23_16_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_23_16_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1298,7 +1298,7 @@ namespace ful
 	ful_inline unit_utf61 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf61 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_23_61(first, last, begin);
+		return detail::convert_23_61_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_23_61_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1311,7 +1311,7 @@ namespace ful
 	ful_inline unit_utf32 * convert(const unit_utf23 * first, const unit_utf23 * last, unit_utf32 * begin)
 	{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::convert_23_32(first, last, begin);
+		return detail::convert_23_32_rtd(first, last, begin);
 //#elif defined(__AVX2__)
 //		return detail::convert_23_32_avx2(first, last, begin);
 //#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))

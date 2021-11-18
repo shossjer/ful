@@ -1,5 +1,6 @@
 #include "ful/heap.hpp"
 #include "ful/string_compare.hpp"
+#include "ful/string_init.hpp"
 #include "ful/string_modify.hpp"
 
 #include <catch2/catch.hpp>
