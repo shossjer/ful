@@ -96,9 +96,9 @@ namespace ful
 
 	template <typename Begin, typename End, typename R>
 	ful_inline ful_pure auto ends_with(Begin beg1, End end1, const R & x)
-		-> decltype(ends_with(begin1, end1, begin(x), end(x)))
+		-> decltype(ends_with(beg1, end1, begin(x), end(x)))
 	{
-		return ends_with(begin1, end1, begin(x), end(x));
+		return ends_with(beg1, end1, begin(x), end(x));
 	}
 
 	template <typename R1, typename R2>
