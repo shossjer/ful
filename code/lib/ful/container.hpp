@@ -63,7 +63,8 @@ namespace ful
 		}
 
 		template <typename Char>
-		ful_inline iterator insert(const_iterator at, usize count, Char u)
+		ful_inline auto insert(const_iterator at, usize count, Char u)
+			-> decltype(memset(pointer{}, pointer{}, u), iterator())
 		{
 			pointer new_end;
 			if (ful_add_overflow(this->end_, count * sizeof(hck::compact_type_t<Char>) / sizeof(value_type), new_end) || this->beg_ + this->capacity() < new_end)
@@ -109,7 +110,8 @@ namespace ful
 		}
 
 		template <typename Char>
-		ful_inline iterator replace(const_iterator from, const_iterator to, usize count, Char u)
+		ful_inline auto replace(const_iterator from, const_iterator to, usize count, Char u)
+			-> decltype(memset(pointer{}, pointer{}, u), iterator())
 		{
 			pointer new_end;
 			if (ful_add_overflow(const_cast<iterator>(from) + (this->end_ - to), count * sizeof(hck::compact_type_t<Char>) / sizeof(value_type), new_end) || this->beg_ + this->capacity() < new_end)
@@ -171,7 +173,8 @@ namespace ful
 		// `insert(end_, first, last)` but the compilers have some trouble
 		// optimizing that
 		template <typename Char>
-		ful_inline iterator append(usize count, Char u)
+		ful_inline auto append(usize count, Char u)
+			-> decltype(memset(pointer{}, pointer{}, u), iterator())
 		{
 			pointer new_end;
 			if (ful_add_overflow(this->end_, count * sizeof(hck::compact_type_t<Char>) / sizeof(value_type), new_end) || this->beg_ + this->capacity() < new_end)
@@ -249,7 +252,8 @@ namespace ful
 		// `replace(begin, end, first, last)` but the compilers have some
 		// trouble optimizing that
 		template <typename Char>
-		ful_inline iterator assign(usize count, Char u)
+		ful_inline auto assign(usize count, Char u)
+			-> decltype(memset(pointer{}, pointer{}, u), iterator())
 		{
 			if (this->capacity() < count * sizeof(hck::compact_type_t<Char>) / sizeof(value_type))
 			{
@@ -328,7 +332,7 @@ namespace ful
 	// return element, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto push_back(string_container<Base> & x, Char u)
-		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
+		-> decltype(x.append(1, u))
 	{
 		return x.append(1, u);
 	}
@@ -341,7 +345,8 @@ namespace ful
 
 	// return element, or nullptr if allocation fails
 	template <typename Base, typename First, typename Last>
-	ful_inline typename string_container<Base>::iterator append(string_container<Base> & x, First first, Last last)
+	ful_inline auto append(string_container<Base> & x, First first, Last last)
+		-> decltype(x.append(first, last))
 	{
 		return x.append(first, last);
 	}
@@ -349,14 +354,15 @@ namespace ful
 	// return element, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto append(string_container<Base> & x, usize count, Char u)
-		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
+		-> decltype(x.append(count, u))
 	{
 		return x.append(count, u);
 	}
 
 	// return (possibly relocated) it, or nullptr if allocation fails
 	template <typename Base, typename First, typename Last>
-	ful_inline typename string_container<Base>::iterator insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, First first, Last last)
+	ful_inline auto insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, First first, Last last)
+		-> decltype(x.insert(at, first, last))
 	{
 		return x.insert(at, first, last);
 	}
@@ -364,14 +370,15 @@ namespace ful
 	// return (possibly relocated) it, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto insert(string_container<Base> & x, typename string_container<Base>::const_iterator at, usize count, Char u)
-		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
+		-> decltype(x.insert(at, count, u))
 	{
 		return x.insert(at, count, u);
 	}
 
 	// return begin, or nullptr if allocation fails
 	template <typename Base, typename First, typename Last>
-	ful_inline typename string_container<Base>::iterator assign(string_container<Base> & x, First first, Last last)
+	ful_inline auto assign(string_container<Base> & x, First first, Last last)
+		-> decltype(x.assign(first, last))
 	{
 		return x.assign(first, last);
 	}
@@ -379,14 +386,15 @@ namespace ful
 	// return begin, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto assign(string_container<Base> & x, usize count, Char u)
-		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
+		-> decltype(x.assign(count, u))
 	{
 		return x.assign(count, u);
 	}
 
 	// return (possibly relocated) from, or nullptr if allocation fails
 	template <typename Base, typename First, typename Last>
-	ful_inline typename string_container<Base>::iterator replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, First first, Last last)
+	ful_inline auto replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, First first, Last last)
+		-> decltype(x.replace(from, to, first, last))
 	{
 		return x.replace(from, to, first, last);
 	}
@@ -394,7 +402,7 @@ namespace ful
 	// return (possibly relocated) from, or nullptr if allocation fails
 	template <typename Base, typename Char>
 	ful_inline auto replace(string_container<Base> & x, typename string_container<Base>::const_iterator from, typename string_container<Base>::const_iterator to, usize count, Char u)
-		-> decltype(memset(x.begin(), x.end(), u), typename string_container<Base>::iterator())
+		-> decltype(x.replace(from, to, count, u))
 	{
 		return x.replace(from, to, count, u);
 	}
