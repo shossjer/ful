@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ful/memoryfwd.hpp"
+#include "ful/stdhacks.hpp"
 
 #include "ful/string.hpp"
 #include "ful/ranges.hpp"
