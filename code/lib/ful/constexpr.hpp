@@ -1,5 +1,8 @@
 #pragma once
 
+#include "ful/compiler.hpp"
+#include "ful/stdint.hpp"
+
 #include "ful/ranges.hpp"
 
 namespace ful

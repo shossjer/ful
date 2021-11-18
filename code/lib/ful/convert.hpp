@@ -2,8 +2,6 @@
 
 #include "ful/unicode.hpp"
 
-#include "ful/ranges.hpp"
-
 namespace ful
 {
 	template <typename From, typename To>

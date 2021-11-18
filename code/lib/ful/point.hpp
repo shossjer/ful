@@ -6,7 +6,7 @@
 
 #include "ful/intrinsics.hpp"
 
-#include "ful/ranges.hpp"
+#include "ful/string.hpp"
 
 namespace ful
 {

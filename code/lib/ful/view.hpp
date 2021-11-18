@@ -4,7 +4,6 @@
 
 #include "ful/constexpr.hpp"
 #include "ful/string.hpp"
-#include "ful/ranges.hpp"
 
 namespace ful
 {

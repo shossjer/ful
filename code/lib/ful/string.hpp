@@ -6,6 +6,8 @@
 #include "ful/dispatch.hpp"
 #include "ful/stdint.hpp"
 
+#include "ful/ranges.hpp"
+
 #include "ful/intrinsics.hpp"
 
 #include "ful/string_none.hpp"
@@ -1608,5 +1610,30 @@ namespace ful
 	ful_inline ful_pure bool equal(const T * beg1, const T * end1, const T * beg2, const T * end2)
 	{
 		return equal(reinterpret_cast<const byte *>(beg1), reinterpret_cast<const byte *>(end1), reinterpret_cast<const byte *>(beg2), reinterpret_cast<const byte *>(end2));
+	}
+
+	namespace detail
+	{
+		ful_inline const char8 * find(const char8 * begin, const char8 * end, char8 c);
+		ful_inline const char8 * find(const char8 * begin, const char8 * end, char16 c);
+		ful_inline const char8 * find(const char8 * begin, const char8 * end, char_fast24 c);
+		ful_inline const char8 * find(const char8 * begin, const char8 * end, char32 c);
+		ful_inline const char16 * find(const char16 * begin, const char16 * end, char16 c);
+		ful_inline const char16 * find(const char16 * begin, const char16 * end, char32 c);
+		ful_inline const char32 * find(const char32 * begin, const char32 * end, char32 c);
+	}
+
+	template <typename Begin, typename End, typename Char>
+	ful_inline auto find(Begin begin, End end, Char c)
+		-> decltype(detail::find(to_chars(to_address(begin)), to_chars(to_address(end)), c), to_address(begin))
+	{
+		return (decltype(to_address(begin)))detail::find(to_chars(to_address(begin)), to_chars(to_address(end)), c);
+	}
+
+	template <typename R, typename Char>
+	ful_inline auto find(R && x, Char c)
+		-> decltype(find(begin(x), end(x), c))
+	{
+		return find(begin(x), end(x), c);
 	}
 }

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "ful/compiler.hpp"
-#include "ful/stdint.hpp"
-
 namespace ful
 {
 	template <typename T, unsigned long long N>

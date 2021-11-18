@@ -4,7 +4,6 @@
 #include "ful/stdhacks.hpp"
 
 #include "ful/string.hpp"
-#include "ful/ranges.hpp"
 
 #include "ful/container.hpp"
 
