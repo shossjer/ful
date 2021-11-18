@@ -91,7 +91,7 @@ namespace Catch
 					}
 				}
 
-				explicit Dump(const char * filename, lin_type/*, int reps*/, unsigned int from, unsigned int to, unsigned int step, const char * xlabel = "")
+				explicit Dump(const char * filename, lin_type/*, int reps*/, unsigned int from, unsigned int to, unsigned int step, const char * xlabel = "unknown")
 					: filename(filename)
 					, xlabel(xlabel)
 					, type(0)
@@ -109,7 +109,7 @@ namespace Catch
 					}
 				}
 
-				explicit Dump(const char * filename, log_type/*, int reps*/, unsigned char from, unsigned char to, const char * xlabel = "")
+				explicit Dump(const char * filename, log_type/*, int reps*/, unsigned char from, unsigned char to, const char * xlabel = "unknown")
 					: filename(filename)
 					, xlabel(xlabel)
 					, type(1)
