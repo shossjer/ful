@@ -269,50 +269,50 @@ namespace ful
 			}
 			return s;
 		}
-	}
 
-	ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
-	{
+		ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
+		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::point_count_8(beg, end);
+			return detail::point_count_8(beg, end);
 #else
-		return detail::point_count_8_none(beg, end);
+			return detail::point_count_8_none(beg, end);
 #endif
-	}
+		}
 
-	ful_inline usize point_count(const unit_utf16 * beg, const unit_utf16 * end)
-	{
+		ful_inline usize point_count(const unit_utf16 * beg, const unit_utf16 * end)
+		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::point_count_16(beg, end);
+			return detail::point_count_16(beg, end);
 #else
-		return detail::point_count_16_none(beg, end);
+			return detail::point_count_16_none(beg, end);
 #endif
-	}
+		}
 
-	ful_inline usize point_count(const unit_utf61 * beg, const unit_utf61 * end)
-	{
+		ful_inline usize point_count(const unit_utf61 * beg, const unit_utf61 * end)
+		{
 #if defined(FUL_IFUNC) || defined(FUL_FPTR)
-		return detail::point_count_61(beg, end);
+			return detail::point_count_61(beg, end);
 #else
-		return detail::point_count_61_none(beg, end);
+			return detail::point_count_61_none(beg, end);
 #endif
-	}
+		}
 
-	ful_inline usize point_count(const unit_utf32 * beg, const unit_utf32 * end)
-	{
-		return end - beg;
-	}
+		ful_inline usize point_count(const unit_utf32 * beg, const unit_utf32 * end)
+		{
+			return end - beg;
+		}
 
-	ful_inline usize point_count(const unit_utf23 * beg, const unit_utf23 * end)
-	{
-		return end - beg;
+		ful_inline usize point_count(const unit_utf23 * beg, const unit_utf23 * end)
+		{
+			return end - beg;
+		}
 	}
 
 	template <typename Begin, typename End>
 	ful_inline auto point_count(Begin begin, End end)
-		-> decltype(point_count(to_address(begin), to_address(end)))
+		-> decltype(detail::point_count(to_address(begin), to_address(end)))
 	{
-		return point_count(to_address(begin), to_address(end));
+		return detail::point_count(to_address(begin), to_address(end));
 	}
 
 	template <typename R>
