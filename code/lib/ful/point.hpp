@@ -279,9 +279,12 @@ namespace ful
 	}
 
 	template <typename Begin, typename End>
-	ful_inline Begin find(Begin begin, End end, point_utf p)
+	ful_inline auto find(Begin begin, End end, point_utf p)
+		-> decltype(to_address(begin))
 	{
-		point_buffer<hck::iter_value_t<Begin>, 1> buffer;
+		using T = hck::iter_value_t<Begin>;
+
+		point_buffer<T, 1> buffer;
 		const auto it = encode(p, buffer);
 
 		switch ((it - buffer) * sizeof(T))
@@ -295,7 +298,8 @@ namespace ful
 	}
 
 	template <typename R>
-	ful_inline hck::iterator_t<R> find(R && x, point_utf p)
+	ful_inline auto find(R && x, point_utf p)
+		-> decltype(to_address(hck::declval<hck::iterator_t<R>>()))
 	{
 		point_buffer<hck::range_value_t<R>, 1> buffer;
 		const auto it = encode(p, buffer);
