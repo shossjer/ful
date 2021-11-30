@@ -299,12 +299,12 @@ namespace ful
 
 		ful_inline usize point_count(const unit_utf32 * beg, const unit_utf32 * end)
 		{
-			return end - beg;
+			return static_cast<usize>(end - beg);
 		}
 
 		ful_inline usize point_count(const unit_utf23 * beg, const unit_utf23 * end)
 		{
-			return end - beg;
+			return static_cast<usize>(end - beg);
 		}
 	}
 

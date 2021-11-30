@@ -12,7 +12,7 @@
 // warning C4146: unary minus operator applied to unsigned type, result still unsigned
 #endif
 
-#define ful_align_next(ptr, n) reinterpret_cast<decltype(ptr + 0)>(reinterpret_cast<ful::puint>((ptr) + (n)) & -(n))
+#define ful_align_next(ptr, n) reinterpret_cast<decltype(ptr + 0)>(reinterpret_cast<ful::puint>((ptr) + (n)) & static_cast<ful::puint>(-(n)))
 #define ful_align_next_8(ptr) ful_align_next(ptr, 8)
 #define ful_align_next_16(ptr) ful_align_next(ptr, 16)
 #define ful_align_next_32(ptr) ful_align_next(ptr, 32)
@@ -40,14 +40,14 @@ namespace ful
 			return x;
 		}
 
-		ful_inline int set_lower_bits(int x) { return set_lower_bits(static_cast<unsigned int>(x)); }
+		ful_inline int set_lower_bits(int x) { return static_cast<int>(set_lower_bits(static_cast<unsigned int>(x))); }
 
 		ful_inline
 		unsigned int count_leading_zeros(unsigned int x)
 		{
 			// Hacker's Delight, 2nd ed, p 100
 			unsigned int y;
-			int n = 32;
+			unsigned int n = 32;
 			y = x >> 16; if (y != 0) { n -= 16; x = y; }
 			y = x >>  8; if (y != 0) { n -=  8; x = y; }
 			y = x >>  4; if (y != 0) { n -=  4; x = y; }
@@ -56,7 +56,7 @@ namespace ful
 			return n - x;
 		}
 
-		ful_inline int count_leading_zeros(int x) { return count_leading_zeros(static_cast<unsigned int>(x)); }
+		ful_inline int count_leading_zeros(int x) { return static_cast<int>(count_leading_zeros(static_cast<unsigned int>(x))); }
 
 #if defined(_MSC_VER) || !defined(__LP64__)
 		ful_inline unsigned long set_lower_bits(unsigned long x) { return set_lower_bits(static_cast<unsigned int>(x)); }
@@ -81,14 +81,14 @@ namespace ful
 			return x;
 		}
 
-		ful_inline long long set_lower_bits(long long x) { return set_lower_bits(static_cast<unsigned long long>(x)); }
+		ful_inline long long set_lower_bits(long long x) { return static_cast<long long>(set_lower_bits(static_cast<unsigned long long>(x))); }
 
 		ful_inline
 		unsigned long long count_leading_zeros(unsigned long long x)
 		{
 			// Hacker's Delight, 2nd ed, p 100
 			unsigned long long y;
-			int n = 64;
+			unsigned long long n = 64;
 			y = x >> 32; if (y != 0) { n -= 32; x = y; }
 			y = x >> 16; if (y != 0) { n -= 16; x = y; }
 			y = x >>  8; if (y != 0) { n -=  8; x = y; }
@@ -98,17 +98,17 @@ namespace ful
 			return n - x;
 		}
 
-		ful_inline long long count_leading_zeros(long long x) { return count_leading_zeros(static_cast<unsigned long long>(x)); }
+		ful_inline long long count_leading_zeros(long long x) { return static_cast<long long>(count_leading_zeros(static_cast<unsigned long long>(x))); }
 #endif
 
 #if defined(__LP64__)
 		ful_inline unsigned long set_lower_bits(unsigned long x) { return set_lower_bits(static_cast<unsigned long long>(x)); }
 
-		ful_inline long set_lower_bits(long x) { return set_lower_bits(static_cast<unsigned long>(x)); }
+		ful_inline long set_lower_bits(long x) { return static_cast<long>(set_lower_bits(static_cast<unsigned long>(x))); }
 
 		ful_inline unsigned long count_leading_zeros(unsigned long x) { return count_leading_zeros(static_cast<unsigned long long>(x)); }
 
-		ful_inline long count_leading_zeros(long x) { return count_leading_zeros(static_cast<unsigned long>(x)); }
+		ful_inline long count_leading_zeros(long x) { return static_cast<long>(count_leading_zeros(static_cast<unsigned long>(x))); }
 #endif
 	}
 

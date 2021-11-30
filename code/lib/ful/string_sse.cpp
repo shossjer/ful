@@ -68,7 +68,7 @@ namespace ful
 		ful_target("sse")
 		byte * memcopy_sse_64(const byte * first, usize size, byte * begin)
 		{
-			const usize begin_offset = ful_align_next_16(begin) - begin;
+			const usize begin_offset = static_cast<usize>(ful_align_next_16(begin) - begin);
 			{
 				const __m128 a = _mm_loadu_ps(reinterpret_cast<const float *>(first));
 				_mm_storeu_ps(reinterpret_cast<float *>(begin), a);
@@ -168,7 +168,7 @@ namespace ful
 		ful_target("sse")
 		void memset8_sse_64(char8 * from, char8 * to, char8 u)
 		{
-			uint32 bytes = 0x01010101u * u;
+			uint32 bytes = 0x01010101u * static_cast<uint8>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			memset_sse_64(reinterpret_cast<byte *>(from), reinterpret_cast<byte *>(to), u128);
@@ -177,7 +177,7 @@ namespace ful
 		ful_target("sse")
 		void memset16_sse_64(char16 * from, char16 * to, char16 u)
 		{
-			uint32 bytes = 0x00010001u * u;
+			uint32 bytes = 0x00010001u * static_cast<uint16>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			memset_sse_64(reinterpret_cast<byte *>(from), reinterpret_cast<byte *>(to), u128);

@@ -29,7 +29,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		byte * memcopy_sse2(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -62,7 +62,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		byte * memmovef_sse2(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -95,7 +95,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		byte * memmover_sse2(const byte * first, const byte * last, byte * end)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -148,7 +148,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		void memset8_sse2(char8 * from, char8 * to, char8 u)
 		{
-			const usize size = to - from;
+			const usize size = static_cast<usize>(to - from);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -197,7 +197,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		void memset16_sse2(char16 * from, char16 * to, char16 u)
 		{
-			const usize size = (to - from) * sizeof(char16);
+			const usize size = static_cast<usize>(to - from) * sizeof(char16);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -232,8 +232,8 @@ namespace ful
 			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0100000100000100 0001000001000001
 			// hi 0000010000010000 0100000100000100
-			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
-			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+			const __m128i lo_u128 = _mm_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m128i hi_u128 = _mm_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1));
 
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(to) - 16), hi_u128);
@@ -249,9 +249,9 @@ namespace ful
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000
 			// hi 0000010000010000 0100000100000100
-			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
-			const __m128i mi_u128 = _mm_set_epi64x(bytes0, bytes2);
-			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+			const __m128i lo_u128 = _mm_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m128i mi_u128 = _mm_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2));
+			const __m128i hi_u128 = _mm_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1));
 
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
@@ -269,9 +269,9 @@ namespace ful
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000
 			// hi 0000010000010000 0100000100000100
-			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
-			const __m128i mi_u128 = _mm_set_epi64x(bytes0, bytes2);
-			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+			const __m128i lo_u128 = _mm_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m128i mi_u128 = _mm_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2));
+			const __m128i hi_u128 = _mm_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1));
 
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(reinterpret_cast<char8 *>(from) + 16), mi_u128);
@@ -286,7 +286,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		void memset24_sse2(char24 * from, char24 * to, char_fast24 u)
 		{
-			const usize size = (to - from) * sizeof(char24);
+			const usize size = static_cast<usize>(to - from) * sizeof(char24);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -339,7 +339,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		void memset32_sse2(char32 * from, char32 * to, char32 u)
 		{
-			const usize size = (to - from) * sizeof(char32);
+			const usize size = static_cast<usize>(to - from) * sizeof(char32);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -402,7 +402,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		byte * memswap_sse2(byte * beg1, byte * end1, byte * beg2)
 		{
-			const usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -467,27 +467,5 @@ namespace ful
 		}
 
 		ful_target("sse2") ful_inline __m128i rotate(__m128i ab, int n) { return rotate(ab, static_cast<unsigned int>(n) & (16 - 1)); }
-
-		ful_target("sse2") inline
-		__m128i loadu_first_sse2(const char8 * begin, const char8 * end)
-		{
-			if (!ful_expect(begin != end))
-				return _mm_setzero_si128();
-
-			const __m128i * const begin_word = reinterpret_cast<const __m128i *>(reinterpret_cast<puint>(begin) & -16);
-			const __m128i * const end_word = reinterpret_cast<const __m128i *>(reinterpret_cast<puint>(end - 1) & -16);
-
-			__m128i word;
-			if (begin_word != end_word)
-			{
-				word = _mm_loadu_si128(reinterpret_cast<const __m128i *>(begin));
-			}
-			else
-			{
-				const unsigned int first_offset = reinterpret_cast<puint>(begin) & (16 - 1);
-				word = rotate(*begin_word, first_offset);
-			}
-			return word;
-		}
 	}
 }

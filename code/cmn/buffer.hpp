@@ -64,10 +64,10 @@ public:
 
 	T * data() { return beg_; }
 	const T * data() const { return beg_; }
-	unsigned long long size() const { return end_ - beg_; }
-	unsigned long long capacity() const { return cap_ - beg_; }
+	ful::usize size() const { return static_cast<ful::usize>(end_ - beg_); }
+	ful::usize capacity() const { return static_cast<ful::usize>(cap_ - beg_); }
 
-	void allocate(unsigned long long size)
+	void allocate(ful::usize size)
 	{
 		if (!ful_expect(beg_ == nullptr))
 			return;

@@ -40,7 +40,7 @@ namespace ful
 		ful_target("avx") ful_inline
 		byte * memcopy_avx(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -73,7 +73,7 @@ namespace ful
 		ful_target("avx") ful_inline
 		byte * memmovef_avx(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -118,7 +118,7 @@ namespace ful
 		ful_target("avx") ful_inline
 		byte * memmover_avx(const byte * first, const byte * last, byte * end)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -160,7 +160,7 @@ namespace ful
 		ful_target("avx") inline
 		void memset8_avx(char8 * from, char8 * to, char8 u)
 		{
-			const usize size = to - from;
+			const usize size = static_cast<usize>(to - from);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -198,7 +198,7 @@ namespace ful
 		ful_target("avx") inline
 		void memset16_avx(char16 * from, char16 * to, char16 u)
 		{
-			const usize size = (to - from) * sizeof(char16);
+			const usize size = static_cast<usize>(to - from) * sizeof(char16);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -233,8 +233,8 @@ namespace ful
 			const uint64 bytes2 = (bytes0 << 16) | (static_cast<uint32>(u) >> 8);
 			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
 			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
-			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
-			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+			const __m256i lo_u256 = _mm256_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m256i hi_u256 = _mm256_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0), static_cast<long long>(bytes2));
 
 			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
 			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(to) - 32), hi_u256);
@@ -250,9 +250,9 @@ namespace ful
 			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
 			// mi 0100000100000100 0001000001000001 0000010000010000 0100000100000100
 			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
-			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
-			const __m256i mi_u256 = _mm256_set_epi64x(bytes1, bytes0, bytes2, bytes1);
-			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+			const __m256i lo_u256 = _mm256_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m256i mi_u256 = _mm256_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0), static_cast<long long>(bytes2), static_cast<long long>(bytes1));
+			const __m256i hi_u256 = _mm256_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0), static_cast<long long>(bytes2));
 
 			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
 			_mm256_storeu_si256(reinterpret_cast<__m256i *>(reinterpret_cast<char8 *>(from) + 32), mi_u256);
@@ -262,7 +262,7 @@ namespace ful
 		ful_target("avx") inline
 		void memset24_avx(char24 * from, char24 * to, char_fast24 u)
 		{
-			const usize size = (to - from) * sizeof(char24);
+			const usize size = static_cast<usize>(to - from) * sizeof(char24);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -304,7 +304,7 @@ namespace ful
 		ful_target("avx") inline
 		void memset32_avx(char32 * from, char32 * to, char32 u)
 		{
-			const usize size = (to - from) * sizeof(char32);
+			const usize size = static_cast<usize>(to - from) * sizeof(char32);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -346,7 +346,7 @@ namespace ful
 		ful_target("avx") ful_inline
 		byte * memswap_avx(byte * beg1, byte * end1, byte * beg2)
 		{
-			const usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))

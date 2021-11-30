@@ -12,7 +12,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf8 * first, const unit_utf8 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -24,7 +24,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf8 * first, const unit_utf8 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -36,7 +36,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
 		{
-			return (last - first) * 3;
+			return static_cast<usize>(last - first) * 3;
 		}
 	};
 
@@ -45,7 +45,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -54,7 +54,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf16 * first, const unit_utf16 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -66,7 +66,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf61 * first, const unit_utf61 * last)
 		{
-			return (last - first) * 3;
+			return static_cast<usize>(last - first) * 3;
 		}
 	};
 
@@ -78,7 +78,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf61 * first, const unit_utf61 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -90,7 +90,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
 		{
-			return (last - first) * 4;
+			return static_cast<usize>(last - first) * 4;
 		}
 	};
 
@@ -99,7 +99,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
 		{
-			return (last - first) * 2;
+			return static_cast<usize>(last - first) * 2;
 		}
 	};
 
@@ -111,7 +111,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf32 * first, const unit_utf32 * last)
 		{
-			return last - first;
+			return static_cast<usize>(last - first);
 		}
 	};
 
@@ -120,7 +120,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf23 * first, const unit_utf23 * last)
 		{
-			return (last - first) * 4;
+			return static_cast<usize>(last - first) * 4;
 		}
 	};
 
@@ -129,7 +129,7 @@ namespace ful
 	{
 		static usize max_size(const unit_utf23 * first, const unit_utf23 * last)
 		{
-			return (last - first) * 2;
+			return static_cast<usize>(last - first) * 2;
 		}
 	};
 
@@ -495,7 +495,7 @@ namespace ful
 
 		ful_target("sse2") inline unit_utf16 * convert_8_16_sse2(const unit_utf8 * first, const unit_utf8 * last, unit_utf16 * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 			if (size >= 28)
 			{
 				const unit_utf8 * const last_chunk = last - 28;
@@ -507,7 +507,7 @@ namespace ful
 					{
 						const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 
-						const unsigned int mask = _mm_movemask_epi8(line);
+						const int mask = _mm_movemask_epi8(line);
 						const unsigned int count = least_significant_set_bit(mask | 0x10000);
 
 						const __m128i zero = _mm_setzero_si128();
@@ -603,7 +603,7 @@ namespace ful
 
 		ful_target("sse2") inline unit_utf32 * convert_8_32_sse2(const unit_utf8 * first, const unit_utf8 * last, unit_utf32 * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 			if (size >= 22)
 			{
 				const unit_utf8 * const last_chunk = last - 22;
@@ -615,7 +615,7 @@ namespace ful
 					{
 						const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 
-						const unsigned int mask = _mm_movemask_epi8(line);
+						const int mask = _mm_movemask_epi8(line);
 						const unsigned int count = least_significant_set_bit(mask | 0x10000);
 
 						const __m128i zero = _mm_setzero_si128();
@@ -745,7 +745,7 @@ namespace ful
 
 		ful_target("sse2") inline unit_utf8 * convert_16_8_sse2(const unit_utf16 * first, const unit_utf16 * last, unit_utf8 * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 			if (size >= 16)
 			{
 				const unit_utf16 * const last_chunk = last - 16;
@@ -764,7 +764,7 @@ namespace ful
 						// (16 8-bits)  p| o| n| m| l| k| j| i| h| g| f| e| d| c| b| a
 						const __m128i val8 = _mm_packus_epi16(line1, line2);
 
-						const unsigned int mask = _mm_movemask_epi8(val8);
+						const int mask = _mm_movemask_epi8(val8);
 						const unsigned int count = least_significant_set_bit(mask | 0x10000);
 
 						_mm_storeu_si128(reinterpret_cast<__m128i *>(begin + 0), val8);
@@ -841,7 +841,7 @@ namespace ful
 					// word : aaaaaaaa aaaaaaaa | aaaaaaaa aaaaaaaa
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 
-					const unsigned int mask = _mm256_movemask_epi8(word);
+					const int mask = _mm256_movemask_epi8(word);
 					const unsigned int count = count_trailing_zero_bits(mask);
 
 					//if (ful_expect(begin <= end - 32)) // todo
@@ -895,7 +895,7 @@ namespace ful
 					const __m256i value = _mm256_or_si256(x, y);
 
 					const __m256i add = _mm256_adds_epi8(word, p32);
-					const unsigned int mask = _mm256_movemask_epi8(add);
+					const int mask = _mm256_movemask_epi8(add);
 					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
 					//if (ful_expect(begin <= end - 16)) // todo
@@ -920,8 +920,8 @@ namespace ful
 			//	0x80090a0b80060708, 0x8003040580000102,
 			//	0x80090a0b80060708, 0x8003040580000102);
 			const __m256i order3 = _mm256_set_epi64x(
-				0x8005060780020304, 0x800f0001800c0d0e,
-				0x80090a0b80060708, 0x8003040580000102);
+				static_cast<long long>(0x8005060780020304), static_cast<long long>(0x800f0001800c0d0e),
+				static_cast<long long>(0x80090a0b80060708), static_cast<long long>(0x8003040580000102));
 
 			const __m256i x_mask2 = _mm256_set1_epi16(0x07c0);
 			const __m256i y_mask2 = _mm256_set1_epi16(0x003f);
@@ -943,7 +943,7 @@ namespace ful
 					// word : aaaaaaaa aaaaaaaa | aaaaaaaa aaaaaaaa
 					const __m256i word = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 
-					const unsigned int mask = _mm256_movemask_epi8(word);
+					const int mask = _mm256_movemask_epi8(word);
 					const unsigned int count = count_trailing_zero_bits(mask);
 
 					//if (ful_expect(begin <= end - 32)) // todo
@@ -1008,8 +1008,8 @@ namespace ful
 					const __m256i value = _mm256_or_si256(_mm256_or_si256(x, y), z);
 
 					const __m256i cmp = _mm256_cmpeq_epi16(s, cmp_mask3);
-					const unsigned int mask = _mm256_movemask_epi8(cmp);
-					const unsigned int count = count_trailing_zero_bits(mask ^ 0xcccccccc) / 4;
+					const int mask = _mm256_movemask_epi8(cmp);
+					const unsigned int count = count_trailing_zero_bits(mask ^ static_cast<int>(0xcccccccc)) / 4;
 
 					//if (ful_expect(begin <= end - 8)) // todo
 					{
@@ -1033,7 +1033,7 @@ namespace ful
 					const __m256i value = _mm256_or_si256(x, y);
 
 					const __m256i add = _mm256_adds_epi8(word, p32);
-					const unsigned int mask = _mm256_movemask_epi8(add);
+					const int mask = _mm256_movemask_epi8(add);
 					const unsigned int count = count_trailing_zero_bits(~mask) / 2;
 
 					//if (ful_expect(begin <= end - 16)) // todo

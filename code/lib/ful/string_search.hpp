@@ -33,7 +33,7 @@ namespace ful
 		ful_inline
 		const char8 * find_unit_8_8_generic(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -51,7 +51,7 @@ namespace ful
 		ful_inline
 		const char8 * find_unit_8_16_generic(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -69,7 +69,7 @@ namespace ful
 		ful_inline
 		const char8 * find_unit_8_24_generic(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -177,7 +177,7 @@ namespace ful
 		ful_inline
 		const char8 * find_unit_8_32_generic(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -234,7 +234,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_8_sse2(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #else
@@ -250,11 +250,11 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_16_sse2_9(const char8 * begin, const char8 * end, char16 c, usize size)
 		{
-			const __m128i c1281 = _mm_set1_epi8((uint8)c);
-			const __m128i c1282 = _mm_set1_epi8((uint8)(c >> 8));
+			const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint16>(c) & 0xff));
+			const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint16>(c) >> 8));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -263,7 +263,7 @@ namespace ful
 				const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -278,7 +278,7 @@ namespace ful
 				const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -291,7 +291,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_16_sse2(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -316,12 +316,12 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_24_sse2_5_17(const char8 * begin, const char8 * end, char_fast24 c, usize size)
 		{
-			const __m128i c1281 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c)));
-			const __m128i c1282 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 8));
-			const __m128i c1283 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 16));
+			const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m128i c1283 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -332,7 +332,7 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -349,7 +349,7 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 3));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -362,7 +362,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_24_sse2(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -387,7 +387,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * find_unit_8_32_sse2(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -431,14 +431,14 @@ namespace ful
 		{
 			const __m256i c256 = _mm256_set1_epi8(c);
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
 				const unsigned int index = count_trailing_zero_bits(mask);
 				return begin + index;
 			}
@@ -446,7 +446,7 @@ namespace ful
 			{
 				const __m256i line = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)), static_cast<unsigned int>(size - 1));
 				const unsigned int index = count_trailing_zero_bits(mask);
 				return begin + index;
 			}
@@ -455,7 +455,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_8_avx2(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #else
@@ -478,18 +478,18 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_16_avx2_9(const char8 * begin, const char8 * end, char16 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-			const __m256i c2562 = _mm256_set1_epi8((uint8)(c >> 8));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint16>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint16>(c) >> 8));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
@@ -505,7 +505,7 @@ namespace ful
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i andcmp = _mm256_and_si256(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -518,7 +518,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_16_avx2(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -543,12 +543,12 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_24_avx2_5_33(const char8 * begin, const char8 * end, char_fast24 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c)));
-			const __m256i c2562 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 8));
-			const __m256i c2563 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 16));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m256i c2563 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) &  static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -556,7 +556,7 @@ namespace ful
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 2;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
@@ -573,7 +573,7 @@ namespace ful
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i cmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line2, c2563);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp12) & _mm256_movemask_epi8(cmp3_) >> 1;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp12)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 1;
 				const unsigned int mask = zero_higher_bits(andcmp, static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
@@ -587,7 +587,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_24_avx2(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -612,13 +612,13 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_32_avx2_4_34(const char8 * begin, const char8 * end, char32 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-			const __m256i c2562 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 8));
-			const __m256i c2563 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 16));
-			const __m256i c2564 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 24));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m256i c2563 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
+			const __m256i c2564 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 24));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -627,7 +627,7 @@ namespace ful
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
 				const __m256i cmp4_ = _mm256_cmpeq_epi8(line1, c2564);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2 & _mm256_movemask_epi8(cmp4_) >> 3;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 2 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp4_)) >> 3;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
 				if (mask != 0)
 				{
@@ -648,7 +648,7 @@ namespace ful
 				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 				const __m256i andcmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i andcmp34 = _mm256_and_si256(cmp3, cmp4);
-				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & _mm256_movemask_epi8(andcmp34) >> (35 - size);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(andcmp12)) & static_cast<unsigned int>(_mm256_movemask_epi8(andcmp34)) >> (35 - size);
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -661,7 +661,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * find_unit_8_32_avx2(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -746,7 +746,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -762,7 +762,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16));
 				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -784,7 +784,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -800,7 +800,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -852,7 +852,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 				const __m128i cmp = _mm_cmpeq_epi16(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -868,7 +868,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 2));
 				const __m128i cmp = _mm_cmpeq_epi16(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -890,7 +890,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 				const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -906,7 +906,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 2));
 				const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -958,7 +958,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 				const __m128i cmp = _mm_cmpeq_epi32(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -974,7 +974,7 @@ namespace ful
 
 				const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 4));
 				const __m128i cmp = _mm_cmpeq_epi32(line, c128);
-				const unsigned int mask = _mm_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -996,7 +996,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 				const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1012,7 +1012,7 @@ namespace ful
 
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 4));
 				const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
-				const unsigned int mask = _mm256_movemask_epi8(cmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1024,7 +1024,7 @@ namespace ful
 		ful_inline
 		const char8 * rfind_unit_8_8_generic(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1042,7 +1042,7 @@ namespace ful
 		ful_inline
 		const char8 * rfind_unit_8_16_generic(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1060,7 +1060,7 @@ namespace ful
 		ful_inline
 		const char8 * rfind_unit_8_24_generic(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1168,7 +1168,7 @@ namespace ful
 		ful_inline
 		const char8 * rfind_unit_8_32_generic(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -1226,7 +1226,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_8_sse2(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #else
@@ -1242,11 +1242,11 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_16_sse2_9(const char8 * begin, const char8 * end, char16 c, usize size)
 		{
-			const __m128i c1281 = _mm_set1_epi8((uint8)c);
-			const __m128i c1282 = _mm_set1_epi8((uint8)(c >> 8));
+			const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint16>(c) & 0xff));
+			const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint16>(c) >> 8));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -1255,7 +1255,7 @@ namespace ful
 				const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1270,7 +1270,7 @@ namespace ful
 				const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1283,7 +1283,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_16_sse2(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1308,12 +1308,12 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_24_sse2_5_17(const char8 * begin, const char8 * end, char_fast24 c, usize size)
 		{
-			const __m128i c1281 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c)));
-			const __m128i c1282 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 8));
-			const __m128i c1283 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 16));
+			const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m128i c1283 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -1324,7 +1324,7 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1341,7 +1341,7 @@ namespace ful
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>(size - 3));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1354,7 +1354,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_24_sse2(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1379,7 +1379,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		const char8 * rfind_unit_8_32_sse2(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -1423,14 +1423,14 @@ namespace ful
 		{
 			const __m256i c256 = _mm256_set1_epi8(c);
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1442,7 +1442,7 @@ namespace ful
 			{
 				const __m256i line = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(_mm256_movemask_epi8(cmp), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)), static_cast<unsigned int>(size - 1));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1455,7 +1455,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_8_avx2(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(32u < size))
 #else
@@ -1478,18 +1478,18 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_16_avx2_9(const char8 * begin, const char8 * end, char16 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-			const __m256i c2562 = _mm256_set1_epi8((uint8)(c >> 8));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint16>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint16>(c) >> 8));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
 				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
@@ -1505,7 +1505,7 @@ namespace ful
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i andcmp = _mm256_and_si256(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm256_movemask_epi8(andcmp), static_cast<unsigned int>(size - 2));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(andcmp)), static_cast<unsigned int>(size - 2));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1518,7 +1518,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_16_avx2(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1543,12 +1543,12 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_24_avx2_5_33(const char8 * begin, const char8 * end, char_fast24 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c)));
-			const __m256i c2562 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 8));
-			const __m256i c2563 = _mm256_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 16));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m256i c2563 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -1556,7 +1556,7 @@ namespace ful
 				const __m256i cmp1 = _mm256_cmpeq_epi8(line1, c2561);
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 2;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
@@ -1573,7 +1573,7 @@ namespace ful
 				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, c2562);
 				const __m256i cmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line2, c2563);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp12) & _mm256_movemask_epi8(cmp3_) >> 1;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp12)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 1;
 				const unsigned int mask = zero_higher_bits(andcmp, static_cast<unsigned int>(size - 3));
 				if (mask != 0)
 				{
@@ -1587,7 +1587,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_24_avx2(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(33u < size))
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1612,13 +1612,13 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_32_avx2_4_34(const char8 * begin, const char8 * end, char32 c, usize size)
 		{
-			const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-			const __m256i c2562 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 8));
-			const __m256i c2563 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 16));
-			const __m256i c2564 = _mm256_set1_epi8((uint8)(static_cast<uint32>(c) >> 24));
+			const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+			const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+			const __m256i c2563 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
+			const __m256i c2564 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 24));
 
-			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+			const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+			const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 			if (begin_chunk == end_chunk)
 			{
@@ -1627,7 +1627,7 @@ namespace ful
 				const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
 				const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
 				const __m256i cmp4_ = _mm256_cmpeq_epi8(line1, c2564);
-				const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2 & _mm256_movemask_epi8(cmp4_) >> 3;
+				const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 2 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp4_)) >> 3;
 				const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
 				if (mask != 0)
 				{
@@ -1648,7 +1648,7 @@ namespace ful
 				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 				const __m256i andcmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i andcmp34 = _mm256_and_si256(cmp3, cmp4);
-				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & _mm256_movemask_epi8(andcmp34) >> (35 - size);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(andcmp12)) & static_cast<unsigned int>(_mm256_movemask_epi8(andcmp34)) >> (35 - size);
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1661,7 +1661,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		const char8 * rfind_unit_8_32_avx2(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (!ful_expect(34u < size))
 #else
@@ -1714,7 +1714,7 @@ namespace ful
 
 		ful_inline const char8 * find(const char8 * begin, const char8 * end, char8 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (size <= 32u)
 #else
@@ -1810,7 +1810,7 @@ namespace ful
 
 		ful_inline const char8 * find(const char8 * begin, const char8 * end, char16 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (size <= 33u)
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1891,7 +1891,7 @@ namespace ful
 
 		ful_inline const char8 * find(const char8 * begin, const char8 * end, char_fast24 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (size <= 33u)
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -1969,7 +1969,7 @@ namespace ful
 
 		ful_inline const char8 * find(const char8 * begin, const char8 * end, char32 c)
 		{
-			const usize size = end - begin;
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 			if (size <= 34u)
 #else
@@ -2094,7 +2094,7 @@ namespace ful
 
 	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char8 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 		if (size <= 32u)
 #else
@@ -2202,7 +2202,7 @@ namespace ful
 
 	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char16 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 		if (size <= 33u)
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2295,7 +2295,7 @@ namespace ful
 
 	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char_fast24 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 		if (size <= 33u)
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
@@ -2385,7 +2385,7 @@ namespace ful
 
 	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char32 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
 		if (size <= 34u)
 #else

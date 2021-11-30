@@ -113,7 +113,7 @@ namespace ful
 		const auto last_ptr = to_address(last);
 		const auto begin_ptr = to_address(begin);
 
-		if (!ful_expect((last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
 			return begin_ptr;
 
 		return reinterpret_cast<decltype(begin_ptr)>(detail::memcopy(to_bytes(first_ptr), to_bytes(last_ptr), to_bytes(begin_ptr)));
@@ -127,7 +127,7 @@ namespace ful
 		const auto last_ptr = to_address(last);
 		const auto begin_ptr = to_address(begin);
 
-		if (!ful_expect((last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
 			return begin_ptr;
 
 		return reinterpret_cast<decltype(begin_ptr)>(detail::memmove(reinterpret_cast<const byte *>(first_ptr), reinterpret_cast<const byte *>(last_ptr), reinterpret_cast<byte *>(begin_ptr)));
@@ -141,7 +141,7 @@ namespace ful
 		const auto last_ptr = to_address(last);
 		const auto begin_ptr = to_address(begin);
 
-		if (!ful_expect((last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
 			return begin_ptr;
 
 		return reinterpret_cast<decltype(begin_ptr)>(detail::memmovef(reinterpret_cast<const byte *>(first_ptr), reinterpret_cast<const byte *>(last_ptr), reinterpret_cast<byte *>(begin_ptr)));
@@ -155,7 +155,7 @@ namespace ful
 		const auto last_ptr = to_address(last);
 		const auto begin_ptr = to_address(begin);
 
-		if (!ful_expect((last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
+		if (!ful_expect(static_cast<usize>(last_ptr - first_ptr) * sizeof(*first_ptr) % sizeof(*begin_ptr) == 0))
 			return begin_ptr;
 
 		return reinterpret_cast<decltype(begin_ptr)>(detail::memmover(reinterpret_cast<const byte *>(first_ptr), reinterpret_cast<const byte *>(last_ptr), reinterpret_cast<byte *>(begin_ptr)));
@@ -186,7 +186,7 @@ namespace ful
 		const auto end1_ptr = to_address(end1);
 		const auto beg2_ptr = to_address(beg2);
 
-		if (!ful_expect((end1_ptr - beg1_ptr) * sizeof(*beg1_ptr) % sizeof(*beg2_ptr) == 0))
+		if (!ful_expect(static_cast<usize>(end1_ptr - beg1_ptr) * sizeof(*beg1_ptr) % sizeof(*beg2_ptr) == 0))
 			return beg2_ptr;
 
 		return reinterpret_cast<decltype(beg2_ptr)>(detail::memswap(reinterpret_cast<byte *>(beg1_ptr), reinterpret_cast<byte *>(end1_ptr), reinterpret_cast<byte *>(beg2_ptr)));
@@ -197,7 +197,7 @@ namespace ful
 		ful_inline
 		bool equal_cstr_generic(const byte * beg1, const byte * end1, const byte * beg2)
 		{
-			const ful::usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			if (!ful_expect(32u < size))
 #else
@@ -213,7 +213,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		bool equal_cstr_sse(const byte * beg1, const byte * end1, const byte * beg2)
 		{
-			const ful::usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			if (!ful_expect(32u < size))
 #else
@@ -229,7 +229,7 @@ namespace ful
 		ful_target("sse2") ful_inline
 		bool equal_cstr_sse2(const byte * beg1, const byte * end1, const byte * beg2)
 		{
-			const ful::usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			if (!ful_expect(32u < size))
 #else
@@ -245,7 +245,7 @@ namespace ful
 		ful_target("avx") ful_inline
 		bool equal_cstr_avx(const byte * beg1, const byte * end1, const byte * beg2)
 		{
-			const ful::usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			if (!ful_expect(32u < size))
 #else
@@ -268,7 +268,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -276,7 +276,7 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 
@@ -293,7 +293,7 @@ namespace ful
 		ful_target("avx2") ful_inline
 		bool equal_cstr_avx2(const byte * beg1, const byte * end1, const byte * beg2)
 		{
-			const ful::usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 			if (!ful_expect(32u < size))
 #else
@@ -316,7 +316,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -324,7 +324,7 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 
@@ -341,8 +341,8 @@ namespace ful
 		ful_inline
 		bool equal_range_generic(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
-			const ful::usize size = end1 - beg1;
-			if (size != static_cast<ful::usize>(end2 - beg2))
+			const usize size = static_cast<usize>(end1 - beg1);
+			if (size != static_cast<usize>(end2 - beg2))
 				return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -360,8 +360,8 @@ namespace ful
 		ful_target("sse") ful_inline
 		bool equal_range_sse(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
-			const ful::usize size = end1 - beg1;
-			if (size != static_cast<ful::usize>(end2 - beg2))
+			const usize size = static_cast<usize>(end1 - beg1);
+			if (size != static_cast<usize>(end2 - beg2))
 				return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -379,8 +379,8 @@ namespace ful
 		ful_target("sse2") ful_inline
 		bool equal_range_sse2(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
-			const ful::usize size = end1 - beg1;
-			if (size != static_cast<ful::usize>(end2 - beg2))
+			const usize size = static_cast<usize>(end1 - beg1);
+			if (size != static_cast<usize>(end2 - beg2))
 				return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -398,8 +398,8 @@ namespace ful
 		ful_target("avx") ful_inline
 		bool equal_range_avx(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
-			const ful::usize size = end1 - beg1;
-			if (size != static_cast<ful::usize>(end2 - beg2))
+			const usize size = static_cast<usize>(end1 - beg1);
+			if (size != static_cast<usize>(end2 - beg2))
 				return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -415,7 +415,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -423,7 +423,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -440,8 +440,8 @@ namespace ful
 		ful_target("avx2") ful_inline
 		bool equal_range_avx2(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 		{
-			const ful::usize size = end1 - beg1;
-			if (size != static_cast<ful::usize>(end2 - beg2))
+			const usize size = static_cast<usize>(end1 - beg1);
+			if (size != static_cast<usize>(end2 - beg2))
 				return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -457,7 +457,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -465,7 +465,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 				}
@@ -483,7 +483,7 @@ namespace ful
 	ful_inline
 	bool equal(const byte * beg1, const byte * end1, const byte * beg2)
 	{
-		const ful::usize size = end1 - beg1;
+		const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
 		if (size <= 32u)
 #else
@@ -524,14 +524,14 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 #else
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
 					const __m128 line2 = _mm_load_ps(reinterpret_cast<const float *>(beg2 + index));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const int mask = _mm_movemask_ps(cmpeq);
 					if (mask != 0x0000000f)
 						return false;
 #endif
@@ -541,14 +541,14 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 #else
 				const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + end_line));
 				const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + end_line));
 				const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-				const unsigned int mask = _mm_movemask_ps(cmpeq);
+				const int mask = _mm_movemask_ps(cmpeq);
 				if (mask != 0x0000000f)
 					return false;
 #endif
@@ -630,8 +630,8 @@ namespace ful
 	ful_inline
 	bool equal(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2)
 	{
-		const ful::usize size = end1 - beg1;
-		if (size != static_cast<ful::usize>(end2 - beg2))
+		const usize size = static_cast<usize>(end1 - beg1);
+		if (size != static_cast<usize>(end2 - beg2))
 			return false;
 
 #if defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -665,14 +665,14 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 #else
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + 0));
 					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + 0));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const int mask = _mm_movemask_ps(cmpeq);
 					if (mask != 0x0000000f)
 						return false;
 #endif
@@ -682,14 +682,14 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 #else
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(end1 - 16));
 					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(end2 - 16));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const int mask = _mm_movemask_ps(cmpeq);
 					if (mask != 0x0000000f)
 						return false;
 #endif

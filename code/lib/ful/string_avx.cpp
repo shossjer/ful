@@ -61,7 +61,7 @@ namespace ful
 		ful_target("avx")
 		byte * memcopy_avx_64(const byte * first, usize size, byte * begin)
 		{
-			const usize begin_offset = ful_align_next_32(begin) - begin;
+			const usize begin_offset = static_cast<usize>(ful_align_next_32(begin) - begin);
 			{
 				const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 				_mm256_storeu_si256(reinterpret_cast<__m256i *>(begin), a);
@@ -97,7 +97,7 @@ namespace ful
 		byte * memmovef_avx_64(const byte * first, usize size, byte * begin)
 		{
 			// todo benchmark stream vs unaligned
-			const usize begin_offset = ful_align_next_32(begin) - begin;
+			const usize begin_offset = static_cast<usize>(ful_align_next_32(begin) - begin);
 			{
 				const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first));
 				const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(first + begin_offset));
@@ -190,9 +190,9 @@ namespace ful
 			// lo 0001000001000001 0000010000010000 0100000100000100 0001000001000001
 			// mi 0100000100000100 0001000001000001 0000010000010000 0100000100000100
 			// hi 0000010000010000 0100000100000100 0001000001000001 0000010000010000
-			const __m256i lo_u256 = _mm256_set_epi64x(bytes0, bytes2, bytes1, bytes0);
-			const __m256i mi_u256 = _mm256_set_epi64x(bytes1, bytes0, bytes2, bytes1);
-			const __m256i hi_u256 = _mm256_set_epi64x(bytes2, bytes1, bytes0, bytes2);
+			const __m256i lo_u256 = _mm256_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m256i mi_u256 = _mm256_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0), static_cast<long long>(bytes2), static_cast<long long>(bytes1));
+			const __m256i hi_u256 = _mm256_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1), static_cast<long long>(bytes0), static_cast<long long>(bytes2));
 
 			_mm256_storeu_si256(reinterpret_cast<__m256i *>(from), lo_u256);
 

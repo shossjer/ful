@@ -202,7 +202,7 @@ namespace ful
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
 					const __m128 line2 = _mm_load_ps(reinterpret_cast<const float *>(beg2 + index));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const int mask = _mm_movemask_ps(cmpeq);
 					if (mask != 0x0000000f)
 						return false;
 
@@ -214,7 +214,7 @@ namespace ful
 			const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + end_line));
 			const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + end_line));
 			const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-			const unsigned int mask = _mm_movemask_ps(cmpeq);
+			const int mask = _mm_movemask_ps(cmpeq);
 			if (mask != 0x0000000f)
 				return false;
 
@@ -238,7 +238,7 @@ namespace ful
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 					const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const int mask = _mm_movemask_epi8(cmpeq);
 					if (mask != 0x0000ffff)
 						return false;
 
@@ -250,7 +250,7 @@ namespace ful
 			const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 			const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 			const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-			const unsigned int mask = _mm_movemask_epi8(cmpeq);
+			const int mask = _mm_movemask_epi8(cmpeq);
 			if (mask != 0x0000ffff)
 				return false;
 
@@ -270,7 +270,7 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 
@@ -315,7 +315,7 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 
@@ -330,8 +330,8 @@ namespace ful
 					const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + index));
 					const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(beg2 + index));
 					const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
-					if (mask != 0xffffffff)
+					const int mask = _mm256_movemask_epi8(line_cmpeq);
+					if (mask != static_cast<int>(0xffffffff))
 						return false;
 
 					index += 32;
@@ -342,8 +342,8 @@ namespace ful
 			const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + end_line));
 			const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg2 + end_line));
 			const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-			const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
-			if (mask != 0xffffffff)
+			const int mask = _mm256_movemask_epi8(line_cmpeq);
+			if (mask != static_cast<int>(0xffffffff))
 				return false;
 
 			return beg2[end_line + 32] == ful::byte{};
@@ -380,7 +380,7 @@ namespace ful
 				const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
 				const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + index));
 				const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-				const unsigned int mask = _mm_movemask_ps(cmpeq);
+				const int mask = _mm_movemask_ps(cmpeq);
 				if (mask != 0x0000000f)
 					return false;
 
@@ -391,7 +391,7 @@ namespace ful
 			const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + end_size));
 			const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + end_size));
 			const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-			const unsigned int mask = _mm_movemask_ps(cmpeq);
+			const int mask = _mm_movemask_ps(cmpeq);
 			if (mask != 0x0000000f)
 				return false;
 
@@ -409,7 +409,7 @@ namespace ful
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 				const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm_movemask_epi8(cmpeq);
+				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
 					return false;
 
@@ -420,7 +420,7 @@ namespace ful
 			const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_size));
 			const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_size));
 			const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-			const unsigned int mask = _mm_movemask_epi8(cmpeq);
+			const int mask = _mm_movemask_epi8(cmpeq);
 			if (mask != 0x0000ffff)
 				return false;
 
@@ -465,8 +465,8 @@ namespace ful
 				const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + index));
 				const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg2 + index));
 				const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-				const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
-				if (mask != 0xffffffff)
+				const int mask = _mm256_movemask_epi8(line_cmpeq);
+				if (mask != static_cast<int>(0xffffffff))
 					return false;
 
 				index += 32;
@@ -476,8 +476,8 @@ namespace ful
 			const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + end_size));
 			const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg2 + end_size));
 			const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-			const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
-			if (mask != 0xffffffff)
+			const int mask = _mm256_movemask_epi8(line_cmpeq);
+			if (mask != static_cast<int>(0xffffffff))
 				return false;
 
 			return true;

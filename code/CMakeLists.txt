@@ -21,7 +21,7 @@ endfunction()
 
 set(_compile_options
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-		-Wall -Wextra -Wconversion -Werror -Wno-sign-conversion>
+		-Wall -Wextra -Wconversion -Werror>
 	$<$<AND:$<CXX_COMPILER_ID:Clang>,$<VERSION_LESS:CXX_COMPILER_VERSION,6.0>>:
 		-Wno-missing-braces>
 	$<$<CXX_COMPILER_ID:MSVC>:

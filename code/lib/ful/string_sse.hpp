@@ -29,7 +29,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		byte * memcopy_sse(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -62,7 +62,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		byte * memmovef_sse(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -95,7 +95,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		byte * memmover_sse(const byte * first, const byte * last, byte * end)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -128,7 +128,7 @@ namespace ful
 		ful_target("sse") inline
 		void set8_sse_16_32(char8 * from, char8 * to, char8 u)
 		{
-			const uint32 bytes = 0x01010101u * u;
+			const uint32 bytes = 0x01010101u * static_cast<uint8>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
@@ -138,7 +138,7 @@ namespace ful
 		ful_target("sse") inline
 		void set8_sse_32_64(char8 * from, char8 * to, char8 u)
 		{
-			const uint32 bytes = 0x01010101u * u;
+			const uint32 bytes = 0x01010101u * static_cast<uint8>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
@@ -150,7 +150,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		void memset8_sse(char8 * from, char8 * to, char8 u)
 		{
-			const usize size = to - from;
+			const usize size = static_cast<usize>(to - from);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -179,7 +179,7 @@ namespace ful
 		ful_target("sse") inline
 		void set16_sse_16_32(char16 * from, char16 * to, char16 u)
 		{
-			const uint32 bytes = 0x00010001u * u;
+			const uint32 bytes = 0x00010001u * static_cast<uint16>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
@@ -189,7 +189,7 @@ namespace ful
 		ful_target("sse") inline
 		void set16_sse_32_64(char16 * from, char16 * to, char16 u)
 		{
-			const uint32 bytes = 0x00010001u * u;
+			const uint32 bytes = 0x00010001u * static_cast<uint16>(u);
 			const __m128 u128 = _mm_load_ps1(reinterpret_cast<const float *>(&bytes));
 
 			_mm_storeu_ps(reinterpret_cast<float *>(from), u128);
@@ -201,7 +201,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		void memset16_sse(char16 * from, char16 * to, char16 u)
 		{
-			const usize size = (to - from) * sizeof(char16);
+			const usize size = static_cast<usize>(to - from) * sizeof(char16);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -293,7 +293,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		void memset24_sse(char24 * from, char24 * to, char_fast24 u)
 		{
-			const usize size = (to - from) * sizeof(char24);
+			const usize size = static_cast<usize>(to - from) * sizeof(char24);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -346,7 +346,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		void memset32_sse(char32 * from, char32 * to, char32 u)
 		{
-			const usize size = (to - from) * sizeof(char32);
+			const usize size = static_cast<usize>(to - from) * sizeof(char32);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -409,7 +409,7 @@ namespace ful
 		ful_target("sse") ful_inline
 		byte * memswap_sse(byte * beg1, byte * end1, byte * beg2)
 		{
-			const usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))

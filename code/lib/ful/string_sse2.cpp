@@ -68,7 +68,7 @@ namespace ful
 		ful_target("sse2")
 		byte * memcopy_sse2_64(const byte * first, usize size, byte * begin)
 		{
-			const usize begin_offset = ful_align_next_16(begin) - begin;
+			const usize begin_offset = static_cast<usize>(ful_align_next_16(begin) - begin);
 			{
 				const __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(first));
 				_mm_storeu_si128(reinterpret_cast<__m128i *>(begin), a);
@@ -191,9 +191,9 @@ namespace ful
 			// lo 0100000100000100 0001000001000001
 			// mi 0001000001000001 0000010000010000
 			// hi 0000010000010000 0100000100000100
-			const __m128i lo_u128 = _mm_set_epi64x(bytes1, bytes0);
-			const __m128i mi_u128 = _mm_set_epi64x(bytes0, bytes2);
-			const __m128i hi_u128 = _mm_set_epi64x(bytes2, bytes1);
+			const __m128i lo_u128 = _mm_set_epi64x(static_cast<long long>(bytes1), static_cast<long long>(bytes0));
+			const __m128i mi_u128 = _mm_set_epi64x(static_cast<long long>(bytes0), static_cast<long long>(bytes2));
+			const __m128i hi_u128 = _mm_set_epi64x(static_cast<long long>(bytes2), static_cast<long long>(bytes1));
 
 			_mm_storeu_si128(reinterpret_cast<__m128i *>(from), lo_u128);
 

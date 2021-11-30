@@ -264,7 +264,7 @@ namespace ful
 		ful_inline
 		void set_small(char16 * from, char16 * to, char16 u)
 		{
-			switch ((to - from) * sizeof(char16))
+			switch (static_cast<usize>(to - from) * sizeof(char16))
 			{
 #if defined(__AVX__)
 			case 64:
@@ -340,7 +340,7 @@ namespace ful
 		ful_inline
 		void set_small(char24 * from, char24 * to, char_fast24 u)
 		{
-			switch ((to - from) * sizeof(char24))
+			switch (static_cast<usize>(to - from) * sizeof(char24))
 			{
 #if defined(__AVX__)
 			case 63:
@@ -410,7 +410,7 @@ namespace ful
 		ful_inline
 		void set_small(char32 * from, char32 * to, char32 u)
 		{
-			switch ((to - from) * sizeof(char32))
+			switch (static_cast<usize>(to - from) * sizeof(char32))
 			{
 #if defined(__AVX__)
 			case 64:
@@ -606,7 +606,7 @@ namespace ful
 		ful_inline
 		byte * memcopy(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 			if (!ful_expect(begin + size <= first || last <= begin))
 				return begin;
 
@@ -627,7 +627,7 @@ namespace ful
 			// about 6'000'000 bytes, repmov is noticibly slower
 			else if (size <= 5000000 && (reinterpret_cast<puint>(first) & (8 - 1)) == (reinterpret_cast<puint>(begin) & (8 - 1)))
 			{
-				const int alignment_offset = 8 - static_cast<int>(reinterpret_cast<puint>(begin) & (8 - 1));
+				const usize alignment_offset = 8 - static_cast<usize>(reinterpret_cast<puint>(begin) & (8 - 1));
 
 				*reinterpret_cast<uint64 *>(begin) = *reinterpret_cast<const uint64 *>(first);
 
@@ -657,7 +657,7 @@ namespace ful
 		ful_inline
 		byte * memmove(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -706,7 +706,7 @@ namespace ful
 			if (!ful_expect(begin <= first || last <= begin))
 				return begin;
 
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -741,7 +741,7 @@ namespace ful
 			if (!ful_expect(end <= first || last <= end))
 				return end;
 
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -773,7 +773,7 @@ namespace ful
 		ful_inline
 		void memset(char8 * from, char8 * to, char8 u)
 		{
-			const usize size = to - from;
+			const usize size = static_cast<usize>(to - from);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -805,7 +805,7 @@ namespace ful
 		ful_inline
 		void memset(char16 * from, char16 * to, char16 u)
 		{
-			const usize size = (to - from) * sizeof(char16);
+			const usize size = static_cast<usize>(to - from) * sizeof(char16);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -837,7 +837,7 @@ namespace ful
 		ful_inline
 		void memset(char24 * from, char24 * to, char_fast24 u)
 		{
-			const usize size = (to - from) * sizeof(char24);
+			const usize size = static_cast<usize>(to - from) * sizeof(char24);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -869,7 +869,7 @@ namespace ful
 		ful_inline
 		void memset(char32 * from, char32 * to, char32 u)
 		{
-			const usize size = (to - from) * sizeof(char32);
+			const usize size = static_cast<usize>(to - from) * sizeof(char32);
 #if defined(__AVX__)
 			if (size <= 64u)
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -901,7 +901,7 @@ namespace ful
 		ful_inline
 		void memset(char8 * from, char8 * to, char16 c)
 		{
-			if (ful_expect((to - from) * sizeof(char8) % sizeof(char16) == 0))
+			if (ful_expect(static_cast<usize>(to - from) * sizeof(char8) % sizeof(char16) == 0))
 			{
 				memset(reinterpret_cast<char16 *>(from), reinterpret_cast<char16 *>(to), c);
 			}
@@ -910,7 +910,7 @@ namespace ful
 		ful_inline
 		void memset(char8 * from, char8 * to, char_fast24 c)
 		{
-			if (ful_expect((to - from) * sizeof(char8) % sizeof(char24) == 0))
+			if (ful_expect(static_cast<usize>(to - from) * sizeof(char8) % sizeof(char24) == 0))
 			{
 				memset(reinterpret_cast<char24 *>(from), reinterpret_cast<char24 *>(to), c);
 			}
@@ -919,7 +919,7 @@ namespace ful
 		ful_inline
 		void memset(char8 * from, char8 * to, char32 c)
 		{
-			if (ful_expect((to - from) * sizeof(char8) % sizeof(char32) == 0))
+			if (ful_expect(static_cast<usize>(to - from) * sizeof(char8) % sizeof(char32) == 0))
 			{
 				memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), c);
 			}
@@ -928,7 +928,7 @@ namespace ful
 		ful_inline
 		void memset(char16 * from, char16 * to, char32 c)
 		{
-			if (ful_expect((to - from) * sizeof(char16) % sizeof(char32) == 0))
+			if (ful_expect(static_cast<usize>(to - from) * sizeof(char16) % sizeof(char32) == 0))
 			{
 				memset(reinterpret_cast<char32 *>(from), reinterpret_cast<char32 *>(to), c);
 			}
@@ -937,7 +937,7 @@ namespace ful
 		ful_inline
 		byte * memswap(byte * beg1, byte * end1, byte * beg2)
 		{
-			const usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 			if (!ful_expect(end1 <= beg2 || beg2 + size <= beg1))
 				return beg2;
 

@@ -16,7 +16,7 @@ namespace
 		case 4: return uint32(s[0] & 0x07) << 18 | uint32(s[1] & 0x3f) << 12 | uint32(s[2] & 0x3f) << 6 | uint32(s[3] & 0x3f);
 		case 3: return uint32(s[0] & 0x0f) << 12 | uint32(s[1] & 0x3f) << 6 | uint32(s[2] & 0x3f);
 		case 2: return uint32(s[0] & 0x1f) << 6 | uint32(s[1] & 0x3f);
-		case 1: return s[0];
+		case 1: return static_cast<uint32>(s[0]);
 		default: ful_unreachable();
 		}
 	}
@@ -24,14 +24,14 @@ namespace
 #if defined (__BMI2__)
 	uint32 code_point_alt_bmi2(const unit_utf8 * s)
 	{
-		static const unsigned long long table[] = {
+		static const uint64 table[] = {
 			0x0000007f, 0x00001f3f, 0x000f3f3f, 0x033f3f3f,
 		};
 
 		const unsigned int size = point_size(s) - 1;
 
-		const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -8);
-		const unit_utf8 * end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s + size) & -8);
+		const unit_utf8 * beg_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & static_cast<puint>(-8));
+		const unit_utf8 * end_word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s + size) & static_cast<puint>(-8));
 
 		uint64 word = *reinterpret_cast<const uint64 *>(beg_word);
 		if (beg_word != end_word)
@@ -42,10 +42,10 @@ namespace
 		}
 		const unsigned int end_offset = reinterpret_cast<puint>(s + size) & (8 - 1);
 		const unsigned int shift = (end_offset + 1) * 8;
-		word = rotr(word, shift);
+		word = detail::rotr(word, static_cast<int>(shift));
 
 		word = byte_swap(word);
-		return static_cast<uint32>(pext(word, table[size])); // guaranteed at most 21 bits
+		return static_cast<uint32>(detail::pext(word, table[size])); // guaranteed at most 21 bits
 	}
 #endif
 }
@@ -61,7 +61,7 @@ TEST_CASE("code_point", "")
 
 	BENCHMARK_ADVANCED("code_point (naive)")(Catch::Benchmark::Chronometer meter)
 	{
-		for (int i = 0; i < static_cast<int>(sizeof cstrs / sizeof cstrs[0]); i++)
+		for (unsigned int i = 0; i < sizeof cstrs / sizeof cstrs[0]; i++)
 		{
 			REQUIRE(code_point_alt_naive(cstrs[i]) == codes[i]);
 		}
@@ -69,7 +69,7 @@ TEST_CASE("code_point", "")
 			uint32_t sum = 0;
 			for (int i = 0; i < 20; i++)
 			{
-				sum += code_point_alt_naive(cstrs[(i * 4711 + n) % (sizeof cstrs / sizeof cstrs[0])]);
+				sum += code_point_alt_naive(cstrs[(i * 4711 + n) % static_cast<int>(sizeof cstrs / sizeof cstrs[0])]);
 			}
 			return sum;
 		});
@@ -78,7 +78,7 @@ TEST_CASE("code_point", "")
 #if defined(__BMI2__)
 	BENCHMARK_ADVANCED("code_point (bmi2)")(Catch::Benchmark::Chronometer meter)
 	{
-		for (int i = 0; i < sizeof cstrs / sizeof cstrs[0]; i++)
+		for (unsigned int i = 0; i < sizeof cstrs / sizeof cstrs[0]; i++)
 		{
 			REQUIRE(code_point_alt_bmi2(cstrs[i]) == codes[i]);
 		}
@@ -86,7 +86,7 @@ TEST_CASE("code_point", "")
 			uint32_t sum = 0;
 			for (int i = 0; i < 20; i++)
 			{
-				sum += code_point_alt_bmi2(cstrs[(i * 4711 + n) % (sizeof cstrs / sizeof cstrs[0])]);
+				sum += code_point_alt_bmi2(cstrs[(i * 4711 + n) % static_cast<int>(sizeof cstrs / sizeof cstrs[0])]);
 			}
 			return sum;
 		});
@@ -226,11 +226,11 @@ namespace
 			-65, -65, -65, -65, -65, -65, -65, -65,
 		};
 
-		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -32);
+		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & static_cast<puint>(-32));
 		const unsigned int offset = reinterpret_cast<puint>(s) & (32 - 1);
 
 		__m256i cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
-		unsigned int mask = zero_low_bits(_mm256_movemask_epi8(cmpi), offset);
+		unsigned int mask = zero_low_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmpi)), offset);
 		while (true)
 		{
 			const unsigned int npoints = detail::popcnt(mask);
@@ -243,7 +243,7 @@ namespace
 			word += 32;
 
 			cmpi = _mm256_cmpgt_epi8(*reinterpret_cast<const __m256i *>(word), *reinterpret_cast<const __m256i *>(m65));
-			mask = _mm256_movemask_epi8(cmpi);
+			mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmpi));
 		}
 		const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(n - 1)); // n <= 32
 		word += i;
@@ -261,11 +261,11 @@ namespace
 			-65, -65, -65, -65, -65, -65, -65, -65,
 		};
 
-		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & -16);
+		const unit_utf8 * word = reinterpret_cast<const unit_utf8 *>(reinterpret_cast<puint>(s) & static_cast<puint>(-16));
 		const unsigned int offset = reinterpret_cast<puint>(s) & (16 - 1);
 
 		__m128i cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
-		unsigned int mask = zero_low_bits(_mm_movemask_epi8(cmpi), offset);
+		unsigned int mask = zero_low_bits(static_cast<unsigned int>(_mm_movemask_epi8(cmpi)), offset);
 		while (true)
 		{
 			const unsigned int npoints = detail::popcnt(mask);
@@ -278,7 +278,7 @@ namespace
 			word += 16;
 
 			cmpi = _mm_cmpgt_epi8(*reinterpret_cast<const __m128i *>(word), *reinterpret_cast<const __m128i *>(m65));
-			mask = _mm_movemask_epi8(cmpi);
+			mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpi));
 		}
 		const unsigned int i = index_set_bit(mask, static_cast<unsigned int>(n - 1)); // n <= 32
 		word += i;

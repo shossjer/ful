@@ -165,7 +165,7 @@ namespace ful
 	{
 		if (p < 0x80)
 		{
-			begin[0] = static_cast<uint8>(p);
+			begin[0] = static_cast<unit_utf8>(static_cast<uint8>(p));
 			return begin + 1;
 		}
 		else if (p < 0x800)

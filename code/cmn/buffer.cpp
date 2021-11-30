@@ -97,8 +97,8 @@ namespace
 	{
 		/*const*/ char * first_char = const_cast<char *>(first);
 		char * begin_char = reinterpret_cast<char *>(begin);
-		size_t first_size = (last - first) * sizeof(ful::unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(T);
+		size_t first_size = static_cast<ful::usize>(last - first) * sizeof(ful::unit_utf8);
+		size_t begin_size = static_cast<ful::usize>(end - begin) * sizeof(T);
 
 		iconv_t converter;
 		size_t n;
@@ -147,7 +147,7 @@ bool read_buffer(const char * fname, buffer_utf8 & buffer)
 		return false;
 
 	std::fseek(file, 0, SEEK_END);
-	const std::size_t size = std::ftell(file);
+	const std::size_t size = static_cast<unsigned long>(std::ftell(file));
 	std::fseek(file, 0, SEEK_SET);
 
 	buffer.allocate(size);

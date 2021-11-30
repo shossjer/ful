@@ -10,7 +10,14 @@
 #endif
 
 #if HAVE_EASTL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+# endif
 # include <EASTL/string.h>
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# endif
 #endif
 
 #if HAVE_ICU4C
@@ -44,6 +51,7 @@
 # elif defined(__clang__)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wimplicit-int-conversion"
+#  pragma clang diagnostic ignored "-Wsign-conversion"
 # elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wconversion"
@@ -63,7 +71,14 @@
 #endif
 
 #if HAVE_UTFCPP
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+# endif
 # include <utf8cpp/utf8.h>
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# endif
 #endif
 
 namespace
@@ -106,8 +121,8 @@ namespace
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
-		size_t first_size = (last - first) * sizeof(ful::unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(ful::unit_utf16le);
+		size_t first_size = static_cast<size_t>(last - first) * sizeof(ful::unit_utf8);
+		size_t begin_size = static_cast<size_t>(end - begin) * sizeof(ful::unit_utf16le);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
@@ -122,7 +137,7 @@ namespace
 		ful_unused(end);
 
 		size_t size;
-		u8_to_u16(reinterpret_cast<const uint8_t *>(first), last - first, reinterpret_cast<uint16_t *>(begin), &size);
+		u8_to_u16(reinterpret_cast<const uint8_t *>(first), static_cast<size_t>(last - first), reinterpret_cast<uint16_t *>(begin), &size);
 		return begin + size;
 	}
 #endif
@@ -383,8 +398,8 @@ namespace
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
-		size_t first_size = (last - first) * sizeof(ful::unit_utf8);
-		size_t begin_size = (end - begin) * sizeof(ful::unit_utf32le);
+		size_t first_size = static_cast<size_t>(last - first) * sizeof(ful::unit_utf8);
+		size_t begin_size = static_cast<size_t>(end - begin) * sizeof(ful::unit_utf32le);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
@@ -399,7 +414,7 @@ namespace
 		ful_unused(end);
 
 		size_t size;
-		u8_to_u32(reinterpret_cast<const ful::uint8 *>(first), last - first, reinterpret_cast<ful::uint32 *>(begin), &size);
+		u8_to_u32(reinterpret_cast<const ful::uint8 *>(first), static_cast<size_t>(last - first), reinterpret_cast<ful::uint32 *>(begin), &size);
 		return begin + size;
 	}
 #endif
@@ -693,8 +708,8 @@ namespace
 	{
 		/*const*/ char * first_char = const_cast<char *>(reinterpret_cast<const char *>(first));
 		char * begin_char = reinterpret_cast<char *>(begin);
-		size_t first_size = (last - first) * sizeof(ful::unit_utf16le);
-		size_t begin_size = (end - begin) * sizeof(ful::unit_utf8);
+		size_t first_size = static_cast<size_t>(last - first) * sizeof(ful::unit_utf16le);
+		size_t begin_size = static_cast<size_t>(end - begin) * sizeof(ful::unit_utf8);
 
 		const size_t count = iconv(converter, &first_char, &first_size, &begin_char, &begin_size);
 		ful_expect(count != static_cast<size_t>(-1));
@@ -709,7 +724,7 @@ namespace
 		ful_unused(end);
 
 		size_t size;
-		u16_to_u8(reinterpret_cast<const uint16_t *>(first), last - first, reinterpret_cast<uint8_t *>(begin), &size); // todo
+		u16_to_u8(reinterpret_cast<const uint16_t *>(first), static_cast<size_t>(last - first), reinterpret_cast<uint8_t *>(begin), &size); // todo
 		return begin + size;
 	}
 #endif

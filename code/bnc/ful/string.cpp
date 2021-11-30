@@ -18,7 +18,14 @@
 #endif
 
 #if HAVE_EASTL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+# endif
 # include <EASTL/string.h>
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# endif
 #endif
 
 using namespace ful;
@@ -151,7 +158,7 @@ namespace
 
 			std::fill(first, last, 'Z');
 
-			meter.measure([&](int){ return A_memcpy(begin, first, last - first); });
+			meter.measure([&](int){ return A_memcpy(begin, first, static_cast<usize>(last - first)); });
 		};
 
 		BENCHMARK_ADVANCED("strcpy (asmlib)")(Catch::Benchmark::Chronometer meter)
@@ -621,8 +628,8 @@ namespace
 {
 	struct setup_compare_equal
 	{
-		const int unalignment1 = 0;
-		const int unalignment2 = 1;
+		const ful::usize unalignment1 = 0;
+		const ful::usize unalignment2 = 1;
 
 		template <typename F>
 		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
@@ -669,7 +676,7 @@ TEST_CASE("compare equal", "[compare]")
 				if (!ful_expect(end1 - beg1 == end2 - beg2))
 					return false;
 
-				return A_memcmp(beg1, beg2, end1 - beg1) == 0;
+				return A_memcmp(beg1, beg2, static_cast<size_t>(end1 - beg1)) == 0;
 			});
 		};
 #endif
@@ -748,9 +755,9 @@ TEST_CASE("dump memcopy", "[.][dump]")
 				const ful::char8 * const first = reinterpret_cast<const ful::char8 *>(buffer_from.beg());
 				const ful::char8 * const last = reinterpret_cast<const ful::char8 *>(buffer_from.end());
 				ful::char8 * const begin = reinterpret_cast<ful::char8 *>(buffer_to.beg());
-				const ful::usize size = last - first;
+				const ful::usize size = static_cast<ful::usize>(last - first);
 
-				const int alignment_offset = 8 - static_cast<int>(reinterpret_cast<ful::puint>(begin) & (8 - 1));
+				const ful::usize alignment_offset = 8 - static_cast<ful::usize>(reinterpret_cast<ful::puint>(begin) & (8 - 1));
 
 				*reinterpret_cast<ful::uint64 *>(begin) = *reinterpret_cast<const ful::uint64 *>(first);
 
@@ -784,8 +791,8 @@ namespace
 {
 	struct setup_equal_cstr
 	{
-		const int unalignment1 = 0;
-		const int unalignment2 = 1;
+		const ful::usize unalignment1 = 0;
+		const ful::usize unalignment2 = 1;
 
 		template <typename F>
 		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
@@ -825,7 +832,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				for (ful::usize i = 0; i < size; i++)
 				{
 					if (beg1[i] != beg2[i])
@@ -933,7 +940,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 8)
 				{
 					ful::usize index = 0;
@@ -1011,7 +1018,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 16)
 				{
 					ful::usize index = 0;
@@ -1087,7 +1094,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 							const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
 							const __m128 line2 = _mm_load_ps(reinterpret_cast<const float *>(beg2 + index));
 							const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-							const unsigned int mask = _mm_movemask_ps(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_ps(cmpeq));
 							if (mask != 0x0000000f)
 								return false;
 
@@ -1099,7 +1106,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + end_line));
 					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + end_line));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_ps(cmpeq));
 					if (mask != 0x0000000f)
 						return false;
 
@@ -1114,7 +1121,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 16)
 				{
 					ful::usize index = 0;
@@ -1190,7 +1197,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 							const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 
@@ -1202,7 +1209,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 					if (mask != 0x0000ffff)
 						return false;
 
@@ -1217,7 +1224,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 16)
 				{
 					ful::usize index = 0;
@@ -1318,7 +1325,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 32)
 				{
 					ful::usize index = 0;
@@ -1353,7 +1360,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 							const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -1361,7 +1368,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 						const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 						const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm_movemask_epi8(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 						if (mask != 0x0000ffff)
 							return false;
 
@@ -1432,7 +1439,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 						const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 						const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm_movemask_epi8(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 						if (mask != 0x0000ffff)
 							return false;
 
@@ -1472,7 +1479,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size <= 32)
 				{
 					ful::usize index = 0;
@@ -1507,7 +1514,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 							const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -1515,7 +1522,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
 						const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 						const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm_movemask_epi8(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 						if (mask != 0x0000ffff)
 							return false;
 
@@ -1586,7 +1593,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 						const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 						const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm_movemask_epi8(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 						if (mask != 0x0000ffff)
 							return false;
 
@@ -1601,7 +1608,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 							const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + index));
 							const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(beg2 + index));
 							const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(line_cmpeq));
 							if (mask != 0xffffffff)
 								return false;
 
@@ -1613,7 +1620,7 @@ TEST_CASE("dump equal_cstr", "[.][dump]")
 					const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + end_line));
 					const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg2 + end_line));
 					const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(line_cmpeq));
 					if (mask != 0xffffffff)
 						return false;
 
@@ -1629,8 +1636,8 @@ namespace
 {
 	struct setup_equal_range
 	{
-		const int unalignment1 = 0;
-		const int unalignment2 = 1;
+		const ful::usize unalignment1 = 0;
+		const ful::usize unalignment2 = 1;
 
 		template <typename F>
 		void operator () (Catch::Benchmark::Groupometer meter, F && func) const
@@ -1660,7 +1667,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1677,7 +1684,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1720,7 +1727,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1779,7 +1786,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1850,7 +1857,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1903,7 +1910,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 						const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(beg1 + index));
 						const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(beg2 + index));
 						const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-						const unsigned int mask = _mm_movemask_ps(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_ps(cmpeq));
 						if (mask != 0x0000000f)
 							return false;
 
@@ -1914,7 +1921,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 					const __m128 line1 = _mm_loadu_ps(reinterpret_cast<const float *>(end1 - 16));
 					const __m128 line2 = _mm_loadu_ps(reinterpret_cast<const float *>(end2 - 16));
 					const __m128 cmpeq = _mm_cmpeq_ps(line1, line2);
-					const unsigned int mask = _mm_movemask_ps(cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_ps(cmpeq));
 					if (mask != 0x0000000f)
 						return false;
 
@@ -1929,7 +1936,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -1982,7 +1989,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 						const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + index));
 						const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + index));
 						const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm_movemask_epi8(cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 						if (mask != 0x0000ffff)
 							return false;
 
@@ -1993,7 +2000,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 					const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 					const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 					const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm_movemask_epi8(cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 					if (mask != 0x0000ffff)
 						return false;
 
@@ -2008,7 +2015,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -2085,7 +2092,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -2114,7 +2121,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
 							const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -2122,7 +2129,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 							const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -2197,7 +2204,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 		{
 			setup_and_run(meter, [](const ful::byte * beg1, const ful::byte * end1, const ful::byte * beg2, const ful::byte * end2)
 			{
-				const ful::usize size = end1 - beg1;
+				const ful::usize size = static_cast<ful::usize>(end1 - beg1);
 				if (size != static_cast<ful::usize>(end2 - beg2))
 					return false;
 
@@ -2226,7 +2233,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + 0));
 							const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + 0));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -2234,7 +2241,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 							const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end1 - 16));
 							const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end2 - 16));
 							const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
-							const unsigned int mask = _mm_movemask_epi8(cmpeq);
+							const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmpeq));
 							if (mask != 0x0000ffff)
 								return false;
 						}
@@ -2285,7 +2292,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 						const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg1 + index));
 						const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(beg2 + index));
 						const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-						const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
+						const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(line_cmpeq));
 						if (mask != 0xffffffff)
 							return false;
 
@@ -2296,7 +2303,7 @@ TEST_CASE("dump equal_range", "[.][dump]")
 					const __m256i line1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(end1 - 32));
 					const __m256i line2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(end2 - 32));
 					const __m256i line_cmpeq = _mm256_cmpeq_epi8(line1, line2);
-					const unsigned int mask = _mm256_movemask_epi8(line_cmpeq);
+					const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(line_cmpeq));
 					if (mask != 0xffffffff)
 						return false;
 

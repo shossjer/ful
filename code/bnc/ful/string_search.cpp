@@ -17,7 +17,14 @@
 #endif
 
 #if HAVE_EASTL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+# endif
 # include <EASTL/string.h>
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# endif
 #endif
 
 #if HAVE_LIBUNISTRING
@@ -138,7 +145,7 @@ TEST_CASE("find_8_16", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit_8_16_avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		const char16 chr = (static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit());
+		const char16 chr = static_cast<char16>((static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_16_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), chr) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
 		meter.measure([&](int){ return detail::find_unit_8_16_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), chr); });
 	};
@@ -147,7 +154,7 @@ TEST_CASE("find_8_16", "")
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("find_unit_8_16_sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		const char16 chr = (static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit());
+		const char16 chr = static_cast<char16>((static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_16_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
 		meter.measure([&](int){ return detail::find_unit_8_16_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr); });
 	};
@@ -155,7 +162,7 @@ TEST_CASE("find_8_16", "")
 
 	BENCHMARK_ADVANCED("find_unit_8_16_generic")(Catch::Benchmark::Chronometer meter)
 	{
-		const char16 chr = (static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit());
+		const char16 chr = static_cast<char16>((static_cast<uint16>('<') << 8) | static_cast<uint16>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_16_generic(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
 		meter.measure([&](int){ return detail::find_unit_8_16_generic(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr); });
 	};
@@ -252,7 +259,7 @@ TEST_CASE("find_8_32", "")
 #if defined(__AVX2__)
 	BENCHMARK_ADVANCED("find_unit_8_32_avx2")(Catch::Benchmark::Chronometer meter)
 	{
-		const char32 chr = (static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit());
+		const char32 chr = static_cast<char32>((static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_32_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), chr) == reinterpret_cast<char8 *>(txt.beg()) + txt.iunit());
 		meter.measure([&](int){ return detail::find_unit_8_32_avx2(reinterpret_cast<char8 *>(txt.beg()), reinterpret_cast<char8 *>(txt.end()), chr); });
 	};
@@ -261,7 +268,7 @@ TEST_CASE("find_8_32", "")
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	BENCHMARK_ADVANCED("find_unit_8_32_sse2")(Catch::Benchmark::Chronometer meter)
 	{
-		const char32 chr = (static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit());
+		const char32 chr = static_cast<char32>((static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_32_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
 		meter.measure([&](int){ return detail::find_unit_8_32_sse2(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr); });
 	};
@@ -269,7 +276,7 @@ TEST_CASE("find_8_32", "")
 
 	BENCHMARK_ADVANCED("find_unit_8_32_generic")(Catch::Benchmark::Chronometer meter)
 	{
-		const char32 chr =(static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit());
+		const char32 chr = static_cast<char32>((static_cast<uint32>('a') << 24) | (static_cast<uint32>('/') << 16) | (static_cast<uint32>('<') << 8) | static_cast<uint32>(txt.cunit()));
 		REQUIRE(detail::find_unit_8_32_generic(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr) == reinterpret_cast<const char8 *>(txt.beg() + txt.iunit()));
 		meter.measure([&](int){ return detail::find_unit_8_32_generic(reinterpret_cast<const char8 *>(txt.beg()), reinterpret_cast<const char8 *>(txt.end()), chr); });
 	};
@@ -431,14 +438,14 @@ namespace
 
 		const __m128i c128 = _mm_set1_epi8(c);
 
-		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 		if (begin_chunk == end_chunk)
 		{
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(begin_chunk));
 			const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-			const unsigned int mask = (_mm_movemask_epi8(cmp) | (static_cast<unsigned int>(-2) << ((end - 1) - begin_chunk))) & (static_cast<unsigned int>(-1) << (begin - begin_chunk));
+			const unsigned int mask = (static_cast<unsigned int>(_mm_movemask_epi8(cmp)) | (static_cast<unsigned int>(-2) << ((end - 1) - begin_chunk))) & (static_cast<unsigned int>(-1) << (begin - begin_chunk));
 			const unsigned int index = count_trailing_zero_bits(mask);
 			return begin + index;
 		}
@@ -451,7 +458,7 @@ namespace
 				{
 					const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(begin));
 					const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-					const unsigned int mask = _mm_movemask_epi8(cmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 					if (mask != 0)
 					{
 						const unsigned int index = least_significant_set_bit(mask);
@@ -465,7 +472,7 @@ namespace
 				{
 					const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end_line));
 					const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-					const unsigned int mask = _mm_movemask_epi8(cmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 					const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
 					return end_line + index;
 				}
@@ -474,7 +481,7 @@ namespace
 			{
 				const __m128i line = _mm_loadu_si128(reinterpret_cast<const __m128i *>(begin));
 				const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-				const unsigned int mask = set_higher_bits(_mm_movemask_epi8(cmp), static_cast<unsigned int>((end - 1) - begin));
+				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(cmp)), static_cast<unsigned int>((end - 1) - begin));
 				const unsigned int index = count_trailing_zero_bits(mask);
 				return begin + index;
 			}
@@ -697,11 +704,11 @@ namespace
 		if (static_cast<usize>(end - begin) < 2)
 			return end;
 
-		const __m128i c1281 = _mm_set1_epi8((uint8)c);
-		const __m128i c1282 = _mm_set1_epi8((uint8)(c >> 8));
+		const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<char16>(c) & 0xff));
+		const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<char16>(c) >> 8));
 
-		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 		if (begin_chunk == end_chunk)
 		{
@@ -710,7 +717,7 @@ namespace
 			const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 			const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 			const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-			const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>((end - 2) - begin));
+			const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>((end - 2) - begin));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -730,7 +737,7 @@ namespace
 					const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 					const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 					const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-					const unsigned int mask = _mm_movemask_epi8(andcmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 					if (mask != 0)
 					{
 						const unsigned int index = least_significant_set_bit(mask);
@@ -747,7 +754,7 @@ namespace
 					const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 					const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 					const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-					const unsigned int mask = _mm_movemask_epi8(andcmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 					const unsigned int index = count_trailing_zero_bits(mask); // todo tag_popcnt
 					return end_line + index;
 				}
@@ -759,7 +766,7 @@ namespace
 				const __m128i cmp1 = _mm_cmpeq_epi8(line1, c1281);
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i andcmp = _mm_and_si128(cmp1, cmp2);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>((end - 1 - 1) - begin));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>((end - 1 - 1) - begin));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -989,16 +996,16 @@ namespace
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	const char8 * find_8_24_small_sse2(const char8 * begin, const char8 * end, char_fast24 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 		if (size < 3)
 			return end;
 
-		const __m128i c1281 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c)));
-		const __m128i c1282 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 8));
-		const __m128i c1283 = _mm_set1_epi8(static_cast<uint8>(static_cast<uint32>(c) >> 16));
+		const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+		const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+		const __m128i c1283 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
 
-		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<usize>(-16));
+		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<usize>(-16));
 
 		if (begin_chunk == end_chunk)
 		{
@@ -1009,7 +1016,7 @@ namespace
 			const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 			const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 			const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-			const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>((end - 3) - begin));
+			const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>((end - 3) - begin));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1029,7 +1036,7 @@ namespace
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp), static_cast<unsigned int>((end - 3) - begin));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)), static_cast<unsigned int>((end - 3) - begin));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1049,7 +1056,7 @@ namespace
 					const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 					const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 					const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-					const unsigned int mask = _mm_movemask_epi8(andcmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 					if (mask != 0)
 					{
 						const unsigned int index = least_significant_set_bit(mask);
@@ -1069,7 +1076,7 @@ namespace
 				const __m128i cmp2 = _mm_cmpeq_epi8(line2, c1282);
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), cmp3);
-				const unsigned int mask = _mm_movemask_epi8(andcmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1305,17 +1312,17 @@ namespace
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 	const char8 * find_8_32_small_sse2(const char8 * begin, const char8 * end, char32 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 		if (size < 4)
 			return end;
 
-		const __m128i c1281 = _mm_set1_epi8((uint8)c);
-		const __m128i c1282 = _mm_set1_epi8((uint8)(c >> 8));
-		const __m128i c1283 = _mm_set1_epi8((uint8)(c >> 16));
-		const __m128i c1284 = _mm_set1_epi8((uint8)(c >> 24));
+		const __m128i c1281 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+		const __m128i c1282 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+		const __m128i c1283 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
+		const __m128i c1284 = _mm_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 24));
 
-		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -16);
-		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -16);
+		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-16));
+		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-16));
 
 		if (begin_chunk == end_chunk)
 		{
@@ -1328,7 +1335,7 @@ namespace
 			const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 			const __m128i cmp4 = _mm_cmpeq_epi8(line4, c1284);
 			const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), _mm_and_si128(cmp3, cmp4));
-			const unsigned int mask = zero_higher_bits(_mm_movemask_epi8(andcmp) >> (begin - begin_chunk), static_cast<unsigned int>((end - 4) - begin));
+			const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm_movemask_epi8(andcmp)) >> (begin - begin_chunk), static_cast<unsigned int>((end - 4) - begin));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1351,7 +1358,7 @@ namespace
 				const __m128i cmp4 = _mm_cmpeq_epi8(line4, c1284);
 				const __m128i andcmp12 = _mm_and_si128(cmp1, cmp2);
 				const __m128i andcmp34 = _mm_and_si128(cmp3, cmp4);
-				const unsigned int mask = _mm_movemask_epi8(andcmp12) & (_mm_movemask_epi8(andcmp34) >> (((end - 4) - begin) ^ (16 - 1)));
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp12)) & (static_cast<unsigned int>(_mm_movemask_epi8(andcmp34)) >> (((end - 4) - begin) ^ (16 - 1)));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1373,7 +1380,7 @@ namespace
 					const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 					const __m128i cmp4 = _mm_cmpeq_epi8(line4, c1284);
 					const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), _mm_and_si128(cmp3, cmp4));
-					const unsigned int mask = _mm_movemask_epi8(andcmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 					if (mask != 0)
 					{
 						const unsigned int index = least_significant_set_bit(mask);
@@ -1395,7 +1402,7 @@ namespace
 				const __m128i cmp3 = _mm_cmpeq_epi8(line3, c1283);
 				const __m128i cmp4 = _mm_cmpeq_epi8(line4, c1284);
 				const __m128i andcmp = _mm_and_si128(_mm_and_si128(cmp1, cmp2), _mm_and_si128(cmp3, cmp4));
-				const unsigned int mask = _mm_movemask_epi8(andcmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(andcmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1410,17 +1417,17 @@ namespace
 #if defined(__AVX2__)
 	const char8 * find_8_32_small_avx2(const char8 * begin, const char8 * end, char32 c)
 	{
-		const usize size = end - begin;
+		const usize size = static_cast<usize>(end - begin);
 		if (size < 4)
 			return end;
 
-		const __m256i c2561 = _mm256_set1_epi8((uint8)c);
-		const __m256i c2562 = _mm256_set1_epi8((uint8)(c >> 8));
-		const __m256i c2563 = _mm256_set1_epi8((uint8)(c >> 16));
-		const __m256i c2564 = _mm256_set1_epi8((uint8)(c >> 24));
+		const __m256i c2561 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) & 0xff));
+		const __m256i c2562 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 8));
+		const __m256i c2563 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 16));
+		const __m256i c2564 = _mm256_set1_epi8(static_cast<char>(static_cast<uint32>(c) >> 24));
 
-		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & -32);
-		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & -32);
+		const char8 * const begin_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(begin) & static_cast<puint>(-32));
+		const char8 * const end_chunk = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(end - 1) & static_cast<puint>(-32));
 
 		if (begin_chunk == end_chunk)
 		{
@@ -1429,7 +1436,7 @@ namespace
 			const __m256i cmp2_ = _mm256_cmpeq_epi8(line1, c2562);
 			const __m256i cmp3_ = _mm256_cmpeq_epi8(line1, c2563);
 			const __m256i cmp4_ = _mm256_cmpeq_epi8(line1, c2564);
-			const unsigned int andcmp = _mm256_movemask_epi8(cmp1) & _mm256_movemask_epi8(cmp2_) >> 1 & _mm256_movemask_epi8(cmp3_) >> 2 & _mm256_movemask_epi8(cmp4_) >> 3;
+			const unsigned int andcmp = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1)) & static_cast<unsigned int>(_mm256_movemask_epi8(cmp2_)) >> 1 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp3_)) >> 2 & static_cast<unsigned int>(_mm256_movemask_epi8(cmp4_)) >> 3;
 			const unsigned int mask = zero_higher_bits(andcmp >> (begin - begin_chunk), static_cast<unsigned int>(size - 4));
 			if (mask != 0)
 			{
@@ -1453,7 +1460,7 @@ namespace
 				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 				const __m256i andcmp12 = _mm256_and_si256(cmp1, cmp2);
 				const __m256i andcmp34 = _mm256_and_si256(cmp3, cmp4);
-				const unsigned int mask = _mm256_movemask_epi8(andcmp12) & (_mm256_movemask_epi8(andcmp34) >> (((end - 4) - begin) ^ (16 - 1)));
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(andcmp12)) & (static_cast<unsigned int>(_mm256_movemask_epi8(andcmp34)) >> (((end - 4) - begin) ^ (16 - 1)));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1475,7 +1482,7 @@ namespace
 					const __m256i cmp3 = _mm256_cmpeq_epi8(line3, c2563);
 					const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 					const __m256i andcmp = _mm256_and_si256(_mm256_and_si256(cmp1, cmp2), _mm256_and_si256(cmp3, cmp4));
-					const unsigned int mask = _mm256_movemask_epi8(andcmp);
+					const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(andcmp));
 					if (mask != 0)
 					{
 						const unsigned int index = least_significant_set_bit(mask);
@@ -1497,7 +1504,7 @@ namespace
 				const __m256i cmp3 = _mm256_cmpeq_epi8(line3, c2563);
 				const __m256i cmp4 = _mm256_cmpeq_epi8(line4, c2564);
 				const __m256i andcmp = _mm256_and_si256(_mm256_and_si256(cmp1, cmp2), _mm256_and_si256(cmp3, cmp4));
-				const unsigned int mask = _mm256_movemask_epi8(andcmp);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(andcmp));
 				if (mask != 0)
 				{
 					const unsigned int index = least_significant_set_bit(mask);
@@ -1595,7 +1602,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 			const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1611,7 +1618,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32));
 			const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1622,7 +1629,7 @@ namespace
 
 	ful::usize strlen_8_avx2(const unit_utf8 * cstr)
 	{
-		return strend_8_avx2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_8_avx2(cstr) - cstr);
 	}
 #endif
 
@@ -1639,7 +1646,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 			const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1655,7 +1662,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16));
 			const __m128i cmp = _mm_cmpeq_epi8(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1666,7 +1673,7 @@ namespace
 
 	ful::usize strlen_8_sse2(const unit_utf8 * cstr)
 	{
-		return strend_8_sse2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_8_sse2(cstr) - cstr);
 	}
 #endif
 
@@ -1701,7 +1708,7 @@ namespace
 
 	ful::usize strlen_8_unroll8(const unit_utf8 * cstr)
 	{
-		return strend_8_unroll8(cstr) - cstr;
+		return static_cast<ful::usize>(strend_8_unroll8(cstr) - cstr);
 	}
 
 	const unit_utf8 * strend_8_naive(const unit_utf8 * cstr)
@@ -1719,7 +1726,7 @@ namespace
 
 	ful::usize strlen_8_naive(const unit_utf8 * cstr)
 	{
-		return strend_8_naive(cstr) - cstr;
+		return static_cast<ful::usize>(strend_8_naive(cstr) - cstr);
 	}
 }
 
@@ -1834,7 +1841,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 			const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1850,7 +1857,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 2));
 			const __m256i cmp = _mm256_cmpeq_epi16(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1861,7 +1868,7 @@ namespace
 
 	ful::usize strlen_16_avx2(const unit_utf16 * cstr)
 	{
-		return strend_16_avx2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_16_avx2(cstr) - cstr);
 	}
 #endif
 
@@ -1878,7 +1885,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 			const __m128i cmp = _mm_cmpeq_epi16(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1894,7 +1901,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 2));
 			const __m128i cmp = _mm_cmpeq_epi16(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -1905,7 +1912,7 @@ namespace
 
 	ful::usize strlen_16_sse2(const unit_utf16 * cstr)
 	{
-		return strend_16_sse2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_16_sse2(cstr) - cstr);
 	}
 #endif
 
@@ -1940,7 +1947,7 @@ namespace
 
 	ful::usize strlen_16_unroll8(const unit_utf16 * cstr)
 	{
-		return strend_16_unroll8(cstr) - cstr;
+		return static_cast<ful::usize>(strend_16_unroll8(cstr) - cstr);
 	}
 
 	const unit_utf16 * strend_16_naive(const unit_utf16 * cstr)
@@ -1958,7 +1965,7 @@ namespace
 
 	ful::usize strlen_16_naive(const unit_utf16 * cstr)
 	{
-		return strend_16_naive(cstr) - cstr;
+		return static_cast<ful::usize>(strend_16_naive(cstr) - cstr);
 	}
 }
 
@@ -2063,7 +2070,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr));
 			const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -2079,7 +2086,7 @@ namespace
 
 			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 4));
 			const __m256i cmp = _mm256_cmpeq_epi32(line, c256);
-			const unsigned int mask = _mm256_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -2090,7 +2097,7 @@ namespace
 
 	ful::usize strlen_32_avx2(const unit_utf32 * cstr)
 	{
-		return strend_32_avx2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_32_avx2(cstr) - cstr);
 	}
 #endif
 
@@ -2107,7 +2114,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr));
 			const __m128i cmp = _mm_cmpeq_epi32(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp) >> offset;
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> offset;
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -2123,7 +2130,7 @@ namespace
 
 			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 4));
 			const __m128i cmp = _mm_cmpeq_epi32(line, c128);
-			const unsigned int mask = _mm_movemask_epi8(cmp);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
 			if (mask != 0)
 			{
 				const unsigned int index = least_significant_set_bit(mask);
@@ -2134,7 +2141,7 @@ namespace
 
 	ful::usize strlen_32_sse2(const unit_utf32 * cstr)
 	{
-		return strend_32_sse2(cstr) - cstr;
+		return static_cast<ful::usize>(strend_32_sse2(cstr) - cstr);
 	}
 #endif
 
@@ -2169,7 +2176,7 @@ namespace
 
 	ful::usize strlen_32_unroll8(const unit_utf32 * cstr)
 	{
-		return strend_32_unroll8(cstr) - cstr;
+		return static_cast<ful::usize>(strend_32_unroll8(cstr) - cstr);
 	}
 
 	const unit_utf32 * strend_32_naive(const unit_utf32 * cstr)
@@ -2187,7 +2194,7 @@ namespace
 
 	ful::usize strlen_32_naive(const unit_utf32 * cstr)
 	{
-		return strend_32_naive(cstr) - cstr;
+		return static_cast<ful::usize>(strend_32_naive(cstr) - cstr);
 	}
 }
 

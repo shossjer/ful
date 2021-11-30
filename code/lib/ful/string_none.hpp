@@ -20,7 +20,7 @@ namespace ful
 		ful_inline
 		byte * memcopy_none(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -48,7 +48,7 @@ namespace ful
 		ful_inline
 		byte * memmovef_none(const byte * first, const byte * last, byte * begin)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -75,7 +75,7 @@ namespace ful
 		ful_inline
 		byte * memmover_none(const byte * first, const byte * last, byte * end)
 		{
-			const usize size = last - first;
+			const usize size = static_cast<usize>(last - first);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -123,7 +123,7 @@ namespace ful
 		inline
 		void memset8_none(char8 * from, char8 * to, char8 u)
 		{
-			const usize size = to - from;
+			const usize size = static_cast<usize>(to - from);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -143,7 +143,7 @@ namespace ful
 
 			from = ful_align_next_8(from);
 
-			repstosf(reinterpret_cast<unsigned long long *>(from), (to - from) / 8, bytes);
+			repstosf(reinterpret_cast<unsigned long long *>(from), static_cast<usize>(to - from) / 8, bytes);
 
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
@@ -151,7 +151,7 @@ namespace ful
 		inline
 		void memset16_none(char16 * from, char16 * to, char16 u)
 		{
-			const usize size = (to - from) * sizeof(char16);
+			const usize size = static_cast<usize>(to - from) * sizeof(char16);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -171,7 +171,7 @@ namespace ful
 
 			from = ful_align_next_8(from);
 
-			repstosf(reinterpret_cast<unsigned long long *>(from), (to - from) / 8, bytes);
+			repstosf(reinterpret_cast<unsigned long long *>(from), static_cast<usize>(to - from) / 8, bytes);
 
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
@@ -179,7 +179,7 @@ namespace ful
 		inline
 		void memset24_none(char24 * from, char24 * to, char_fast24 u)
 		{
-			const usize size = (to - from) * sizeof(char24);
+			const usize size = static_cast<usize>(to - from) * sizeof(char24);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -197,7 +197,7 @@ namespace ful
 		inline
 		void memset32_none(char32 * from, char32 * to, char32 u)
 		{
-			const usize size = (to - from) * sizeof(char32);
+			const usize size = static_cast<usize>(to - from) * sizeof(char32);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
@@ -217,7 +217,7 @@ namespace ful
 
 			from = ful_align_next_8(from);
 
-			repstosf(reinterpret_cast<unsigned long long *>(from), (to - from) / 8, bytes);
+			repstosf(reinterpret_cast<unsigned long long *>(from), static_cast<usize>(to - from) / 8, bytes);
 
 			*reinterpret_cast<uint64 *>(to - 8) = bytes;
 		}
@@ -225,7 +225,7 @@ namespace ful
 		ful_inline
 		byte * memswap_none(byte * beg1, byte * end1, byte * beg2)
 		{
-			const usize size = end1 - beg1;
+			const usize size = static_cast<usize>(end1 - beg1);
 #if defined(__AVX__)
 			if (!ful_expect(64u < size))
 #elif defined(__SSE__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
