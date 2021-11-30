@@ -1,9 +1,6 @@
+#include "ful/cpuid.hpp"
 #include "ful/string.hpp"
 #include "ful/string_search.hpp"
-
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-
-#include "ful/cpuid.hpp"
 
 ful_resolve(find_unit_8_8, const ful::char8 *, const ful::char8 * begin, const ful::char8 * end, ful::char8 c)
 {
@@ -191,8 +188,6 @@ ful_resolve(strend_32, const ful::char32 *, const ful::char32 * cstr)
 	else
 		return ful_cpucall(strend_32, generic, cstr);
 }
-
-#endif
 
 namespace ful
 {

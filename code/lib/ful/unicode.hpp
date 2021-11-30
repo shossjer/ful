@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ful/dispatch.hpp"
 #include "ful/stdint.hpp"
 #include "ful/types.hpp"
 
@@ -13,7 +12,7 @@ namespace ful
 {
 	namespace detail
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		extern usize ful_dispatch(point_count_8)(const unit_utf8 * beg, const unit_utf8 * end);
 		extern usize ful_dispatch(point_count_16)(const unit_utf16 * beg, const unit_utf16 * end);
 		extern usize ful_dispatch(point_count_61)(const unit_utf61 * beg, const unit_utf61 * end);
@@ -272,7 +271,7 @@ namespace ful
 
 		ful_inline usize point_count(const unit_utf8 * beg, const unit_utf8 * end)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::point_count_8_rtd(beg, end);
 #else
 			return detail::point_count_8_none(beg, end);
@@ -281,7 +280,7 @@ namespace ful
 
 		ful_inline usize point_count(const unit_utf16 * beg, const unit_utf16 * end)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::point_count_16_rtd(beg, end);
 #else
 			return detail::point_count_16_none(beg, end);
@@ -290,7 +289,7 @@ namespace ful
 
 		ful_inline usize point_count(const unit_utf61 * beg, const unit_utf61 * end)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::point_count_61_rtd(beg, end);
 #else
 			return detail::point_count_61_none(beg, end);
@@ -324,7 +323,7 @@ namespace ful
 
 	ful_inline const unit_utf8 * point_next(const unit_utf8 * s, usize n)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::point_next_8_rtd(s, n);
 #else
 		return detail::point_next_8_none(s, n);
@@ -333,7 +332,7 @@ namespace ful
 
 	ful_inline const unit_utf8 * point_prev(const unit_utf8 * s, usize n)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::point_prev_8_rtd(s, n);
 #else
 		return detail::point_prev_8_none(s, n);

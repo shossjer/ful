@@ -1,6 +1,8 @@
 #pragma once
 
-#if defined(FUL_IFUNC)
+# include "ful/compiler.hpp"
+
+#if defined(__GNUC__) && __has_attribute(ifunc)
 
 # define ful_cpucall(stem, alt, ...) ful::detail::stem##_##alt
 # define ful_cpuinit() __builtin_cpu_init()
@@ -24,7 +26,7 @@ ret (* resolve_##stem())(__VA_ARGS__)
 #define FUL_FEATURE_NAME_BMI "bmi"
 #define FUL_FEATURE_NAME_BMI2 "bmi2"
 
-#elif defined(FUL_FPTR)
+#else
 
 # define ful_cpucall(stem, alt, ...) ful::detail::stem##_rtd = ful::detail::stem##_##alt, ful::detail::stem##_##alt(__VA_ARGS__)
 # define ful_cpuinit() ful::cpuid_init()
@@ -33,8 +35,6 @@ ret (* resolve_##stem())(__VA_ARGS__)
 static ret resolve_##stem(__VA_ARGS__); \
 namespace ful { namespace detail { ret (* stem##_rtd)(__VA_ARGS__) = resolve_##stem; }} \
 static ret resolve_##stem(__VA_ARGS__)
-
-# include "ful/compiler.hpp"
 
 namespace ful
 {
@@ -75,9 +75,5 @@ namespace ful
 		}
 	}
 }
-
-#else
-
-# error Not supported!
 
 #endif

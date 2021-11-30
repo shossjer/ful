@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __has_attribute
+# define __has_attribute(x) 0
+#endif
+
 #if defined(__clang__)
 // optimize knowing that the expression is true
 # define ful_assume(x) __builtin_assume(x)
@@ -50,6 +54,14 @@
 # define ful_pure
 #endif
 
+#if defined(__GNUC__) && __has_attribute(ifunc)
+// declare dispatch function
+# define ful_dispatch(stem) stem##_rtd
+#else
+// declare dispatch function
+# define ful_dispatch(stem) (* stem##_rtd)
+#endif
+
 #if defined(_DEBUG) || !defined(NDEBUG)
 // breaks into the debugger if false (in debug builds), optimize knowing that the expression is true (in nondebug builds)
 # define ful_expect(x) ((x) ? true : (ful_break(), false))
@@ -74,16 +86,14 @@
 # define ful_inline inline __attribute__((always_inline))
 #endif
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __has_attribute(target)
 // overrides targeted architecture
 # define ful_target(...) __attribute__((target (__VA_ARGS__)))
 // https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#target
 // https://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html
-#elif defined(_MSC_VER)
+#else
 // overrides targeted architecture
 # define ful_target(...)
-#else
-# error Missing implementation!
 #endif
 
 #if defined(__GNUC__)

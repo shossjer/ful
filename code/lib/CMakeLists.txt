@@ -20,7 +20,6 @@ set(FULLIB_HEADERS
 	lib/ful/cstr.hpp
 	lib/ful/cstrext.hpp
 	lib/ful/cstrfwd.hpp
-	lib/ful/dispatch.hpp
 	lib/ful/heap.hpp
 	lib/ful/heapfwd.hpp
 	lib/ful/intrinsics.hpp

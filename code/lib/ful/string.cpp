@@ -1,14 +1,5 @@
-#include "ful/string.hpp"
-
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-
 #include "ful/cpuid.hpp"
-
-//#include "ful/compiler.hpp"
-//#include "ful/stdint.hpp"
-//#include "ful/types.hpp"
-
-//#include "ful/intrinsics.hpp"
+#include "ful/string.hpp"
 
 // todo remove
 #include "ful/string_none.hpp"
@@ -152,8 +143,6 @@ ful_resolve(equal_range, bool, const byte * beg1, const byte * end1, const byte 
 	else
 		return ful_cpucall(equal_range, generic, beg1, end1, beg2, end2);
 }
-
-#endif
 
 namespace ful
 {

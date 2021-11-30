@@ -1,5 +1,3 @@
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-
 #include "ful/cpuid.hpp"
 
 #include "ful/compiler.hpp"
@@ -41,5 +39,3 @@ ful_resolve(point_prev_8, const ful::unit_utf8 *, const ful::unit_utf8 * s, ful:
 	ful_cpuinit();
 	return ful_cpucall(point_prev_8, none, s, n);
 }
-
-#endif

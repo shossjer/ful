@@ -1,4 +1,10 @@
-#if defined(FUL_FPTR)
+#include "ful/compiler.hpp"
+
+#if defined(__GNUC__) && __has_attribute(ifunc)
+
+// cpuid is not needed
+
+#else
 
 #include "ful/cpuid.hpp"
 

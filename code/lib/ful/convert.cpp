@@ -1,8 +1,5 @@
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
-
-#include "ful/cpuid.hpp"
-
 #include "ful/convert.hpp"
+#include "ful/cpuid.hpp"
 
 ful_resolve(convert_8_16, ful::unit_utf16 *, const ful::unit_utf8 * first, const ful::unit_utf8 * last, ful::unit_utf16 * begin)
 {
@@ -132,5 +129,3 @@ ful_resolve(convert_23_32, ful::unit_utf32 *, const ful::unit_utf23 * first, con
 	ful_cpuinit();
 	return ful_cpucall(convert_23_32, none, first, last, begin);
 }
-
-#endif

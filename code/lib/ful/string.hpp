@@ -3,7 +3,6 @@
 #define FUL_INCLUDED_STRING_HPP
 
 #include "ful/compiler.hpp"
-#include "ful/dispatch.hpp"
 #include "ful/stdint.hpp"
 
 #include "ful/ranges.hpp"
@@ -71,7 +70,7 @@ namespace ful
 
 	namespace detail
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		extern bool ful_dispatch(equal_cstr)(const byte * beg1, const byte * end1, const byte * beg2);
 		extern bool ful_dispatch(equal_range)(const byte * beg1, const byte * end1, const byte * beg2, const byte * end2);
 #endif
@@ -611,7 +610,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::equal_cstr_rtd(beg1, end1, beg2);
 #elif defined(__AVX2__)
 			return detail::equal_cstr_avx2(beg1, end1, beg2);
@@ -734,7 +733,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::equal_range_rtd(beg1, end1, beg2, end2);
 #elif defined(__AVX2__)
 			return detail::equal_range_avx2(beg1, end1, beg2, end2);

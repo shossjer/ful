@@ -10,7 +10,7 @@ namespace ful
 {
 	namespace detail
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		extern const char8 * ful_dispatch(find_unit_8_8)(const char8 * begin, const char8 * end, char8 c);
 		extern const char8 * ful_dispatch(find_unit_8_16)(const char8 * begin, const char8 * end, char16 c);
 		extern const char8 * ful_dispatch(find_unit_8_24)(const char8 * begin, const char8 * end, char_fast24 c);
@@ -1796,7 +1796,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::find_unit_8_8_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_8_avx2(begin, end, c);
@@ -1877,7 +1877,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::find_unit_8_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_16_avx2(begin, end, c);
@@ -1955,7 +1955,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::find_unit_8_24_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_24_avx2(begin, end, c);
@@ -2031,7 +2031,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::find_unit_8_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 				return detail::find_unit_8_32_avx2(begin, end, c);
@@ -2045,7 +2045,7 @@ namespace ful
 
 		ful_inline const char16 * find(const char16 * begin, const char16 * end, char16 c)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::find_unit_16_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_16_16_avx2(begin, end, c);
@@ -2058,7 +2058,7 @@ namespace ful
 
 		ful_inline const char16 * find(const char16 * begin, const char16 * end, char32 c)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::find_unit_16_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_16_32_avx2(begin, end, c);
@@ -2071,7 +2071,7 @@ namespace ful
 
 		ful_inline const char32 * find(const char32 * begin, const char32 * end, char32 c)
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::find_unit_32_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::find_unit_32_32_avx2(begin, end, c);
@@ -2176,7 +2176,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::rfind_unit_8_8_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_8_avx2(begin, end, c);
@@ -2269,7 +2269,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::rfind_unit_8_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_16_avx2(begin, end, c);
@@ -2359,7 +2359,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::rfind_unit_8_24_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_24_avx2(begin, end, c);
@@ -2447,7 +2447,7 @@ namespace ful
 		}
 		else
 		{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 			return detail::rfind_unit_8_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 			return detail::rfind_unit_8_32_avx2(begin, end, c);
@@ -2473,7 +2473,7 @@ namespace ful
 
 	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char16 c)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::rfind_unit_16_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_16_16_avx2(begin, end, c);
@@ -2498,7 +2498,7 @@ namespace ful
 
 	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char32 c)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::rfind_unit_16_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_16_32_avx2(begin, end, c);
@@ -2523,7 +2523,7 @@ namespace ful
 
 	ful_inline const char32 * rfind(const char32 * begin, const char32 * end, char32 c)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::rfind_unit_32_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
 		return detail::rfind_unit_32_32_avx2(begin, end, c);
@@ -2562,7 +2562,7 @@ namespace ful
 
 	ful_inline const char8 * strend(const char8 * cstr)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::strend_8_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_8_avx2(cstr);
@@ -2581,7 +2581,7 @@ namespace ful
 
 	ful_inline const char16 * strend(const char16 * cstr)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::strend_16_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_16_avx2(cstr);
@@ -2600,7 +2600,7 @@ namespace ful
 
 	ful_inline const char32 * strend(const char32 * cstr)
 	{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 		return detail::strend_32_rtd(cstr);
 #elif defined(__AVX2__)
 		return detail::strend_32_avx2(cstr);

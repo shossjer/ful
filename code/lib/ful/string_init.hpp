@@ -640,7 +640,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memcopy_rtd(first, last, begin);
 #elif defined(__AVX__)
 				return detail::memcopy_avx(first, last, begin);
@@ -672,7 +672,7 @@ namespace ful
 			}
 			else if (begin <= first || last <= begin)
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memmovef_rtd(first, last, begin);
 #elif defined(__AVX__)
 				return detail::memmovef_avx(first, last, begin);
@@ -686,7 +686,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memmover_rtd(first, last, begin + size);
 #elif defined(__AVX__)
 				return detail::memmover_avx(first, last, begin + size);
@@ -721,7 +721,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memmovef_rtd(first, last, begin);
 #elif defined(__AVX__)
 				return detail::memmovef_avx(first, last, begin);
@@ -756,7 +756,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memmover_rtd(first, last, end);
 #elif defined(__AVX__)
 				return detail::memmover_avx(first, last, end);
@@ -788,7 +788,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memset8_rtd(from, to, u);
 #elif defined(__AVX__)
 				return detail::memset8_avx(from, to, u);
@@ -820,7 +820,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memset16_rtd(from, to, u);
 #elif defined(__AVX__)
 				return detail::memset16_avx(from, to, u);
@@ -852,7 +852,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memset24_rtd(from, to, u);
 #elif defined(__AVX__)
 				return detail::memset24_avx(from, to, u);
@@ -884,7 +884,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memset32_rtd(from, to, u);
 #elif defined(__AVX__)
 				return detail::memset32_avx(from, to, u);
@@ -955,7 +955,7 @@ namespace ful
 			}
 			else
 			{
-#if defined(FUL_IFUNC) || defined(FUL_FPTR)
+#if defined(FUL_RUNTIME_DISPATCH)
 				return detail::memswap_rtd(beg1, end1, beg2);
 #elif defined(__AVX__)
 				return detail::memswap_avx(beg1, end1, beg2);
