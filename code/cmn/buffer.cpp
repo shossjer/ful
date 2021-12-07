@@ -51,10 +51,13 @@ namespace
 		bool more;
 
 		UErrorCode err = U_ZERO_ERROR;
-		UConverter * const converter8 = ucnv_open("UTF-8", &err);
+		UConverter * converter8;
+		UConverter * converter;
+
+		converter8 = ucnv_open("UTF-8", &err);
 		if (!ful_check(err == U_ZERO_ERROR))
 			goto close0;
-		UConverter * const converter = ucnv_open(converter_name(T{}), &err);
+		converter = ucnv_open(converter_name(T{}), &err);
 		if (!ful_check(err == U_ZERO_ERROR))
 			goto close1;
 
