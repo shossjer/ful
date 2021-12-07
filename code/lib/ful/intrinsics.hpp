@@ -291,7 +291,7 @@ namespace ful
 	unsigned int least_significant_zero_byte(unsigned int x, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		unsigned int y = detail::andn(x, 0x80808080u) & (x - 0x01010101u);
 		return least_significant_set_bit(y) >> 3;
 	}
 
@@ -300,7 +300,7 @@ namespace ful
 	unsigned int least_significant_zero_byte(unsigned int x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		unsigned int y = ~x & 0x80808080u & (x - 0x01010101u);
 		return least_significant_set_bit(y) >> 3;
 	}
 
@@ -309,7 +309,7 @@ namespace ful
 	bool least_significant_zero_byte(unsigned int x, unsigned int & out, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		unsigned int y = detail::andn(x, 0x80808080u) & (x - 0x01010101u);
 		if (y == 0)
 			return false;
 
@@ -322,7 +322,7 @@ namespace ful
 	bool least_significant_zero_byte(unsigned int x, unsigned int & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		unsigned int y = ~x & 0x80808080u & (x - 0x01010101u);
 		if (y == 0)
 			return false;
 
@@ -336,7 +336,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 16 zero bits aligned to 16 bit indices
-		unsigned int y = detail::andn(x, x - 0x00010001u) & 0x80008000u;
+		unsigned int y = detail::andn(x, 0x80008000u) & (x - 0x00010001u);
 		if (y == 0)
 			return false;
 
@@ -350,7 +350,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 16 zero bits aligned to 16 bit indices
-		unsigned int y = (x - 0x00010001u) & ~x & 0x80008000u;
+		unsigned int y = ~x & 0x80008000u & (x - 0x00010001u);
 		if (y == 0)
 			return false;
 
@@ -363,7 +363,7 @@ namespace ful
 	unsigned int most_significant_zero_byte(unsigned int x, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		unsigned int y = detail::andn(x, 0x80808080u) & (x - 0x01010101u);
 		return most_significant_set_bit(y) >> 3;
 	}
 
@@ -372,7 +372,7 @@ namespace ful
 	unsigned int most_significant_zero_byte(unsigned int x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		unsigned int y = ~x & 0x80808080u & (x - 0x01010101u);
 		return most_significant_set_bit(y) >> 3;
 	}
 
@@ -381,7 +381,7 @@ namespace ful
 	bool most_significant_zero_byte(unsigned int x, unsigned int & out, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = detail::andn(x, x - 0x01010101u) & 0x80808080u;
+		unsigned int y = detail::andn(x, 0x80808080u) & (x - 0x01010101u);
 		if (y == 0)
 			return false;
 
@@ -394,7 +394,7 @@ namespace ful
 	bool most_significant_zero_byte(unsigned int x, unsigned int & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned int y = (x - 0x01010101u) & ~x & 0x80808080u;
+		unsigned int y = ~x & 0x80808080u & (x - 0x01010101u);
 		if (y == 0)
 			return false;
 
@@ -486,7 +486,7 @@ namespace ful
 	unsigned long long least_significant_zero_byte(unsigned long long x, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		unsigned long long y = detail::andn(x, 0x8080808080808080ull) & (x - 0x0101010101010101u);
 		return least_significant_set_bit(y) >> 3;
 	}
 
@@ -495,7 +495,7 @@ namespace ful
 	unsigned long long least_significant_zero_byte(unsigned long long x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		unsigned long long y = ~x & 0x8080808080808080u & (x - 0x0101010101010101u);
 		return least_significant_set_bit(y) >> 3;
 	}
 
@@ -504,7 +504,7 @@ namespace ful
 	bool least_significant_zero_byte(unsigned long long x, unsigned long long & out, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		unsigned long long y = detail::andn(x, 0x8080808080808080ull) & (x - 0x0101010101010101u);
 		if (y == 0)
 			return false;
 
@@ -517,7 +517,7 @@ namespace ful
 	bool least_significant_zero_byte(unsigned long long x, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		unsigned long long y = ~x & 0x8080808080808080u & (x - 0x0101010101010101u);
 		if (y == 0)
 			return false;
 
@@ -531,7 +531,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 16 zero bits aligned to 16 bit indices
-		unsigned long long y = detail::andn(x, x - 0x0001000100010001u) & 0x8000800080008000u;
+		unsigned long long y = detail::andn(x, 0x8000800080008000ull) & (x - 0x0001000100010001u);
 		if (y == 0)
 			return false;
 
@@ -545,7 +545,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 16 zero bits aligned to 16 bit indices
-		unsigned long long y = (x - 0x0001000100010001u) & ~x & 0x8000800080008000u;
+		unsigned long long y = ~x & 0x8000800080008000u & (x - 0x0001000100010001u);
 		if (y == 0)
 			return false;
 
@@ -559,7 +559,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 32 zero bits aligned to 32 bit indices
-		unsigned long long y = detail::andn(x, x - 0x0000000100000001u) & 0x8000000080000000u;
+		unsigned long long y = detail::andn(x, 0x8000000080000000ull) & (x - 0x0000000100000001u);
 		if (y == 0)
 			return false;
 
@@ -573,7 +573,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 32 zero bits aligned to 32 bit indices
-		unsigned long long y = (x - 0x0000000100000001u) & ~x & 0x8000000080000000u;
+		unsigned long long y = ~x & 0x8000000080000000u & (x - 0x0000000100000001u);
 		if (y == 0)
 			return false;
 
@@ -586,7 +586,7 @@ namespace ful
 	unsigned long long most_significant_zero_byte(unsigned long long x, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		unsigned long long y = detail::andn(x, 0x8080808080808080ull) & (x - 0x0101010101010101u);
 		return most_significant_set_bit(y) >> 3;
 	}
 
@@ -595,7 +595,7 @@ namespace ful
 	unsigned long long most_significant_zero_byte(unsigned long long x)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		unsigned long long y = ~x & 0x8080808080808080u & (x - 0x0101010101010101u);
 		return most_significant_set_bit(y) >> 3;
 	}
 
@@ -604,7 +604,7 @@ namespace ful
 	bool most_significant_zero_byte(unsigned long long x, unsigned long long & out, tag_bmi_type)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = detail::andn(x, x - 0x0101010101010101u) & 0x8080808080808080u;
+		unsigned long long y = detail::andn(x, 0x8080808080808080ull) & (x - 0x0101010101010101u);
 		if (y == 0)
 			return false;
 
@@ -617,7 +617,7 @@ namespace ful
 	bool most_significant_zero_byte(unsigned long long x, unsigned long long & out)
 	{
 		// Hacker's Delight, 2nd ed, p 118
-		unsigned long long y = (x - 0x0101010101010101u) & ~x & 0x8080808080808080u;
+		unsigned long long y = ~x & 0x8080808080808080u & (x - 0x0101010101010101u);
 		if (y == 0)
 			return false;
 
@@ -731,7 +731,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 2 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
@@ -745,7 +745,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 3 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & (~x16 & (x16 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
@@ -759,7 +759,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 4 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & ((x24 - 0x0101010101010101u) & ~x24) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & (~x16 & (x16 - 0x0101010101010101u)) & (~x24 & (x24 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
@@ -773,7 +773,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 2 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
@@ -787,7 +787,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 3 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & (~x16 & (x16 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
@@ -801,7 +801,7 @@ namespace ful
 	{
 		// Hacker's Delight, 2nd ed, p 118
 		// note modified to detect 4 overlapping 8 bits
-		unsigned long long y = ((x0 - 0x0101010101010101u) & ~x0) & ((x8 - 0x0101010101010101u) & ~x8) & ((x16 - 0x0101010101010101u) & ~x16) & ((x24 - 0x0101010101010101u) & ~x24) & 0x8080808080808080u;
+		unsigned long long y = (~x0 & (x0 - 0x0101010101010101u)) & (~x8 & (x8 - 0x0101010101010101u)) & (~x16 & (x16 - 0x0101010101010101u)) & (~x24 & (x24 - 0x0101010101010101u)) & 0x8080808080808080u;
 		if (y == 0)
 			return false;
 
