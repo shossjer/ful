@@ -13,6 +13,7 @@ set(FULLIB_SOURCES
 	)
 
 set(FULLIB_HEADERS
+	lib/ful/architecture.hpp
 	lib/ful/compiler.hpp
 	lib/ful/constexpr.hpp
 	lib/ful/container.hpp

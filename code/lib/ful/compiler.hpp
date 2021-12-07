@@ -18,6 +18,14 @@
 #endif
 
 #if defined(__clang__)
+// clang does not handle big arguments correctly by value, so we make them ref
+# define ful_big_value const &
+#else
+// clang does not handle big arguments correctly by value, so we make them ref
+# define ful_big_value
+#endif
+
+#if defined(__clang__)
 # if __has_builtin(__builtin_debugtrap)
 // break into the debugger
 #  define ful_break() __builtin_debugtrap()

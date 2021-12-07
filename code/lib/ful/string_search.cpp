@@ -1350,5 +1350,781 @@ namespace ful
 			}
 			return def;
 		}
+
+		const char8 * strend_8_generic_aligned(const char8 * cstr)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (8 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 8 / 1;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 1);
+
+				uint64 index;
+				if (least_significant_zero_byte(qword, index))
+					return cstr - 8 / 1 + index;
+			}
+		}
+
+		const char8 * strend_8_generic_unaligned(const char8 * cstr, usize offset)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 8))
+				return cstr;
+
+			// note the first 8 has already been read
+
+			cstr = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(to_bytes(cstr) + 8) & static_cast<puint>(-8));
+
+			return strend_8_generic_aligned(cstr);
+		}
+
+		const char8 * strend_8_generic_boundary(const char8 * cstr, usize offset)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 8) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			cstr = reinterpret_cast<const char8 *>(to_bytes(cstr) - offset);
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8));
+
+			uint64 index;
+			if (least_significant_zero_byte(qword | low_mask((offset - (FUL_PAGE_SIZE - 8)) * 8), index))
+				return reinterpret_cast<const char8 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + index * 1);
+
+			return strend_8_generic_aligned(reinterpret_cast<const char8 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + 8));
+		}
+
+		ful_target("sse2")
+		const char8 * strend_8_sse2_aligned(const char8 * cstr, __m128i zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (64 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 64 / 1;
+
+				const __m128i line1 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 64 / 1));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 48 / 1));
+				const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 32 / 1));
+				const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 1));
+				const __m128i min1234 = _mm_min_epu8(_mm_min_epu8(line1, line2), _mm_min_epu8(line3, line4));
+				const __m128i cmp1234 = _mm_cmpeq_epi8(min1234, zero);
+				const unsigned int mask1234 = static_cast<unsigned int>(_mm_movemask_epi8(cmp1234));
+				if (mask1234 != 0)
+				{
+					const __m128i cmp1 = _mm_cmpeq_epi8(line1, zero);
+					const __m128i cmp2 = _mm_cmpeq_epi8(line2, zero);
+					const __m128i cmp3 = _mm_cmpeq_epi8(line3, zero);
+					const __m128i cmp4 = _mm_cmpeq_epi8(line4, zero);
+					const uint64 mask1 = static_cast<unsigned int>(_mm_movemask_epi8(cmp1));
+					const uint64 mask2 = static_cast<unsigned int>(_mm_movemask_epi8(cmp2));
+					const uint64 mask3 = static_cast<unsigned int>(_mm_movemask_epi8(cmp3));
+					const uint64 mask4 = static_cast<unsigned int>(_mm_movemask_epi8(cmp4));
+					const uint64 mask = (mask4 << 48) | (mask3 << 32) | (mask2 << 16) | mask1;
+					const uint64 index = least_significant_set_bit(mask);
+					return reinterpret_cast<const char8 *>(to_bytes(cstr) + index * 1) - 64 / 1;
+				}
+			}
+		}
+
+		ful_target("sse2")
+		const char8 * strend_8_sse2_unaligned(const char8 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 16))
+				return cstr;
+
+			// note the first 16 has already been read
+
+			const char8 * const aligned = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(to_bytes(cstr) + (64 - 1)) & static_cast<puint>(-64));
+			cstr = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(to_bytes(cstr) + 16) & static_cast<puint>(-16));
+
+			if (cstr < aligned)
+			{
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+				const __m128i cmp2 = _mm_cmpeq_epi8(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+				}
+				cstr += 16 / 1;
+
+				if (cstr < aligned)
+				{
+					const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+					const __m128i cmp3 = _mm_cmpeq_epi8(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+					}
+					cstr += 16 / 1;
+
+					if (cstr < aligned)
+					{
+						const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+						const __m128i cmp4 = _mm_cmpeq_epi8(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_8_sse2_aligned(aligned, zero);
+		}
+
+		ful_target("sse2")
+		const char8 * strend_8_sse2_boundary(const char8 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 16) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char8 * const aligned = reinterpret_cast<const char8 *>(to_bytes(cstr) - offset);
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 16)));
+			const __m128i cmp = _mm_cmpeq_epi8(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 16));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_8_sse2_aligned(reinterpret_cast<const char8 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
+
+		ful_target("avx2")
+		const char8 * strend_8_avx2_aligned(const char8 * cstr, __m256i ful_big_value zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (128 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 128 / 1;
+
+				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 128 / 1));
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 96 / 1));
+				const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 64 / 1));
+				const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 1));
+				const __m256i min = _mm256_min_epu8(_mm256_min_epu8(line1, line2), _mm256_min_epu8(line3, line4));
+				const __m256i cmp = _mm256_cmpeq_epi8(min, zero);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
+				if (mask != 0)
+				{
+					const __m256i cmp1 = _mm256_cmpeq_epi8(line1, zero);
+					const __m256i cmp2 = _mm256_cmpeq_epi8(line2, zero);
+					const __m256i cmp3 = _mm256_cmpeq_epi8(line3, zero);
+					const __m256i cmp4 = _mm256_cmpeq_epi8(line4, zero);
+					const uint64 mask1 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1));
+					const uint64 mask2 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp2));
+					const uint64 mask3 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp3));
+					const uint64 mask4 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp4));
+					const uint64 mask12 = (mask2 << 32) | mask1;
+					if (mask12 != 0)
+					{
+						const uint64 index = least_significant_set_bit(mask12);
+						return reinterpret_cast<const char8 *>(to_bytes(cstr) + index * 1) - 128 / 1;
+					}
+					const uint64 mask34 = (mask4 << 32) | mask3;
+					// if (ful_expect(mask34 != 0))
+					{
+						const uint64 index = least_significant_set_bit(mask34);
+						return reinterpret_cast<const char8 *>(to_bytes(cstr) + index * 1) - 128 / 1 + 64 / 1;
+					}
+				}
+			}
+		}
+
+		ful_target("avx2")
+		const char8 * strend_8_avx2_unaligned(const char8 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 32))
+				return cstr;
+
+			// note the first 32 has already been read
+
+			const char8 * const aligned = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(to_bytes(cstr) + (128 - 1)) & static_cast<puint>(-128));
+			cstr = reinterpret_cast<const char8 *>(reinterpret_cast<puint>(to_bytes(cstr) + 32) & static_cast<puint>(-32));
+
+			if (cstr < aligned)
+			{
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+				const __m256i cmp2 = _mm256_cmpeq_epi8(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+				}
+				cstr += 32 / 1;
+
+				if (cstr < aligned)
+				{
+					const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+					const __m256i cmp3 = _mm256_cmpeq_epi8(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+					}
+					cstr += 32 / 1;
+
+					if (cstr < aligned)
+					{
+						const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+						const __m256i cmp4 = _mm256_cmpeq_epi8(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_8_avx2_aligned(aligned, zero);
+		}
+
+		ful_target("avx2")
+		const char8 * strend_8_avx2_boundary(const char8 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 32) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char8 * const aligned = reinterpret_cast<const char8 *>(to_bytes(cstr) - offset);
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 32)));
+			const __m256i cmp = _mm256_cmpeq_epi8(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 32));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char8 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_8_avx2_aligned(reinterpret_cast<const char8 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
+
+		const char16 * strend_16_generic_aligned(const char16 * cstr)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (8 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 8 / 2;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 2);
+
+				uint64 index;
+				if (least_significant_zero_a16(qword, index))
+					return cstr - 8 / 2 + index;
+			}
+		}
+
+		const char16 * strend_16_generic_unaligned(const char16 * cstr, usize offset)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 8))
+				return cstr;
+
+			// note the first 8 has already been read
+
+			cstr = reinterpret_cast<const char16 *>(reinterpret_cast<puint>(to_bytes(cstr) + 8) & static_cast<puint>(-8));
+
+			return strend_16_generic_aligned(cstr);
+		}
+
+		const char16 * strend_16_generic_boundary(const char16 * cstr, usize offset)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 8) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			cstr = reinterpret_cast<const char16 *>(to_bytes(cstr) - offset);
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8));
+
+			uint64 index;
+			if (least_significant_zero_a16(qword | low_mask((offset - (FUL_PAGE_SIZE - 8)) * 8), index))
+				return reinterpret_cast<const char16 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + index * 2);
+
+			return strend_16_generic_aligned(reinterpret_cast<const char16 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + 8));
+		}
+
+		ful_target("sse2")
+		const char16 * strend_16_sse2_aligned(const char16 * cstr, __m128i zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (64 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 64 / 2;
+
+				const __m128i line1 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 64 / 2));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 48 / 2));
+				const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 32 / 2));
+				const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 2));
+				const __m128i pack12 = _mm_packs_epi16(line1, line2);
+				const __m128i pack34 = _mm_packs_epi16(line3, line4);
+				const __m128i min1234 = _mm_min_epu8(pack12, pack34);
+				const __m128i cmp1234 = _mm_cmpeq_epi8(min1234, zero);
+				const unsigned int mask1234 = static_cast<unsigned int>(_mm_movemask_epi8(cmp1234));
+				if (mask1234 != 0)
+				{
+					const __m128i cmp12 = _mm_cmpeq_epi8(pack12, zero);
+					const __m128i cmp34 = _mm_cmpeq_epi8(pack34, zero);
+					const unsigned int mask12 = static_cast<unsigned int>(_mm_movemask_epi8(cmp12));
+					const unsigned int mask34 = static_cast<unsigned int>(_mm_movemask_epi8(cmp34));
+					const unsigned int mask = (mask34 << 16) | mask12;
+					const unsigned int index = least_significant_set_bit(mask);
+					return reinterpret_cast<const char16 *>(to_bytes(cstr) + index * 2) - 64 / 2;
+				}
+			}
+		}
+
+		ful_target("sse2")
+		const char16 * strend_16_sse2_unaligned(const char16 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 16))
+				return cstr;
+
+			// note the first 16 has already been read
+
+			const char16 * const aligned = reinterpret_cast<const char16 *>(reinterpret_cast<puint>(to_bytes(cstr) + (64 - 1)) & static_cast<puint>(-64));
+			cstr = reinterpret_cast<const char16 *>(reinterpret_cast<puint>(to_bytes(cstr) + 16) & static_cast<puint>(-16));
+
+			if (cstr < aligned)
+			{
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+				const __m128i cmp2 = _mm_cmpeq_epi16(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+				}
+				cstr += 16 / 2;
+
+				if (cstr < aligned)
+				{
+					const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+					const __m128i cmp3 = _mm_cmpeq_epi16(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+					}
+					cstr += 16 / 2;
+
+					if (cstr < aligned)
+					{
+						const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+						const __m128i cmp4 = _mm_cmpeq_epi16(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_16_sse2_aligned(aligned, zero);
+		}
+
+		ful_target("sse2")
+		const char16 * strend_16_sse2_boundary(const char16 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 16) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char16 * const aligned = reinterpret_cast<const char16 *>(to_bytes(cstr) - offset);
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 16)));
+			const __m128i cmp = _mm_cmpeq_epi16(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 16));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_16_sse2_aligned(reinterpret_cast<const char16 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
+
+		ful_target("avx2")
+		const char16 * strend_16_avx2_aligned(const char16 * cstr, __m256i ful_big_value zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (128 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 128 / 2;
+
+				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 128 / 2));
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 96 / 2));
+				const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 64 / 2));
+				const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 2));
+				const __m256i min = _mm256_min_epu16(_mm256_min_epu16(line1, line2), _mm256_min_epu16(line3, line4));
+				const __m256i cmp = _mm256_cmpeq_epi16(min, zero);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
+				if (mask != 0)
+				{
+					const __m256i pack12 = _mm256_packs_epi16(line1, line2);
+					const __m256i pack34 = _mm256_packs_epi16(line3, line4);
+					const __m256i perm12 = _mm256_permute4x64_epi64(pack12, 0xd8);
+					const __m256i perm34 = _mm256_permute4x64_epi64(pack34, 0xd8);
+					const __m256i cmp12 = _mm256_cmpeq_epi8(perm12, zero);
+					const __m256i cmp34 = _mm256_cmpeq_epi8(perm34, zero);
+					const uint64 mask12 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp12));
+					const uint64 mask34 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp34));
+					const uint64 mask1234 = (mask34 << 32) | mask12;
+					const uint64 index = least_significant_set_bit(mask1234);
+					return reinterpret_cast<const char16 *>(to_bytes(cstr) + index * 2) - 128 / 2;
+				}
+			}
+		}
+
+		ful_target("avx2")
+		const char16 * strend_16_avx2_unaligned(const char16 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 32))
+				return cstr;
+
+			// note the first 32 has already been read
+
+			const char16 * const aligned = reinterpret_cast<const char16 *>(reinterpret_cast<puint>(to_bytes(cstr) + (128 - 1)) & static_cast<puint>(-128));
+			cstr = reinterpret_cast<const char16 *>(reinterpret_cast<puint>(to_bytes(cstr) + 32) & static_cast<puint>(-32));
+
+			if (cstr < aligned)
+			{
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+				const __m256i cmp2 = _mm256_cmpeq_epi16(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+				}
+				cstr += 32 / 2;
+
+				if (cstr < aligned)
+				{
+					const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+					const __m256i cmp3 = _mm256_cmpeq_epi16(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+					}
+					cstr += 32 / 2;
+
+					if (cstr < aligned)
+					{
+						const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+						const __m256i cmp4 = _mm256_cmpeq_epi16(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_16_avx2_aligned(aligned, zero);
+		}
+
+		ful_target("avx2")
+		const char16 * strend_16_avx2_boundary(const char16 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 32) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char16 * const aligned = reinterpret_cast<const char16 *>(to_bytes(cstr) - offset);
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 32)));
+			const __m256i cmp = _mm256_cmpeq_epi16(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 32));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char16 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_16_avx2_aligned(reinterpret_cast<const char16 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
+
+		const char32 * strend_32_generic_aligned(const char32 * cstr)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (8 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 8 / 4;
+
+				const uint64 qword = *reinterpret_cast<const uint64 *>(cstr - 8 / 4);
+
+				uint64 index;
+				if (least_significant_zero_a32(qword, index))
+					return cstr - 8 / 4 + index;
+			}
+		}
+
+		const char32 * strend_32_generic_unaligned(const char32 * cstr, usize offset)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 8))
+				return cstr;
+
+			// note the first 8 has already been read
+
+			cstr = reinterpret_cast<const char32 *>(reinterpret_cast<puint>(to_bytes(cstr) + 8) & static_cast<puint>(-8));
+
+			return strend_32_generic_aligned(cstr);
+		}
+
+		const char32 * strend_32_generic_boundary(const char32 * cstr, usize offset)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 8) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			cstr = reinterpret_cast<const char32 *>(to_bytes(cstr) - offset);
+
+			const uint64 qword = *reinterpret_cast<const uint64 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8));
+
+			uint64 index;
+			if (least_significant_zero_a32(qword | low_mask((offset - (FUL_PAGE_SIZE - 8)) * 8), index))
+				return reinterpret_cast<const char32 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + index * 4);
+
+			return strend_32_generic_aligned(reinterpret_cast<const char32 *>(to_bytes(cstr) + (FUL_PAGE_SIZE - 8) + 8));
+		}
+
+		ful_target("sse2")
+		const char32 * strend_32_sse2_aligned(const char32 * cstr, __m128i zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (64 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 64 / 4;
+
+				const __m128i line1 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 64 / 4));
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 48 / 4));
+				const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 32 / 4));
+				const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(cstr - 16 / 4));
+				const __m128i pack = _mm_packs_epi16(_mm_packs_epi32(line1, line2), _mm_packs_epi32(line3, line4));
+				const __m128i cmp = _mm_cmpeq_epi8(pack, zero);
+				const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp));
+				if (mask != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask);
+					return reinterpret_cast<const char32 *>(to_bytes(cstr) + index * 4) - 64 / 4;
+				}
+			}
+		}
+
+		ful_target("sse2")
+		const char32 * strend_32_sse2_unaligned(const char32 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 16))
+				return cstr;
+
+			// note the first 16 has already been read
+
+			const char32 * const aligned = reinterpret_cast<const char32 *>(reinterpret_cast<puint>(to_bytes(cstr) + (64 - 1)) & static_cast<puint>(-64));
+			cstr = reinterpret_cast<const char32 *>(reinterpret_cast<puint>(to_bytes(cstr) + 16) & static_cast<puint>(-16));
+
+			if (cstr < aligned)
+			{
+				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+				const __m128i cmp2 = _mm_cmpeq_epi32(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+				}
+				cstr += 16 / 4;
+
+				if (cstr < aligned)
+				{
+					const __m128i line3 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+					const __m128i cmp3 = _mm_cmpeq_epi32(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+					}
+					cstr += 16 / 4;
+
+					if (cstr < aligned)
+					{
+						const __m128i line4 = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(cstr)));
+						const __m128i cmp4 = _mm_cmpeq_epi32(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_32_sse2_aligned(aligned, zero);
+		}
+
+		ful_target("sse2")
+		const char32 * strend_32_sse2_boundary(const char32 * cstr, usize offset, __m128i zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 16) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char32 * const aligned = reinterpret_cast<const char32 *>(to_bytes(cstr) - offset);
+
+			const __m128i line = _mm_load_si128(reinterpret_cast<const __m128i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 16)));
+			const __m128i cmp = _mm_cmpeq_epi32(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 16));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_32_sse2_aligned(reinterpret_cast<const char32 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
+
+		ful_target("avx2")
+		const char32 * strend_32_avx2_aligned(const char32 * cstr, __m256i ful_big_value zero)
+		{
+			if (!ful_expect((reinterpret_cast<puint>(cstr) & (128 - 1)) == 0))
+				return cstr;
+
+			while (true)
+			{
+				cstr += 128 / 4;
+
+				const __m256i line1 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 128 / 4));
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 96 / 4));
+				const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 64 / 4));
+				const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(cstr - 32 / 4));
+				const __m256i min = _mm256_min_epu32(_mm256_min_epu32(line1, line2), _mm256_min_epu32(line3, line4));
+				const __m256i cmp = _mm256_cmpeq_epi32(min, zero);
+				const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp));
+				if (mask != 0)
+				{
+					const __m256i pack13 = _mm256_packs_epi32(line1, line3);
+					const __m256i pack24 = _mm256_packs_epi32(line2, line4);
+					const __m256i perm13 = _mm256_permute4x64_epi64(pack13, 0xd8);
+					const __m256i perm24 = _mm256_permute4x64_epi64(pack24, 0xd8);
+					const __m256i pack1234 = _mm256_packs_epi16(perm13, perm24);
+					const __m256i cmp1234 = _mm256_cmpeq_epi8(pack1234, zero);
+					const unsigned int mask1234 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp1234));
+					const unsigned int index = least_significant_set_bit(mask1234);
+					return reinterpret_cast<const char32 *>(to_bytes(cstr) + index * 4) - 128 / 4;
+				}
+			}
+		}
+
+		ful_target("avx2")
+		const char32 * strend_32_avx2_unaligned(const char32 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset <= FUL_PAGE_SIZE - 32))
+				return cstr;
+
+			// note the first 32 has already been read
+
+			const char32 * const aligned = reinterpret_cast<const char32 *>(reinterpret_cast<puint>(to_bytes(cstr) + (128 - 1)) & static_cast<puint>(-128));
+			cstr = reinterpret_cast<const char32 *>(reinterpret_cast<puint>(to_bytes(cstr) + 32) & static_cast<puint>(-32));
+
+			if (cstr < aligned)
+			{
+				const __m256i line2 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+				const __m256i cmp2 = _mm256_cmpeq_epi32(line2, zero);
+				const unsigned int mask2 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp2));
+				if (mask2 != 0)
+				{
+					const unsigned int index = least_significant_set_bit(mask2);
+					return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+				}
+				cstr += 32 / 4;
+
+				if (cstr < aligned)
+				{
+					const __m256i line3 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+					const __m256i cmp3 = _mm256_cmpeq_epi32(line3, zero);
+					const unsigned int mask3 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp3));
+					if (mask3 != 0)
+					{
+						const unsigned int index = least_significant_set_bit(mask3);
+						return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+					}
+					cstr += 32 / 4;
+
+					if (cstr < aligned)
+					{
+						const __m256i line4 = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(cstr)));
+						const __m256i cmp4 = _mm256_cmpeq_epi32(line4, zero);
+						const unsigned int mask4 = static_cast<unsigned int>(_mm256_movemask_epi8(cmp4));
+						if (mask4 != 0)
+						{
+							const unsigned int index = least_significant_set_bit(mask4);
+							return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+						}
+					}
+				}
+			}
+
+			return strend_32_avx2_aligned(aligned, zero);
+		}
+
+		ful_target("avx2")
+		const char32 * strend_32_avx2_boundary(const char32 * cstr, usize offset, __m256i ful_big_value zero)
+		{
+			if (!ful_expect(offset > FUL_PAGE_SIZE - 32) ||
+			    !ful_expect(offset < FUL_PAGE_SIZE))
+				return cstr;
+
+			const char32 * const aligned = reinterpret_cast<const char32 *>(to_bytes(cstr) - offset);
+
+			const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(to_bytes(aligned) + (FUL_PAGE_SIZE - 32)));
+			const __m256i cmp = _mm256_cmpeq_epi32(line, zero);
+			const unsigned int mask = static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (offset - (FUL_PAGE_SIZE - 32));
+			if (mask != 0)
+			{
+				const unsigned int index = least_significant_set_bit(mask);
+				return reinterpret_cast<const char32 *>(to_bytes(cstr) + index);
+			}
+
+			return strend_32_avx2_aligned(reinterpret_cast<const char32 *>(to_bytes(aligned) + FUL_PAGE_SIZE), zero);
+		}
 	}
 }
