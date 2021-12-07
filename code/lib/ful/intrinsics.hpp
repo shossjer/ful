@@ -122,6 +122,26 @@ namespace ful
 		return static_cast<unsigned int>(-1) >> (sizeof(unsigned int) * byte_size - n);
 	}
 
+	// generate mask where the n least significant bits are set
+	ful_inline
+	unsigned long low_mask(unsigned long n)
+	{
+		ful_expect(0 < n);
+		ful_expect(n <= sizeof(unsigned long) * byte_size);
+
+		return static_cast<unsigned long>(-1) >> (sizeof(unsigned long) * byte_size - n);
+	}
+
+	// generate mask where the n least significant bits are set
+	ful_inline
+	unsigned long long low_mask(unsigned long long n)
+	{
+		ful_expect(0 < n);
+		ful_expect(n <= sizeof(unsigned long long) * byte_size);
+
+		return static_cast<unsigned long long>(-1) >> (sizeof(unsigned long long) * byte_size - n);
+	}
+
 	// get the index of the nth set bit
 	ful_inline
 	unsigned int index_set_bit(unsigned int x, unsigned int n)
@@ -358,6 +378,26 @@ namespace ful
 		return true;
 	}
 
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	unsigned int least_significant_zero_a16(unsigned int x, tag_bmi_type tag)
+	{
+		unsigned int index;
+		if (!least_significant_zero_a16(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	unsigned int least_significant_zero_a16(unsigned int x)
+	{
+		unsigned int index;
+		if (!least_significant_zero_a16(x, index))
+			ful_unreachable();
+		return index;
+	}
+
 	// get the index of the most significant zero byte
 	ful_target("bmi") ful_inline
 	unsigned int most_significant_zero_byte(unsigned int x, tag_bmi_type)
@@ -449,6 +489,26 @@ namespace ful
 		const auto ret = least_significant_zero_a16(static_cast<unsigned int>(x), outout);
 		out = static_cast<unsigned long>(outout);
 		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	unsigned long least_significant_zero_a16(unsigned long x, tag_bmi_type tag)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a16(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	unsigned long least_significant_zero_a16(unsigned long x)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a16(x, index))
+			ful_unreachable();
+		return index;
 	}
 
 	// get the index of the most significant zero byte
@@ -553,6 +613,26 @@ namespace ful
 		return true;
 	}
 
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	unsigned long long least_significant_zero_a16(unsigned long long x, tag_bmi_type tag)
+	{
+		unsigned long long index;
+		if (!least_significant_zero_a16(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	unsigned long long least_significant_zero_a16(unsigned long long x)
+	{
+		unsigned long long index;
+		if (!least_significant_zero_a16(x, index))
+			ful_unreachable();
+		return index;
+	}
+
 	// get the index of the least significant zero aligned to 32
 	ful_target("bmi") ful_inline
 	bool least_significant_zero_a32(unsigned long long x, unsigned long long & out, tag_bmi_type)
@@ -579,6 +659,26 @@ namespace ful
 
 		out = least_significant_set_bit(y) >> 5;
 		return true;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_target("bmi") ful_inline
+	unsigned long long least_significant_zero_a32(unsigned long long x, tag_bmi_type tag)
+	{
+		unsigned long long index;
+		if (!least_significant_zero_a32(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_inline
+	unsigned long long least_significant_zero_a32(unsigned long long x)
+	{
+		unsigned long long index;
+		if (!least_significant_zero_a32(x, index))
+			ful_unreachable();
+		return index;
 	}
 
 	// get the index of the most significant zero byte
@@ -675,6 +775,26 @@ namespace ful
 		return ret;
 	}
 
+	// get the index of the least significant zero aligned to 16
+	ful_target("bmi") ful_inline
+	unsigned long least_significant_zero_a16(unsigned long x, tag_bmi_type tag)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a16(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 16
+	ful_inline
+	unsigned long least_significant_zero_a16(unsigned long x)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a16(x, index))
+			ful_unreachable();
+		return index;
+	}
+
 	// get the index of the least significant zero aligned to 32
 	ful_target("bmi") ful_inline
 	bool least_significant_zero_a32(unsigned long x, unsigned long & out, tag_bmi_type)
@@ -693,6 +813,26 @@ namespace ful
 		const auto ret = least_significant_zero_a32(static_cast<unsigned long long>(x), outout);
 		out = static_cast<unsigned long long>(outout);
 		return ret;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_target("bmi") ful_inline
+	unsigned long least_significant_zero_a32(unsigned long x, tag_bmi_type tag)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a32(x, index, tag))
+			ful_unreachable();
+		return index;
+	}
+
+	// get the index of the least significant zero aligned to 32
+	ful_inline
+	unsigned long least_significant_zero_a32(unsigned long x)
+	{
+		unsigned long index;
+		if (!least_significant_zero_a32(x, index))
+			ful_unreachable();
+		return index;
 	}
 
 	// get the index of the most significant zero byte
