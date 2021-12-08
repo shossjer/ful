@@ -1632,15 +1632,6 @@ namespace ful
 			return rfind_unit_32_32_generic(begin, end, c);
 		}
 
-		// prevents implicit casts from inbuilt characters with single quotes
-		// (e.g. 'a') to int/char32
-		template <typename T>
-		const T * find(T * from, T * to, char u) = delete;
-#if defined(_MSC_VER)
-		template <typename T>
-		const T * find(T * from, T * to, wchar_t u) = delete;
-#endif
-
 		ful_inline const char8 * find(const char8 * begin, const char8 * end, char8 c)
 		{
 			const usize size = static_cast<usize>(end - begin);
