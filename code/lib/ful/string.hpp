@@ -794,4 +794,38 @@ namespace ful
 	{
 		return find(begin(x), end(x), c);
 	}
+
+	namespace detail
+	{
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char8 c);
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char16 c);
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char_fast24 c);
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char32 c);
+		ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char16 c);
+		ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char32 c);
+		ful_inline const char32 * rfind(const char32 * begin, const char32 * end, char32 c);
+
+		// prevents implicit casts from inbuilt characters with single quotes
+		// (e.g. 'a') to int/char32
+		template <typename T>
+		const T * rfind(const T * from, const T * to, char u) = delete;
+#if defined(_MSC_VER)
+		template <typename T>
+		const T * rfind(const T * from, const T * to, wchar_t u) = delete;
+#endif
+	}
+
+	template <typename Begin, typename End, typename Char>
+	ful_inline auto rfind(Begin begin, End end, Char c)
+		-> decltype(detail::rfind(to_chars(to_address(begin)), to_chars(to_address(end)), c), to_address(begin))
+	{
+		return (decltype(to_address(begin)))detail::rfind(to_chars(to_address(begin)), to_chars(to_address(end)), c);
+	}
+
+	template <typename R, typename Char>
+	ful_inline auto rfind(R && x, Char c)
+		-> decltype(rfind(begin(x), end(x), c))
+	{
+		return rfind(begin(x), end(x), c);
+	}
 }

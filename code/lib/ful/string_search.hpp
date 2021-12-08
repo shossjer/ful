@@ -2001,483 +2001,376 @@ namespace ful
 			return detail::find_unit_32_32_generic(begin, end, c);
 #endif
 		}
-	}
 
-	// prevents implicit casts from inbuilt characters with single quotes
-	// (e.g. 'a') to int/char32
-	template <typename T>
-	const T * rfind(T * from, T * to, char u) = delete;
-#if defined(_MSC_VER)
-	template <typename T>
-	const T * rfind(T * from, T * to, wchar_t u) = delete;
-#endif
-
-	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char8 c)
-	{
-		const usize size = static_cast<usize>(end - begin);
-#if defined(__AVX2__)
-		if (size <= 32u)
-#else
-		if (size <= 16u)
-#endif
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char8 c)
 		{
-			switch (size)
-			{
+			const usize size = static_cast<usize>(end - begin);
 #if defined(__AVX2__)
-			case 32:
-			case 31:
-			case 30:
-			case 29:
-			case 28:
-			case 27:
-			case 26:
-			case 25:
-			case 24:
-			case 23:
-			case 22:
-			case 21:
-			case 20:
-			case 19:
-			case 18:
-			case 17:
-			{
-				return detail::rfind_unit_8_8_avx2_16(begin, end, c, size);
-			}
+			if (size <= 32u)
+#else
+			if (size <= 16u)
 #endif
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			case 12:
-			case 11:
-			case 10:
-			case 9:
 			{
-				const uint64 bytes = 0x0101010101010101u * (uint8)c;
+				switch (size)
+				{
+#if defined(__AVX2__)
+				case 32:
+				case 31:
+				case 30:
+				case 29:
+				case 28:
+				case 27:
+				case 26:
+				case 25:
+				case 24:
+				case 23:
+				case 22:
+				case 21:
+				case 20:
+				case 19:
+				case 18:
+				case 17:
+				{
+					return detail::rfind_unit_8_8_avx2_16(begin, end, c, size);
+				}
+#endif
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				case 12:
+				case 11:
+				case 10:
+				case 9:
+				{
+					const uint64 bytes = 0x0101010101010101u * (uint8)c;
 
-				const uint64 qword1 = *reinterpret_cast<const uint64 *>(begin);
-				const uint64 qword2 = *reinterpret_cast<const uint64 *>(end - 8);
+					const uint64 qword1 = *reinterpret_cast<const uint64 *>(begin);
+					const uint64 qword2 = *reinterpret_cast<const uint64 *>(end - 8);
 
-				uint64 index;
-				if (most_significant_zero_byte(qword2 ^ bytes, index))
-					return end - 8 + index;
+					uint64 index;
+					if (most_significant_zero_byte(qword2 ^ bytes, index))
+						return end - 8 + index;
 
-				if (most_significant_zero_byte(qword1 ^ bytes, index))
-					return begin + index;
+					if (most_significant_zero_byte(qword1 ^ bytes, index))
+						return begin + index;
 
-				return end;
+					return end;
+				}
+				case 8:
+				case 7:
+				case 6:
+				case 5:
+				{
+					const uint32 bytes = 0x01010101u * (uint8)c;
+
+					const uint32 dword1 = *reinterpret_cast<const uint32 *>(begin);
+					const uint32 dword2 = *reinterpret_cast<const uint32 *>(end - 4);
+
+					uint32 index;
+					if (most_significant_zero_byte(dword2 ^ bytes, index))
+						return end - 4 + index;
+
+					if (most_significant_zero_byte(dword1 ^ bytes, index))
+						return begin + index;
+
+					return end;
+				}
+				case 4: if (*(begin + 3) == c) return begin + 3; ful_fallthrough;
+				case 3: if (*(begin + 2) == c) return begin + 2; ful_fallthrough;
+				case 2: if (*(begin + 1) == c) return begin + 1; ful_fallthrough;
+				case 1: if (*(begin + 0) == c) return begin + 0; ful_fallthrough;
+				case 0: return end;
+				default: ful_unreachable();
+				}
 			}
-			case 8:
-			case 7:
-			case 6:
-			case 5:
+			else
 			{
-				const uint32 bytes = 0x01010101u * (uint8)c;
-
-				const uint32 dword1 = *reinterpret_cast<const uint32 *>(begin);
-				const uint32 dword2 = *reinterpret_cast<const uint32 *>(end - 4);
-
-				uint32 index;
-				if (most_significant_zero_byte(dword2 ^ bytes, index))
-					return end - 4 + index;
-
-				if (most_significant_zero_byte(dword1 ^ bytes, index))
-					return begin + index;
-
-				return end;
-			}
-			case 4: if (*(begin + 3) == c) return begin + 3; ful_fallthrough;
-			case 3: if (*(begin + 2) == c) return begin + 2; ful_fallthrough;
-			case 2: if (*(begin + 1) == c) return begin + 1; ful_fallthrough;
-			case 1: if (*(begin + 0) == c) return begin + 0; ful_fallthrough;
-			case 0: return end;
-			default: ful_unreachable();
+#if defined(FUL_RUNTIME_DISPATCH)
+				return detail::rfind_unit_8_8_rtd(begin, end, c);
+#elif defined(__AVX2__)
+				return detail::rfind_unit_8_8_avx2(begin, end, c);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				return detail::rfind_unit_8_8_sse2(begin, end, c);
+#else
+				return detail::rfind_unit_8_8_generic(begin, end, c);
+#endif
 			}
 		}
-		else
+
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char16 c)
+		{
+			const usize size = static_cast<usize>(end - begin);
+#if defined(__AVX2__)
+			if (size <= 33u)
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			if (size <= 17u)
+#else
+			if (size <= 9u)
+#endif
+			{
+				switch (size)
+				{
+#if defined(__AVX2__)
+				case 33:
+				case 32:
+				case 31:
+				case 30:
+				case 29:
+				case 28:
+				case 27:
+				case 26:
+				case 25:
+				case 24:
+				case 23:
+				case 22:
+				case 21:
+				case 20:
+				case 19:
+				case 18:
+				case 17:
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				case 12:
+				case 11:
+				case 10:
+				{
+					return detail::rfind_unit_8_16_avx2_9(begin, end, c, size);
+				}
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				case 17:
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				case 12:
+				case 11:
+				case 10:
+				{
+					return detail::rfind_unit_8_16_sse2_9(begin, end, c, size);
+				}
+#endif
+				case 9: if (*reinterpret_cast<const char16 *>(begin + 7) == c) return begin + 7; ful_fallthrough;
+				case 8: if (*reinterpret_cast<const char16 *>(begin + 6) == c) return begin + 6; ful_fallthrough;
+				case 7: if (*reinterpret_cast<const char16 *>(begin + 5) == c) return begin + 5; ful_fallthrough;
+				case 6: if (*reinterpret_cast<const char16 *>(begin + 4) == c) return begin + 4; ful_fallthrough;
+				case 5: if (*reinterpret_cast<const char16 *>(begin + 3) == c) return begin + 3; ful_fallthrough;
+				case 4: if (*reinterpret_cast<const char16 *>(begin + 2) == c) return begin + 2; ful_fallthrough;
+				case 3: if (*reinterpret_cast<const char16 *>(begin + 1) == c) return begin + 1; ful_fallthrough;
+				case 2: if (*reinterpret_cast<const char16 *>(begin + 0) == c) return begin + 0; ful_fallthrough;
+				case 1:
+				case 0: return end;
+				default: ful_unreachable();
+				}
+			}
+			else
+			{
+#if defined(FUL_RUNTIME_DISPATCH)
+				return detail::rfind_unit_8_16_rtd(begin, end, c);
+#elif defined(__AVX2__)
+				return detail::rfind_unit_8_16_avx2(begin, end, c);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				return detail::rfind_unit_8_16_sse2(begin, end, c);
+#else
+				return detail::rfind_unit_8_16_generic(begin, end, c);
+#endif
+			}
+		}
+
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char_fast24 c)
+		{
+			const usize size = static_cast<usize>(end - begin);
+#if defined(__AVX2__)
+			if (size <= 33u)
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+			if (size <= 17u)
+#else
+			if (size <= 9u)
+#endif
+			{
+				switch (size)
+				{
+#if defined(__AVX2__)
+				case 33:
+				case 32:
+				case 31:
+				case 30:
+				case 29:
+				case 28:
+				case 27:
+				case 26:
+				case 25:
+				case 24:
+				case 23:
+				case 22:
+				case 21:
+				case 20:
+				case 19:
+				case 18:
+				case 17:
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				{
+					return detail::rfind_unit_8_24_avx2_5_33(begin, end, c, size);
+				}
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				case 17:
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				{
+					return detail::rfind_unit_8_24_sse2_5_17(begin, end, c, size);
+				}
+#endif
+				case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 9)) == c) return begin + 9; ful_fallthrough;
+				case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 8)) == c) return begin + 8; ful_fallthrough;
+				case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 7)) == c) return begin + 7; ful_fallthrough;
+				case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 6)) == c) return begin + 6; ful_fallthrough;
+				case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 5)) == c) return begin + 5; ful_fallthrough;
+				case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 4)) == c) return begin + 4; ful_fallthrough;
+				case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 3)) == c) return begin + 3; ful_fallthrough;
+				case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 2)) == c) return begin + 2; ful_fallthrough;
+				case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 1)) == c) return begin + 1; ful_fallthrough;
+				case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 0)) == c) return begin + 0; ful_fallthrough;
+				case 2:
+				case 1:
+				case 0: return end;
+				default: ful_unreachable();
+				}
+			}
+			else
+			{
+#if defined(FUL_RUNTIME_DISPATCH)
+				return detail::rfind_unit_8_24_rtd(begin, end, c);
+#elif defined(__AVX2__)
+				return detail::rfind_unit_8_24_avx2(begin, end, c);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				return detail::rfind_unit_8_24_sse2(begin, end, c);
+#else
+				return detail::rfind_unit_8_24_generic(begin, end, c);
+#endif
+			}
+		}
+
+		ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char32 c)
+		{
+			const usize size = static_cast<usize>(end - begin);
+#if defined(__AVX2__)
+			if (size <= 34u)
+#else
+			if (size <= 26u)
+#endif
+			{
+				switch (size)
+				{
+#if defined(__AVX2__)
+				case 34:
+				case 33:
+				case 32:
+				case 31:
+				case 30:
+				case 29:
+				case 28:
+				case 27:
+				case 26:
+				case 25:
+				case 24:
+				case 23:
+				{
+					return detail::rfind_unit_8_32_avx2_4_34(begin, end, c, size);
+				}
+#else
+				case 26:
+				case 25:
+				case 24:
+				case 23:
+#endif
+				case 22:
+				case 21:
+				case 20:
+				case 19:
+				case 18:
+				case 17:
+				case 16:
+				case 15:
+				case 14:
+				case 13:
+				case 12:
+				case 11:
+				case 10:
+				case 9:
+				case 8:
+				case 7:
+				case 6:
+				case 5:
+				case 4:
+				case 3:
+				case 2:
+				case 1:
+				case 0:
+				{
+					return detail::rfind_unit_8_32_generic_0_26(begin, end, c, size);
+				}
+				default: ful_unreachable();
+				}
+			}
+			else
+			{
+#if defined(FUL_RUNTIME_DISPATCH)
+				return detail::rfind_unit_8_32_rtd(begin, end, c);
+#elif defined(__AVX2__)
+				return detail::rfind_unit_8_32_avx2(begin, end, c);
+#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+				return detail::rfind_unit_8_32_sse2(begin, end, c);
+#else
+				return detail::rfind_unit_8_32_generic(begin, end, c);
+#endif
+			}
+		}
+
+		ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char16 c)
 		{
 #if defined(FUL_RUNTIME_DISPATCH)
-			return detail::rfind_unit_8_8_rtd(begin, end, c);
+			return detail::rfind_unit_16_16_rtd(begin, end, c);
 #elif defined(__AVX2__)
-			return detail::rfind_unit_8_8_avx2(begin, end, c);
+			return detail::rfind_unit_16_16_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::rfind_unit_8_8_sse2(begin, end, c);
+			return detail::rfind_unit_16_16_sse2(begin, end, c);
 #else
-			return detail::rfind_unit_8_8_generic(begin, end, c);
+			return detail::rfind_unit_16_16_generic(begin, end, c);
 #endif
 		}
-	}
 
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline const T * rfind(const T * begin, const T * end, char8 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char8 *>(begin), reinterpret_cast<const char8 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline T * rfind(T * begin, T * end, char8 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char16 c)
-	{
-		const usize size = static_cast<usize>(end - begin);
-#if defined(__AVX2__)
-		if (size <= 33u)
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		if (size <= 17u)
-#else
-		if (size <= 9u)
-#endif
-		{
-			switch (size)
-			{
-#if defined(__AVX2__)
-			case 33:
-			case 32:
-			case 31:
-			case 30:
-			case 29:
-			case 28:
-			case 27:
-			case 26:
-			case 25:
-			case 24:
-			case 23:
-			case 22:
-			case 21:
-			case 20:
-			case 19:
-			case 18:
-			case 17:
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			case 12:
-			case 11:
-			case 10:
-			{
-				return detail::rfind_unit_8_16_avx2_9(begin, end, c, size);
-			}
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			case 17:
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			case 12:
-			case 11:
-			case 10:
-			{
-				return detail::rfind_unit_8_16_sse2_9(begin, end, c, size);
-			}
-#endif
-			case 9: if (*reinterpret_cast<const char16 *>(begin + 7) == c) return begin + 7; ful_fallthrough;
-			case 8: if (*reinterpret_cast<const char16 *>(begin + 6) == c) return begin + 6; ful_fallthrough;
-			case 7: if (*reinterpret_cast<const char16 *>(begin + 5) == c) return begin + 5; ful_fallthrough;
-			case 6: if (*reinterpret_cast<const char16 *>(begin + 4) == c) return begin + 4; ful_fallthrough;
-			case 5: if (*reinterpret_cast<const char16 *>(begin + 3) == c) return begin + 3; ful_fallthrough;
-			case 4: if (*reinterpret_cast<const char16 *>(begin + 2) == c) return begin + 2; ful_fallthrough;
-			case 3: if (*reinterpret_cast<const char16 *>(begin + 1) == c) return begin + 1; ful_fallthrough;
-			case 2: if (*reinterpret_cast<const char16 *>(begin + 0) == c) return begin + 0; ful_fallthrough;
-			case 1:
-			case 0: return end;
-			default: ful_unreachable();
-			}
-		}
-		else
+		ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char32 c)
 		{
 #if defined(FUL_RUNTIME_DISPATCH)
-			return detail::rfind_unit_8_16_rtd(begin, end, c);
+			return detail::rfind_unit_16_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
-			return detail::rfind_unit_8_16_avx2(begin, end, c);
+			return detail::rfind_unit_16_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::rfind_unit_8_16_sse2(begin, end, c);
+			return detail::rfind_unit_16_32_sse2(begin, end, c);
 #else
-			return detail::rfind_unit_8_16_generic(begin, end, c);
+			return detail::rfind_unit_16_32_generic(begin, end, c);
 #endif
 		}
-	}
 
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline const T * rfind(const T * begin, const T * end, char16 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char8 *>(begin), reinterpret_cast<const char8 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline T * rfind(T * begin, T * end, char16 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char_fast24 c)
-	{
-		const usize size = static_cast<usize>(end - begin);
-#if defined(__AVX2__)
-		if (size <= 33u)
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		if (size <= 17u)
-#else
-		if (size <= 9u)
-#endif
-		{
-			switch (size)
-			{
-#if defined(__AVX2__)
-			case 33:
-			case 32:
-			case 31:
-			case 30:
-			case 29:
-			case 28:
-			case 27:
-			case 26:
-			case 25:
-			case 24:
-			case 23:
-			case 22:
-			case 21:
-			case 20:
-			case 19:
-			case 18:
-			case 17:
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			{
-				return detail::rfind_unit_8_24_avx2_5_33(begin, end, c, size);
-			}
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			case 17:
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			{
-				return detail::rfind_unit_8_24_sse2_5_17(begin, end, c, size);
-			}
-#endif
-			case 12: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 9)) == c) return begin + 9; ful_fallthrough;
-			case 11: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 8)) == c) return begin + 8; ful_fallthrough;
-			case 10: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 7)) == c) return begin + 7; ful_fallthrough;
-			case 9: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 6)) == c) return begin + 6; ful_fallthrough;
-			case 8: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 5)) == c) return begin + 5; ful_fallthrough;
-			case 7: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 4)) == c) return begin + 4; ful_fallthrough;
-			case 6: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 3)) == c) return begin + 3; ful_fallthrough;
-			case 5: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 2)) == c) return begin + 2; ful_fallthrough;
-			case 4: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 1)) == c) return begin + 1; ful_fallthrough;
-			case 3: if (static_cast<char_fast24>(*reinterpret_cast<const char24 *>(begin + 0)) == c) return begin + 0; ful_fallthrough;
-			case 2:
-			case 1:
-			case 0: return end;
-			default: ful_unreachable();
-			}
-		}
-		else
+		ful_inline const char32 * rfind(const char32 * begin, const char32 * end, char32 c)
 		{
 #if defined(FUL_RUNTIME_DISPATCH)
-			return detail::rfind_unit_8_24_rtd(begin, end, c);
+			return detail::rfind_unit_32_32_rtd(begin, end, c);
 #elif defined(__AVX2__)
-			return detail::rfind_unit_8_24_avx2(begin, end, c);
+			return detail::rfind_unit_32_32_avx2(begin, end, c);
 #elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::rfind_unit_8_24_sse2(begin, end, c);
+			return detail::rfind_unit_32_32_sse2(begin, end, c);
 #else
-			return detail::rfind_unit_8_24_generic(begin, end, c);
+			return detail::rfind_unit_32_32_generic(begin, end, c);
 #endif
 		}
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline const T * rfind(const T * begin, const T * end, char_fast24 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char8 *>(begin), reinterpret_cast<const char8 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline T * rfind(T * begin, T * end, char_fast24 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char8 * rfind(const char8 * begin, const char8 * end, char32 c)
-	{
-		const usize size = static_cast<usize>(end - begin);
-#if defined(__AVX2__)
-		if (size <= 34u)
-#else
-		if (size <= 26u)
-#endif
-		{
-			switch (size)
-			{
-#if defined(__AVX2__)
-			case 34:
-			case 33:
-			case 32:
-			case 31:
-			case 30:
-			case 29:
-			case 28:
-			case 27:
-			case 26:
-			case 25:
-			case 24:
-			case 23:
-			{
-				return detail::rfind_unit_8_32_avx2_4_34(begin, end, c, size);
-			}
-#else
-			case 26:
-			case 25:
-			case 24:
-			case 23:
-#endif
-			case 22:
-			case 21:
-			case 20:
-			case 19:
-			case 18:
-			case 17:
-			case 16:
-			case 15:
-			case 14:
-			case 13:
-			case 12:
-			case 11:
-			case 10:
-			case 9:
-			case 8:
-			case 7:
-			case 6:
-			case 5:
-			case 4:
-			case 3:
-			case 2:
-			case 1:
-			case 0:
-			{
-				return detail::rfind_unit_8_32_generic_0_26(begin, end, c, size);
-			}
-			default: ful_unreachable();
-			}
-		}
-		else
-		{
-#if defined(FUL_RUNTIME_DISPATCH)
-			return detail::rfind_unit_8_32_rtd(begin, end, c);
-#elif defined(__AVX2__)
-			return detail::rfind_unit_8_32_avx2(begin, end, c);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-			return detail::rfind_unit_8_32_sse2(begin, end, c);
-#else
-			return detail::rfind_unit_8_32_generic(begin, end, c);
-#endif
-		}
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline const T * rfind(const T * begin, const T * end, char32 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char8 *>(begin), reinterpret_cast<const char8 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char8))>
-	ful_inline T * rfind(T * begin, T * end, char32 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char16 c)
-	{
-#if defined(FUL_RUNTIME_DISPATCH)
-		return detail::rfind_unit_16_16_rtd(begin, end, c);
-#elif defined(__AVX2__)
-		return detail::rfind_unit_16_16_avx2(begin, end, c);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::rfind_unit_16_16_sse2(begin, end, c);
-#else
-		return detail::rfind_unit_16_16_generic(begin, end, c);
-#endif
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char16))>
-	ful_inline const T * rfind(const T * begin, const T * end, char16 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char16 *>(begin), reinterpret_cast<const char16 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char16))>
-	ful_inline T * rfind(T * begin, T * end, char16 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char16 * rfind(const char16 * begin, const char16 * end, char32 c)
-	{
-#if defined(FUL_RUNTIME_DISPATCH)
-		return detail::rfind_unit_16_32_rtd(begin, end, c);
-#elif defined(__AVX2__)
-		return detail::rfind_unit_16_32_avx2(begin, end, c);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::rfind_unit_16_32_sse2(begin, end, c);
-#else
-		return detail::rfind_unit_16_32_generic(begin, end, c);
-#endif
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char16))>
-	ful_inline const T * rfind(const T * begin, const T * end, char32 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char16 *>(begin), reinterpret_cast<const char16 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char16))>
-	ful_inline T * rfind(T * begin, T * end, char32 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	ful_inline const char32 * rfind(const char32 * begin, const char32 * end, char32 c)
-	{
-#if defined(FUL_RUNTIME_DISPATCH)
-		return detail::rfind_unit_32_32_rtd(begin, end, c);
-#elif defined(__AVX2__)
-		return detail::rfind_unit_32_32_avx2(begin, end, c);
-#elif defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-		return detail::rfind_unit_32_32_sse2(begin, end, c);
-#else
-		return detail::rfind_unit_32_32_generic(begin, end, c);
-#endif
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char32))>
-	ful_inline const T * rfind(const T * begin, const T * end, char32 c)
-	{
-		return reinterpret_cast<const T *>(rfind(reinterpret_cast<const char32 *>(begin), reinterpret_cast<const char32 *>(end), c));
-	}
-
-	template <typename T, ful_requires(sizeof(T) == sizeof(char32))>
-	ful_inline T * rfind(T * begin, T * end, char32 c)
-	{
-		return const_cast<T *>(rfind(const_cast<const T *>(begin), const_cast<const T *>(end), c));
-	}
-
-	template <typename Begin, typename End, typename Char>
-	ful_inline auto rfind(Begin begin, End end, Char c)
-		-> decltype(rfind(to_address(begin), to_address(end), c))
-	{
-		return rfind(to_address(begin), to_address(end), c);
-	}
-
-	template <typename R, typename Char>
-	ful_inline auto rfind(R && x, Char c)
-		-> decltype(rfind(begin(x), end(x), c))
-	{
-		return rfind(begin(x), end(x), c);
 	}
 
 	ful_inline const char8 * strend(const char8 * cstr)
