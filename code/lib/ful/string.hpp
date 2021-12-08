@@ -538,7 +538,7 @@ namespace ful
 
 #if defined(__SSE2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 				const __m128i line1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg1 + end_line));
-				const __m128i line2 = _mm_load_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
+				const __m128i line2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(beg2 + end_line));
 				const __m128i cmpeq = _mm_cmpeq_epi8(line1, line2);
 				const int mask = _mm_movemask_epi8(cmpeq);
 				if (mask != 0x0000ffff)
