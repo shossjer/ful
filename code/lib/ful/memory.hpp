@@ -107,6 +107,7 @@ namespace ful
 		ful_inline size_type max_size() const { return cap_ - beg_; }
 
 		ful_inline const_pointer c_str() const { return beg_; }
+		ful_inline pointer c_str() { return beg_; }
 
 	protected:
 

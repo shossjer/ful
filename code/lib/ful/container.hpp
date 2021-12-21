@@ -310,6 +310,9 @@ namespace ful
 	ful_inline ful_pure typename string_container<Base>::const_pointer c_str(const string_container<Base> & x) { return x.c_str(); }
 
 	template <typename Base>
+	ful_inline ful_pure typename string_container<Base>::pointer c_str(string_container<Base> & x) { return x.c_str(); }
+
+	template <typename Base>
 	ful_inline ful_pure bool empty(const string_container<Base> & x) { return x.begin() == x.end(); }
 
 	template <typename Base>

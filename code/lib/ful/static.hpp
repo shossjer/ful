@@ -180,6 +180,7 @@ namespace ful
 		ful_inline constexpr size_type max_size() ful_const { return Capacity; }
 
 		ful_inline const_pointer c_str() ful_const { return beg_; }
+		ful_inline pointer c_str() ful_pure { return beg_; }
 
 	protected:
 

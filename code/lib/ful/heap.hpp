@@ -140,6 +140,7 @@ namespace ful
 		ful_inline constexpr size_type max_size() ful_const { return static_cast<usize>(-1) / sizeof(value_type); }
 
 		ful_inline const_pointer c_str() const { return beg_; }
+		ful_inline pointer c_str() { return beg_; }
 
 	protected:
 
