@@ -1359,7 +1359,7 @@ namespace ful
 			{
 				const __m256i line = _mm256_load_si256(reinterpret_cast<const __m256i *>(begin_chunk));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)) >> (begin - begin_chunk), static_cast<unsigned int>(size - 1));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
@@ -1371,7 +1371,7 @@ namespace ful
 			{
 				const __m256i line = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(begin));
 				const __m256i cmp = _mm256_cmpeq_epi8(line, c256);
-				const unsigned int mask = set_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)), static_cast<unsigned int>(size - 1));
+				const unsigned int mask = zero_higher_bits(static_cast<unsigned int>(_mm256_movemask_epi8(cmp)), static_cast<unsigned int>(size - 1));
 				if (mask != 0)
 				{
 					const unsigned int index = most_significant_set_bit(mask);
