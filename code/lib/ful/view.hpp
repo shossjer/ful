@@ -106,7 +106,8 @@ namespace ful
 #endif
 
 		template <typename Stream>
-		friend Stream & operator << (Stream & stream, const view_base & x)
+		friend auto operator << (Stream && stream, const view_base & x)
+			-> decltype(stream.write(const_pointer{}, usize{}))
 		{
 			return stream.write(x.data(), x.size());
 		}

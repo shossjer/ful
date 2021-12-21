@@ -270,6 +270,13 @@ namespace ful
 				return this->beg_;
 			}
 		}
+
+		template <typename Stream>
+		friend auto operator << (Stream && stream, const string_container & x)
+			-> decltype(stream.write(const_pointer{}, usize{}))
+		{
+			return stream.write(x.data(), x.size());
+		}
 	};
 
 	template <typename Base>
