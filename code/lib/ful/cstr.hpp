@@ -33,14 +33,14 @@ namespace ful
 
 		template <unsigned long long N>
 		ful_inline constexpr explicit cstr_base(const value_type (& str)[N]) noexcept
-			: view_utf8(str, (ful_expect(str[N - 1] == value_type{}), str + N - 1)) // subtract terminating null
+			: view_base<T>(str, (ful_expect(str[N - 1] == value_type{}), str + N - 1)) // subtract terminating null
 		{}
 
 		cstr_base(const cstr_base &) = default;
 
 		template <typename R>
 		ful_inline constexpr explicit cstr_base(const R & x) noexcept
-			: view_utf8(x.c_str(), x.size())
+			: view_base<T>(x.c_str(), x.size())
 		{}
 
 	public:
